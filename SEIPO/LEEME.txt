@@ -1,0 +1,7 @@
+SEIPO - Java Swing (NetBeans)
+Usuario: admin   Contraseña: 1234
+
+Abrir: NetBeans > File > Open Project > carpeta SEIPO > F6 (Run).
+Si NetBeans no lo reconoce: File > New Project > Java with Ant > Java Application (nombre SEIPO,
+desmarcar "Create Main Class"), y copie la carpeta src/seipo dentro del nuevo proyecto.
+Clase principal: seipo.Login
