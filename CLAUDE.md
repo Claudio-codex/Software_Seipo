@@ -1,0 +1,45 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## Language
+
+Always respond to the user in Spanish (siempre responde en español), including explanations, summaries, questions, and commit messages.
+
+## Overview
+
+SEIPO is a Java Swing desktop app for sales and inventory ("Sistema de venta e inventario") backed by a local MySQL database. Code, identifiers, UI text, and docs are in Spanish. Money is in Peruvian soles (`Datos.soles(...)`), and IGV (18% tax) is applied to every sale.
+
+## Build & Run
+
+No build tool (Maven/Gradle). The project is built from an IDE: IntelliJ (`Software_Seipo.iml` at the repo root, source root `SEIPO/src`) or NetBeans/Ant (`SEIPO/build.xml`, `SEIPO/nbproject/`). There are no tests and no linter.
+
+- **Prerequisite:** MySQL running on `localhost:3306`, user `root`, empty password (hard-coded in `seipo.modelo.ConexionBD`). The MySQL Connector/J jar has to be on the classpath. In IntelliJ it is a project library pointing to a jar outside the repo (`.idea/libraries/`).
+- **Entry point:** `seipo.vista.Login` (`main`). Default login: `admin` / `123` (seeded by `ConexionBD`; `LEEME.txt` wrongly says `1234`).
+- `seipo.modelo.ConexionBD#main` checks the connection and creates the schema.
+- `nbproject/project.properties` has `main.class=seipo.Login`, which is outdated. The real class is `seipo.vista.Login`.
+- Command-line compile/run (connector jar path required):
+  ```
+  javac -d out -cp <mysql-connector-j.jar> $(find SEIPO/src -name "*.java")
+  java -cp "out;<mysql-connector-j.jar>" seipo.vista.Login   # ':' separator on Unix
+  ```
+- `out/` and `SEIPO/out/` contain IDE build output (some of it is committed). Don't edit them.
+
+## Architecture
+
+The app is a simple three-package MVC under `SEIPO/src/seipo/`:
+
+- **`modelo`**
+  - `ConexionBD.obtenerConexion()` is the only way code gets a DB connection. **On every call** it runs `inicializarBaseDatos()`, which runs `CREATE DATABASE/TABLE IF NOT EXISTS` and seeds the admin user. This makes the schema self-bootstrapping, so schema changes go in that SQL array (there are no migrations; existing tables are not altered).
+  - `Datos` holds shared constants (`IGV`, `STOCK_BAJO` low-stock threshold, the `dd/MM/yy` date format), the `ProductoVenta` value object, and the currency formatter.
+- **`controlador`**: one controller per screen (`ControladorVentas`, `ControladorProductos`, etc.). Each one opens its own connection with try-with-resources, uses plain JDBC `PreparedStatement`s, throws `SQLException` up to the view, and returns small nested `*VO` classes with public fields.
+- **`vista`**: Swing views. `Login` opens `Principal`, a `JFrame` with a side menu and a `CardLayout` of `Panel*` screens. `Principal.mostrar()` calls each panel's `refrescar()` when that panel is shown, so new panels need a `refrescar()` and a case in that method. `UI` holds the shared styling and widget factories (`boton`, `modelo` for a read-only table model, `tabla`, `tarjeta`, `base`).
+
+Domain notes:
+- A sale (`ControladorVentas.cobrarVenta`) runs as one transaction: it inserts into `ventas` and `detalle_ventas`, decrements `productos.stock`, and logs to `movimientos`. The total is computed as `(subtotal - discount) * (1 + IGV)`, and `PanelVentas` repeats that same calculation for display, so keep the two in sync.
+- `detalle_ventas` and `movimientos` store the product **name** (`producto_nombre`) rather than a foreign key to `productos`. `movimientos.fecha` is a `VARCHAR` formatted with `Datos.FECHA`.
+- Passwords are stored and compared in plaintext (`ControladorLogin`).
+
+## Docs
+
+`docs/Documentacion_Proyecto_Seipo_2.docx` is the project documentation (university course project).
