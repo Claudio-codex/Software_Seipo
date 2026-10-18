@@ -186,7 +186,7 @@ public class ControladorReportes {
     private Map<String, InventarioVO> cargarInventario(Connection con, DatosReporteVO vo, Map<String, String> categoriaDe) throws SQLException {
         Map<String, InventarioVO> porCategoria = new HashMap<>();
         try (Statement st = con.createStatement();
-             ResultSet rs = st.executeQuery("SELECT nombre, categoria, precio, stock FROM productos")) {
+             ResultSet rs = st.executeQuery("SELECT nombre, categoria, precio, stock, stock_minimo FROM productos")) {
             while (rs.next()) {
                 String categoria = categoria(rs.getString("categoria"));
                 int stock = rs.getInt("stock");
@@ -197,7 +197,7 @@ public class ControladorReportes {
                 inv.stock += stock;
                 inv.valor += rs.getDouble("precio") * stock;
                 if (stock == 0) inv.agotados++;
-                else if (stock <= Datos.STOCK_BAJO) inv.bajo++;
+                else if (stock <= rs.getInt("stock_minimo")) inv.bajo++;
             }
         }
         vo.inventario.addAll(porCategoria.values());

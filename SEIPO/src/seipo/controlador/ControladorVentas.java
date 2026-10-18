@@ -14,7 +14,7 @@ public class ControladorVentas {
      * Stock que se puede vender: lotes no vencidos menos las unidades reservadas por mermas pendientes
      * (los vencidos se dan de baja como merma).
      */
-    private static final String STOCK_DISPONIBLE =
+    static final String STOCK_DISPONIBLE =
             "(SELECT COALESCE(SUM(l.cantidad - " + ControladorMermas.RESERVADO_EN_LOTE + "), 0) " +
             "FROM lotes l WHERE l.producto_id = p.id " +
             "AND (l.fecha_vencimiento IS NULL OR l.fecha_vencimiento >= CURDATE())) AS stock";

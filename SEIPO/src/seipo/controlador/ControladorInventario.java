@@ -89,9 +89,14 @@ public class ControladorInventario {
         }
     }
 
+    /** Totales del inventario; stock bajo y agotados salen de las mismas alertas que la sección Compras. */
     public ResumenInventario obtenerResumen() throws SQLException {
         int sumaStockTotal = 0, bajo = 0, agotados = 0, vencidos = 0, porVencer = 0;
-        String sqlProductos = "SELECT stock FROM productos";
+        for (ControladorCompras.AlertaVO a : new ControladorCompras().listarAlertas()) {
+            if (ControladorCompras.AGOTADO.equals(a.estado)) agotados++;
+            else if (ControladorCompras.STOCK_BAJO.equals(a.estado)) bajo++;
+        }
+        String sqlProductos = "SELECT COALESCE(SUM(stock), 0) FROM productos";
         String sqlLotes = "SELECT " +
                 "SUM(fecha_vencimiento < CURDATE()), " +
                 "SUM(fecha_vencimiento BETWEEN CURDATE() AND CURDATE() + INTERVAL ? DAY) " +
@@ -99,12 +104,8 @@ public class ControladorInventario {
         try (Connection con = ConexionBD.obtenerConexion()) {
             try (Statement st = con.createStatement();
                  ResultSet rs = st.executeQuery(sqlProductos)) {
-                while (rs.next()) {
-                    int stock = rs.getInt("stock");
-                    sumaStockTotal += stock;
-                    if (stock == 0) agotados++;
-                    else if (stock <= Datos.STOCK_BAJO) bajo++;
-                }
+                rs.next();
+                sumaStockTotal = rs.getInt(1);
             }
             try (PreparedStatement pst = con.prepareStatement(sqlLotes)) {
                 pst.setInt(1, Datos.DIAS_POR_VENCER);
@@ -203,6 +204,12 @@ public class ControladorInventario {
      * remisión, un lote por línea, el aumento de stock y el movimiento de ingreso.
      */
     public void registrarRecepcion(String guia, String proveedor, List<LineaRecepcion> lineas) throws SQLException {
+        registrarRecepcion(guia, proveedor, lineas, null);
+    }
+
+    /** Igual que la anterior; si se indica ordenId, en la misma transacción marca esa orden aprobada como RECIBIDA. */
+    public void registrarRecepcion(String guia, String proveedor, List<LineaRecepcion> lineas, Integer ordenId) throws SQLException {
+        String sqlOrden = "UPDATE ordenes_compra SET estado = 'RECIBIDA', recepcion_id = ? WHERE id = ? AND estado = 'APROBADA'";
         String sqlGuia = "SELECT COUNT(*) FROM recepciones WHERE guia_remision = ? AND proveedor = ?";
         String sqlRecepcion = "INSERT INTO recepciones (fecha, guia_remision, proveedor, usuario_id) VALUES (?, ?, ?, ?)";
         String sqlLote = "INSERT INTO lotes (producto_id, recepcion_id, numero_lote, fecha_vencimiento, cantidad_inicial, cantidad, ubicacion) " +
@@ -269,6 +276,15 @@ public class ControladorInventario {
                         pstMov.setInt(5, l.cantidad);
                         pstMov.setInt(6, nuevoStock);
                         pstMov.executeUpdate();
+                    }
+                }
+                if (ordenId != null) {
+                    try (PreparedStatement pst = con.prepareStatement(sqlOrden)) {
+                        pst.setLong(1, recepcionId);
+                        pst.setInt(2, ordenId);
+                        if (pst.executeUpdate() == 0) {
+                            throw new SQLException("La orden de compra N° " + ordenId + " no está aprobada o ya fue recibida.");
+                        }
                     }
                 }
                 con.commit();

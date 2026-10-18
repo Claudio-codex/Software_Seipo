@@ -46,6 +46,8 @@ public class ConexionBD {
                         "    categoria VARCHAR(50)," +
                         "    precio DECIMAL(10, 2) NOT NULL," +
                         "    stock INT NOT NULL DEFAULT 0," +
+                        "    stock_minimo INT NOT NULL DEFAULT 10," +
+                        "    stock_maximo INT," + // NULL: sin límite de sobrestock
                         "    actualizado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP" +
                         ");",
 
@@ -132,6 +134,44 @@ public class ConexionBD {
                         "    FOREIGN KEY (solicitado_por) REFERENCES usuarios(id)," +
                         "    FOREIGN KEY (autorizado_por) REFERENCES usuarios(id)," +
                         "    INDEX idx_mermas_lote (lote_id, estado)" +
+                        ");",
+
+                "CREATE TABLE IF NOT EXISTS proveedores (" +
+                        "    id INT AUTO_INCREMENT PRIMARY KEY," +
+                        "    ruc VARCHAR(11) NOT NULL UNIQUE," +
+                        "    razon_social VARCHAR(150) NOT NULL," +
+                        "    contacto VARCHAR(100)," +
+                        "    telefono VARCHAR(20)," +
+                        "    correo VARCHAR(100)," +
+                        "    activo BOOLEAN NOT NULL DEFAULT TRUE," +
+                        "    registrado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP" +
+                        ");",
+
+                // Estados: PENDIENTE -> APROBADA -> RECIBIDA, o PENDIENTE -> RECHAZADA
+                "CREATE TABLE IF NOT EXISTS ordenes_compra (" +
+                        "    id INT AUTO_INCREMENT PRIMARY KEY," +
+                        "    proveedor_id INT NOT NULL," +
+                        "    estado VARCHAR(20) NOT NULL DEFAULT 'PENDIENTE'," +
+                        "    observacion VARCHAR(255)," +
+                        "    creado_por INT NOT NULL," +
+                        "    creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP," +
+                        "    aprobado_por INT," +
+                        "    aprobado_en DATETIME," +
+                        "    motivo_rechazo VARCHAR(255)," +
+                        "    recepcion_id INT," +
+                        "    FOREIGN KEY (proveedor_id) REFERENCES proveedores(id)," +
+                        "    FOREIGN KEY (creado_por) REFERENCES usuarios(id)," +
+                        "    FOREIGN KEY (aprobado_por) REFERENCES usuarios(id)," +
+                        "    FOREIGN KEY (recepcion_id) REFERENCES recepciones(id)" +
+                        ");",
+
+                "CREATE TABLE IF NOT EXISTS detalle_ordenes (" +
+                        "    id INT AUTO_INCREMENT PRIMARY KEY," +
+                        "    orden_id INT NOT NULL," +
+                        "    producto_id INT NOT NULL," +
+                        "    cantidad INT NOT NULL," +
+                        "    FOREIGN KEY (orden_id) REFERENCES ordenes_compra(id) ON DELETE CASCADE," +
+                        "    FOREIGN KEY (producto_id) REFERENCES productos(id)" +
                         ");"
         };
 
@@ -163,11 +203,13 @@ public class ConexionBD {
     }
 
     /**
-     * Prepara una base de la versión anterior para el control FEFO: agrega la columna lote a
-     * movimientos y pasa el stock de los productos que aún no tienen lotes a un lote "INICIAL"
+     * Prepara una base de versiones anteriores: agrega a productos el stock mínimo y máximo
+     * y, para el control FEFO, agrega la columna lote a movimientos y pasa el stock de los productos que aún no tienen lotes a un lote "INICIAL"
      * sin fecha de vencimiento. Solo ocurre una vez: cuando la columna lote todavía no existía.
      */
     private static void actualizarInventario(Statement stmt) throws SQLException {
+        agregarColumna(stmt, "ALTER TABLE productos ADD COLUMN stock_minimo INT NOT NULL DEFAULT 10");
+        agregarColumna(stmt, "ALTER TABLE productos ADD COLUMN stock_maximo INT");
         if (agregarColumna(stmt, "ALTER TABLE movimientos ADD COLUMN lote VARCHAR(50)")) {
             stmt.execute("INSERT INTO lotes (producto_id, numero_lote, cantidad_inicial, cantidad) " +
                     "SELECT p.id, 'INICIAL', p.stock, p.stock FROM productos p " +

@@ -7,7 +7,10 @@ public class Datos {
     public static final DateTimeFormatter FECHA = DateTimeFormatter.ofPattern("dd/MM/yy");
     /** Formato para ingresar y mostrar fechas de vencimiento. */
     public static final DateTimeFormatter FECHA_COMPLETA = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-    public static final int STOCK_BAJO = 10;
+    /** Stock mínimo que se propone al registrar un producto (cada producto tiene el suyo). */
+    public static final int STOCK_MINIMO_DEFECTO = 10;
+    /** Cada cuántos minutos se revisan las alertas de stock con la aplicación abierta. */
+    public static final int MINUTOS_REVISION_ALERTAS = 5;
     /** Días antes del vencimiento en que un lote se marca como "Por vencer". */
     public static final int DIAS_POR_VENCER = 30;
     public static final double IGV = 0.18;
