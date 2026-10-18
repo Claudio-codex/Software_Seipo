@@ -1,0 +1,10 @@
+<component name="libraryTable">
+  <library name="seipo-lib">
+    <CLASSES>
+      <root url="file://$PROJECT_DIR$/SEIPO/lib" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+    <jarDirectory url="file://$PROJECT_DIR$/SEIPO/lib" recursive="false" />
+  </library>
+</component>
