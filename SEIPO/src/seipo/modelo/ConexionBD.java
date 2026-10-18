@@ -33,10 +33,11 @@ public class ConexionBD {
                         "    id INT AUTO_INCREMENT PRIMARY KEY," +
                         "    usuario VARCHAR(50) NOT NULL UNIQUE," +
                         "    password VARCHAR(255) NOT NULL," +
+                        "    nombre VARCHAR(100) NOT NULL DEFAULT ''," +
+                        "    rol VARCHAR(20) NOT NULL DEFAULT 'PERSONAL'," +
+                        "    activo BOOLEAN NOT NULL DEFAULT TRUE," +
                         "    creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP" +
                         ");",
-
-                "INSERT IGNORE INTO usuarios (usuario, password) VALUES ('admin', '123');",
 
                 "CREATE TABLE IF NOT EXISTS productos (" +
                         "    id INT AUTO_INCREMENT PRIMARY KEY," +
@@ -91,8 +92,34 @@ public class ConexionBD {
             for (String sql : sqls) {
                 stmt.execute(sql);
             }
+            actualizarUsuarios(stmt);
         } catch (SQLException e) {
             System.err.println("Aviso/Error al autoinicializar la BD: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Agrega las columnas de roles a una tabla usuarios creada con la versión anterior.
+     * Los usuarios que ya existían quedan como administradores para no perder el acceso.
+     */
+    private static void actualizarUsuarios(Statement stmt) throws SQLException {
+        if (agregarColumna(stmt, "ALTER TABLE usuarios ADD COLUMN rol VARCHAR(20) NOT NULL DEFAULT 'PERSONAL'")) {
+            stmt.execute("UPDATE usuarios SET rol = 'ADMINISTRADOR'");
+        }
+        agregarColumna(stmt, "ALTER TABLE usuarios ADD COLUMN nombre VARCHAR(100) NOT NULL DEFAULT ''");
+        agregarColumna(stmt, "ALTER TABLE usuarios ADD COLUMN activo BOOLEAN NOT NULL DEFAULT TRUE");
+        stmt.execute("INSERT IGNORE INTO usuarios (usuario, password, nombre, rol) " +
+                "VALUES ('admin', '123', 'Administrador', 'ADMINISTRADOR')");
+    }
+
+    /** Ejecuta un ALTER TABLE ... ADD COLUMN; devuelve false si la columna ya existía. */
+    private static boolean agregarColumna(Statement stmt, String sql) throws SQLException {
+        try {
+            stmt.execute(sql);
+            return true;
+        } catch (SQLException e) {
+            if (e.getErrorCode() == 1060) return false; // ER_DUP_FIELDNAME
+            throw e;
         }
     }
 

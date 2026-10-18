@@ -62,12 +62,18 @@ public class Login extends JFrame {
         }
 
         try {
-            if (controlador.validarUsuario(usuario, password)) {
-                new Principal().setVisible(true);
-                dispose();
-            } else {
-                JOptionPane.showMessageDialog(this, "Usuario o contraseña incorrectos.",
-                        "Error", JOptionPane.ERROR_MESSAGE);
+            switch (controlador.iniciarSesion(usuario, password)) {
+                case CORRECTO:
+                    new Principal().setVisible(true);
+                    dispose();
+                    break;
+                case DESACTIVADO:
+                    JOptionPane.showMessageDialog(this, "El usuario está desactivado. Consulte con el administrador.",
+                            "Acceso denegado", JOptionPane.WARNING_MESSAGE);
+                    break;
+                default:
+                    JOptionPane.showMessageDialog(this, "Usuario o contraseña incorrectos.",
+                            "Error", JOptionPane.ERROR_MESSAGE);
             }
         } catch (SQLException ex) {
             JOptionPane.showMessageDialog(this, "Error de conexión con la base de datos:\n" + ex.getMessage(),

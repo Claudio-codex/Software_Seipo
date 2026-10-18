@@ -30,7 +30,8 @@ No build tool (Maven/Gradle). The project is built from an IDE: IntelliJ (`Softw
 The app is a simple three-package MVC under `SEIPO/src/seipo/`:
 
 - **`modelo`**
-  - `ConexionBD.obtenerConexion()` is the only way code gets a DB connection. **On every call** it runs `inicializarBaseDatos()`, which runs `CREATE DATABASE/TABLE IF NOT EXISTS` and seeds the admin user. This makes the schema self-bootstrapping, so schema changes go in that SQL array (there are no migrations; existing tables are not altered).
+  - `ConexionBD.obtenerConexion()` is the only way code gets a DB connection. **On every call** it runs `inicializarBaseDatos()`, which runs `CREATE DATABASE/TABLE IF NOT EXISTS` and seeds the admin user. This makes the schema self-bootstrapping, so schema changes go in that SQL array. `CREATE TABLE IF NOT EXISTS` does not alter tables that already exist, so a new column on an existing table also needs an `ALTER TABLE ... ADD COLUMN` through `agregarColumna` (it ignores MySQL error 1060, duplicate column). See `actualizarUsuarios` for an example.
+  - `Sesion` holds the logged-in user (id, name, role). There are two roles, `ADMINISTRADOR` and `PERSONAL`. `Principal` only builds `PanelReportes` and `PanelUsuarios` for administrators.
   - `Datos` holds shared constants (`IGV`, `STOCK_BAJO` low-stock threshold, the `dd/MM/yy` date format), the `ProductoVenta` value object, and the currency formatter.
 - **`controlador`**: one controller per screen (`ControladorVentas`, `ControladorProductos`, etc.). Each one opens its own connection with try-with-resources, uses plain JDBC `PreparedStatement`s, throws `SQLException` up to the view, and returns small nested `*VO` classes with public fields.
 - **`vista`**: Swing views. `Login` opens `Principal`, a `JFrame` with a side menu and a `CardLayout` of `Panel*` screens. `Principal.mostrar()` calls each panel's `refrescar()` when that panel is shown, so new panels need a `refrescar()` and a case in that method. `UI` holds the shared styling and widget factories (`boton`, `modelo` for a read-only table model, `tabla`, `tarjeta`, `base`).
@@ -38,7 +39,7 @@ The app is a simple three-package MVC under `SEIPO/src/seipo/`:
 Domain notes:
 - A sale (`ControladorVentas.cobrarVenta`) runs as one transaction: it inserts into `ventas` and `detalle_ventas`, decrements `productos.stock`, and logs to `movimientos`. The total is computed as `(subtotal - discount) * (1 + IGV)`, and `PanelVentas` repeats that same calculation for display, so keep the two in sync.
 - `detalle_ventas` and `movimientos` store the product **name** (`producto_nombre`) rather than a foreign key to `productos`. `movimientos.fecha` is a `VARCHAR` formatted with `Datos.FECHA`.
-- Passwords are stored and compared in plaintext (`ControladorLogin`).
+- Passwords are stored and compared in plaintext (`ControladorLogin`, `ControladorUsuarios`). Deactivated users (`usuarios.activo = FALSE`) can't log in. `ControladorUsuarios.actualizarUsuario` stops the logged-in user from demoting or deactivating themselves, and keeps at least one active administrator.
 
 ## Docs
 
