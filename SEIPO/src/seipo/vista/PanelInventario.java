@@ -1,28 +1,62 @@
 package seipo.vista;
 
 import seipo.controlador.ControladorInventario;
+import seipo.controlador.ControladorInventario.LoteVO;
+import seipo.modelo.Datos;
+import seipo.modelo.Sesion;
 import java.awt.*;
 import java.sql.SQLException;
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
 import java.util.List;
 import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 
 public class PanelInventario extends JPanel {
 
-    private final JLabel lblTotal = new JLabel(), lblBajo = new JLabel(), lblAgotados = new JLabel();
-    private final DefaultTableModel modelo = UI.modelo("Fecha", "Producto", "Tipo", "Cantidad", "Stock");
+    private static final Color ROJO = new Color(254, 226, 226), AMBAR = new Color(254, 243, 199);
+    private static final String[] FILTROS = {"Todos", "Vencidos", "Por vencer"};
+
+    private final JLabel lblTotal = new JLabel(), lblBajo = new JLabel(), lblAgotados = new JLabel(),
+            lblVencidos = new JLabel(), lblPorVencer = new JLabel();
+    private final DefaultTableModel modelo = UI.modelo("Fecha", "Producto", "Tipo", "Lote", "Cantidad", "Stock");
+    private final DefaultTableModel modeloLotes = UI.modelo("Código", "Producto", "Lote", "Vencimiento", "Días", "Cantidad", "Ubicación", "Estado");
+    private final JTable tablaLotes = UI.tabla(modeloLotes);
+    private final JTextField txtBuscarLote = new JTextField();
+    private final JComboBox<String> cmbFiltro = new JComboBox<>(FILTROS);
     private final ControladorInventario controlador = new ControladorInventario();
+    private List<LoteVO> lotes = new ArrayList<>();
 
     public PanelInventario() {
         setLayout(new BorderLayout());
         JPanel p = UI.base();
         add(p);
 
-        JPanel tarjetas = new JPanel(new GridLayout(1, 3, 10, 0));
+        JTabbedPane pestanas = new JTabbedPane();
+        pestanas.setFont(UI.NEGRITA);
+        pestanas.addTab("Resumen", resumen());
+        pestanas.addTab("Lotes y vencimientos", lotes());
+        pestanas.addTab("Recepción de mercadería", new PanelRecepcion(this::refrescar));
+        p.add(pestanas, BorderLayout.CENTER);
+
+        refrescar();
+    }
+
+    private JPanel resumen() {
+        JPanel p = new JPanel(new BorderLayout(10, 10));
+        p.setOpaque(false);
+
+        JPanel tarjetas = new JPanel(new GridLayout(1, 5, 10, 0));
         tarjetas.setOpaque(false);
         tarjetas.add(UI.tarjeta("Productos totales", lblTotal));
         tarjetas.add(UI.tarjeta("Stock bajo", lblBajo));
         tarjetas.add(UI.tarjeta("Agotados", lblAgotados));
+        tarjetas.add(UI.tarjeta("Lotes vencidos", lblVencidos));
+        tarjetas.add(UI.tarjeta("Por vencer (" + Datos.DIAS_POR_VENCER + " días)", lblPorVencer));
         p.add(tarjetas, BorderLayout.NORTH);
 
         JPanel centro = new JPanel(new BorderLayout(0, 6));
@@ -32,16 +66,59 @@ public class PanelInventario extends JPanel {
         centro.add(t, BorderLayout.NORTH);
         centro.add(new JScrollPane(UI.tabla(modelo)), BorderLayout.CENTER);
         p.add(centro, BorderLayout.CENTER);
-
-        refrescar();
+        return p;
     }
 
-    @Override
-    public void setVisible(boolean aFlag) {
-        super.setVisible(aFlag);
-        if (aFlag) {
-            refrescar();
+    private JPanel lotes() {
+        JPanel p = new JPanel(new BorderLayout(0, 8));
+        p.setOpaque(false);
+
+        JPanel norte = new JPanel(new BorderLayout(8, 0));
+        norte.setOpaque(false);
+        norte.add(new JLabel("Buscar producto o lote: "), BorderLayout.WEST);
+        norte.add(txtBuscarLote, BorderLayout.CENTER);
+        JPanel derecha = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
+        derecha.setOpaque(false);
+        derecha.add(new JLabel("Mostrar:"));
+        derecha.add(cmbFiltro);
+        if (Sesion.esAdministrador()) {
+            JButton editar = UI.boton("Editar lote");
+            editar.addActionListener(e -> editarLote());
+            derecha.add(editar);
         }
+        norte.add(derecha, BorderLayout.EAST);
+        p.add(norte, BorderLayout.NORTH);
+
+        JLabel info = new JLabel("💡 Orden FEFO: arriba el lote que vence primero, que es el que se vende primero. "
+                + "Los lotes vencidos no se pueden vender.");
+        info.setFont(new Font("SansSerif", Font.ITALIC, 12));
+        info.setForeground(new Color(100, 116, 139));
+
+        tablaLotes.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable t, Object v, boolean sel, boolean foco, int fila, int col) {
+                Component c = super.getTableCellRendererComponent(t, v, sel, foco, fila, col);
+                if (!sel) {
+                    String estado = lotes.get(t.convertRowIndexToModel(fila)).estado();
+                    c.setBackground("Vencido".equals(estado) ? ROJO : "Por vencer".equals(estado) ? AMBAR : Color.WHITE);
+                }
+                return c;
+            }
+        });
+
+        JPanel centro = new JPanel(new BorderLayout(0, 5));
+        centro.setOpaque(false);
+        centro.add(info, BorderLayout.NORTH);
+        centro.add(new JScrollPane(tablaLotes), BorderLayout.CENTER);
+        p.add(centro, BorderLayout.CENTER);
+
+        txtBuscarLote.getDocument().addDocumentListener(new DocumentListener() {
+            @Override public void insertUpdate(DocumentEvent e) { cargarLotes(); }
+            @Override public void removeUpdate(DocumentEvent e) { cargarLotes(); }
+            @Override public void changedUpdate(DocumentEvent e) { cargarLotes(); }
+        });
+        cmbFiltro.addActionListener(e -> cargarLotes());
+        return p;
     }
 
     public void refrescar() {
@@ -50,14 +127,65 @@ public class PanelInventario extends JPanel {
             lblTotal.setText(String.valueOf(res.totalStock));
             lblBajo.setText(String.valueOf(res.bajoStock));
             lblAgotados.setText(String.valueOf(res.agotados));
+            lblVencidos.setText(String.valueOf(res.lotesVencidos));
+            lblPorVencer.setText(String.valueOf(res.lotesPorVencer));
 
             modelo.setRowCount(0);
             List<ControladorInventario.MovimientoVO> movs = controlador.obtenerMovimientosRecientes();
             for (ControladorInventario.MovimientoVO m : movs) {
-                modelo.addRow(new Object[]{m.fecha, m.producto, m.tipo, m.cantidad, m.stock});
+                modelo.addRow(new Object[]{m.fecha, m.producto, m.tipo, m.lote == null ? "—" : m.lote, m.cantidad, m.stock});
             }
         } catch (SQLException ex) {
             ex.printStackTrace();
+        }
+        cargarLotes();
+    }
+
+    private void cargarLotes() {
+        modeloLotes.setRowCount(0);
+        String filtro = (String) cmbFiltro.getSelectedItem();
+        try {
+            List<LoteVO> todos = controlador.listarLotes(txtBuscarLote.getText().trim());
+            lotes = new ArrayList<>();
+            for (LoteVO l : todos) {
+                if ("Vencidos".equals(filtro) && !"Vencido".equals(l.estado())) continue;
+                if ("Por vencer".equals(filtro) && !"Por vencer".equals(l.estado())) continue;
+                lotes.add(l);
+                Long dias = l.diasParaVencer();
+                modeloLotes.addRow(new Object[]{l.codigo, l.producto, l.numeroLote,
+                        l.vencimiento == null ? "—" : l.vencimiento.format(Datos.FECHA_COMPLETA),
+                        dias == null ? "—" : dias, l.cantidad,
+                        l.ubicacion == null ? "" : l.ubicacion, l.estado()});
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    private void editarLote() {
+        int fila = tablaLotes.getSelectedRow();
+        if (fila < 0) {
+            JOptionPane.showMessageDialog(this, "Seleccione un lote de la tabla.");
+            return;
+        }
+        LoteVO l = lotes.get(tablaLotes.convertRowIndexToModel(fila));
+        JTextField venc = new JTextField(l.vencimiento == null ? "" : l.vencimiento.format(Datos.FECHA_COMPLETA));
+        JTextField ubic = new JTextField(l.ubicacion == null ? "" : l.ubicacion);
+        Object[] campos = {"Producto: " + l.producto, "Lote: " + l.numeroLote,
+                "Vencimiento (dd/mm/aaaa, vacío si no vence):", venc, "Ubicación:", ubic};
+        if (JOptionPane.showConfirmDialog(this, campos, "Editar lote",
+                JOptionPane.OK_CANCEL_OPTION) != JOptionPane.OK_OPTION) return;
+
+        try {
+            String texto = venc.getText().trim();
+            LocalDate vencimiento = texto.isEmpty() ? null : LocalDate.parse(texto, Datos.FECHA_COMPLETA);
+            controlador.actualizarLote(l.id, vencimiento, ubic.getText().trim());
+            refrescar();
+        } catch (DateTimeParseException ex) {
+            JOptionPane.showMessageDialog(this, "Fecha inválida. Use el formato dd/mm/aaaa.");
+        } catch (SQLException ex) {
+            JOptionPane.showMessageDialog(this, "No se pudo actualizar el lote:\n" + ex.getMessage(),
+                    "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 }

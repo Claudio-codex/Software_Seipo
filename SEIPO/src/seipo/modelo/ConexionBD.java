@@ -82,7 +82,34 @@ public class ConexionBD {
                         "    tipo VARCHAR(20) NOT NULL," +
                         "    cantidad INT NOT NULL," +
                         "    stock_resultante INT NOT NULL," +
+                        "    lote VARCHAR(50)," +
                         "    registrado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP" +
+                        ");",
+
+                "CREATE TABLE IF NOT EXISTS recepciones (" +
+                        "    id INT AUTO_INCREMENT PRIMARY KEY," +
+                        "    fecha DATE NOT NULL," +
+                        "    guia_remision VARCHAR(50) NOT NULL," +
+                        "    proveedor VARCHAR(100) NOT NULL," +
+                        "    usuario_id INT," +
+                        "    registrado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP," +
+                        "    FOREIGN KEY (usuario_id) REFERENCES usuarios(id)" +
+                        ");",
+
+                // Stock por lote para la regla FEFO; productos.stock es la suma de cantidad de sus lotes
+                "CREATE TABLE IF NOT EXISTS lotes (" +
+                        "    id INT AUTO_INCREMENT PRIMARY KEY," +
+                        "    producto_id INT NOT NULL," +
+                        "    recepcion_id INT," +
+                        "    numero_lote VARCHAR(50) NOT NULL," +
+                        "    fecha_vencimiento DATE," +
+                        "    cantidad_inicial INT NOT NULL," +
+                        "    cantidad INT NOT NULL," +
+                        "    ubicacion VARCHAR(50)," +
+                        "    registrado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP," +
+                        "    FOREIGN KEY (producto_id) REFERENCES productos(id)," +
+                        "    FOREIGN KEY (recepcion_id) REFERENCES recepciones(id)," +
+                        "    INDEX idx_lotes_fefo (producto_id, fecha_vencimiento)" +
                         ");"
         };
 
@@ -93,6 +120,7 @@ public class ConexionBD {
                 stmt.execute(sql);
             }
             actualizarUsuarios(stmt);
+            actualizarInventario(stmt);
         } catch (SQLException e) {
             System.err.println("Aviso/Error al autoinicializar la BD: " + e.getMessage());
         }
@@ -110,6 +138,18 @@ public class ConexionBD {
         agregarColumna(stmt, "ALTER TABLE usuarios ADD COLUMN activo BOOLEAN NOT NULL DEFAULT TRUE");
         stmt.execute("INSERT IGNORE INTO usuarios (usuario, password, nombre, rol) " +
                 "VALUES ('admin', '123', 'Administrador', 'ADMINISTRADOR')");
+    }
+
+    /**
+     * Prepara una base de la versión anterior para el control FEFO: agrega la columna lote a
+     * movimientos y pasa el stock de los productos que aún no tienen lotes a un lote "INICIAL"
+     * sin fecha de vencimiento.
+     */
+    private static void actualizarInventario(Statement stmt) throws SQLException {
+        agregarColumna(stmt, "ALTER TABLE movimientos ADD COLUMN lote VARCHAR(50)");
+        stmt.execute("INSERT INTO lotes (producto_id, numero_lote, cantidad_inicial, cantidad) " +
+                "SELECT p.id, 'INICIAL', p.stock, p.stock FROM productos p " +
+                "WHERE p.stock > 0 AND NOT EXISTS (SELECT 1 FROM lotes l WHERE l.producto_id = p.id)");
     }
 
     /** Ejecuta un ALTER TABLE ... ADD COLUMN; devuelve false si la columna ya existía. */

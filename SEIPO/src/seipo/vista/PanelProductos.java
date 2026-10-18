@@ -11,7 +11,7 @@ import javax.swing.table.DefaultTableModel;
 public class PanelProductos extends JPanel {
 
     private final JTextField txtBuscar = new JTextField();
-    private final DefaultTableModel modelo = UI.modelo("Código", "Nombre", "Categoría", "Precio", "Stock");
+    private final DefaultTableModel modelo = UI.modelo("Código", "Nombre", "Categoría", "Precio", "Stock", "Próx. vencimiento");
     private final ControladorProductos controlador = new ControladorProductos();
 
     public PanelProductos() {
@@ -47,7 +47,8 @@ public class PanelProductos extends JPanel {
         try {
             List<ControladorProductos.ProductoVO> lista = controlador.buscarProductos(textoBusqueda);
             for (ControladorProductos.ProductoVO pr : lista) {
-                modelo.addRow(new Object[]{pr.codigo, pr.nombre, pr.categoria, Datos.soles(pr.precio), pr.stock});
+                String vence = pr.proximoVencimiento == null ? "—" : pr.proximoVencimiento.format(Datos.FECHA_COMPLETA);
+                modelo.addRow(new Object[]{pr.codigo, pr.nombre, pr.categoria, Datos.soles(pr.precio), pr.stock, vence});
             }
         } catch (SQLException ex) {
             JOptionPane.showMessageDialog(this, "Error al cargar los productos de la base de datos:\n" + ex.getMessage(),
@@ -56,9 +57,9 @@ public class PanelProductos extends JPanel {
     }
 
     private void nuevoProducto() {
-        JTextField c = new JTextField(), n = new JTextField(), cat = new JTextField(),
-                pr = new JTextField(), s = new JTextField();
-        Object[] campos = {"Código:", c, "Nombre:", n, "Categoría:", cat, "Precio:", pr, "Stock:", s};
+        JTextField c = new JTextField(), n = new JTextField(), cat = new JTextField(), pr = new JTextField();
+        Object[] campos = {"Código:", c, "Nombre:", n, "Categoría:", cat, "Precio:", pr,
+                "El stock se ingresa en Inventario → Recepción de mercadería."};
 
         if (JOptionPane.showConfirmDialog(this, campos, "Nuevo producto",
                 JOptionPane.OK_CANCEL_OPTION) != JOptionPane.OK_OPTION) return;
@@ -74,9 +75,8 @@ public class PanelProductos extends JPanel {
             }
 
             double precio = Double.parseDouble(pr.getText().trim());
-            int stock = Integer.parseInt(s.getText().trim());
 
-            controlador.registrarProducto(codigo, nombre, categoria, precio, stock);
+            controlador.registrarProducto(codigo, nombre, categoria, precio);
 
             txtBuscar.setText("");
             refrescar();
@@ -86,7 +86,7 @@ public class PanelProductos extends JPanel {
             JOptionPane.showMessageDialog(this, "Error al registrar el producto:\n" + ex.getMessage(),
                     "Error de Base de Datos", JOptionPane.ERROR_MESSAGE);
         } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(this, "Datos inválidos. Revise que precio y stock sean numéricos.");
+            JOptionPane.showMessageDialog(this, "Datos inválidos. Revise que el precio sea numérico.");
         }
     }
 }
