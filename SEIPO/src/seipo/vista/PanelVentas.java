@@ -31,53 +31,85 @@ public class PanelVentas extends JPanel {
 
     public PanelVentas() {
         setLayout(new BorderLayout());
+        UI.columnaAncha(tabla, 1, 340);
         JPanel p = UI.base();
         add(p);
 
         JPanel norte = new JPanel(new BorderLayout(8, 0));
         norte.setOpaque(false);
         JButton agregar = UI.boton("Agregar");
-        norte.add(new JLabel("Código o nombre: "), BorderLayout.WEST);
+        txtBuscar.putClientProperty("JTextField.placeholderText", "Escanee el código o escriba el nombre del producto y presione Enter");
+        norte.add(new JLabel("Producto  "), BorderLayout.WEST);
         norte.add(txtBuscar, BorderLayout.CENTER);
         norte.add(agregar, BorderLayout.EAST);
         p.add(norte, BorderLayout.NORTH);
         p.add(new JScrollPane(tabla), BorderLayout.CENTER);
 
-        JPanel sur = new JPanel(new GridLayout(1, 3, 10, 0));
+        JPanel sur = new JPanel(new BorderLayout(14, 0));
         sur.setOpaque(false);
 
-        JPanel acciones = new JPanel(new GridLayout(0, 1, 6, 6));
+        JPanel acciones = new JPanel(new GridLayout(0, 1, 0, 8));
         acciones.setOpaque(false);
-        JButton descuento = UI.boton("Aplicar descuento");
-        JButton quitar = UI.boton("Quitar ítem");
+        JButton descuento = UI.botonSecundario("Aplicar descuento");
+        JButton quitar = UI.botonPeligro("Quitar ítem");
         acciones.add(descuento);
         acciones.add(quitar);
+        JPanel accionesArriba = new JPanel(new BorderLayout());
+        accionesArriba.setOpaque(false);
+        accionesArriba.add(acciones, BorderLayout.NORTH);
 
-        JPanel totales = new JPanel(new GridLayout(0, 1));
-        totales.setBackground(Color.WHITE);
-        totales.setBorder(new CompoundBorder(new LineBorder(Color.LIGHT_GRAY), new EmptyBorder(8, 12, 8, 12)));
+        // Resumen de importes: desglose a la izquierda, monto a la derecha y el total destacado
+        JPanel totales = new JPanel(new GridBagLayout());
+        totales.setBackground(UI.SUPERFICIE);
+        totales.setBorder(new CompoundBorder(new LineBorder(UI.BORDE, 1, true), new EmptyBorder(12, 18, 12, 18)));
+        GridBagConstraints g = new GridBagConstraints();
+        g.fill = GridBagConstraints.HORIZONTAL;
+        g.insets = new Insets(2, 0, 2, 0);
+        String[] conceptos = {"Subtotal", "Descuento", "IGV 18%"};
+        JLabel[] montos = {lblSub, lblDesc, lblIgv};
+        for (int i = 0; i < conceptos.length; i++) {
+            g.gridy = i;
+            g.gridx = 0; g.weightx = 1;
+            JLabel c = new JLabel(conceptos[i]);
+            c.setForeground(UI.TEXTO_SECUNDARIO);
+            totales.add(c, g);
+            g.gridx = 1; g.weightx = 0;
+            montos[i].setHorizontalAlignment(SwingConstants.RIGHT);
+            totales.add(montos[i], g);
+        }
+        g.gridy = 3; g.gridx = 0; g.gridwidth = 2;
+        JSeparator sep = new JSeparator();
+        sep.setForeground(UI.BORDE);
+        g.insets = new Insets(8, 0, 6, 0);
+        totales.add(sep, g);
+        g.gridy = 4; g.gridwidth = 1; g.insets = new Insets(0, 0, 0, 0);
         JLabel t = new JLabel("TOTAL");
-        t.setFont(UI.NEGRITA);
-        lblTotal.setFont(new Font("SansSerif", Font.BOLD, 22));
-        lblTotal.setForeground(UI.AZUL);
-        totales.add(t);
-        totales.add(lblSub);
-        totales.add(lblDesc);
-        totales.add(lblIgv);
-        totales.add(lblTotal);
+        t.setFont(UI.fuente(Font.BOLD, 16));
+        totales.add(t, g);
+        g.gridx = 1;
+        lblTotal.setFont(UI.fuente(Font.BOLD, 28));
+        lblTotal.setForeground(UI.ACENTO);
+        lblTotal.setHorizontalAlignment(SwingConstants.RIGHT);
+        totales.add(lblTotal, g);
 
-        JPanel pago = new JPanel(new GridLayout(0, 1, 6, 6));
+        JPanel pago = new JPanel(new GridLayout(0, 1, 0, 8));
         pago.setOpaque(false);
-        pago.add(new JLabel("Forma de pago"));
+        JLabel cobrarCon = new JLabel("Cobrar con");
+        cobrarCon.setFont(UI.fuente(Font.BOLD, 13));
+        cobrarCon.setForeground(UI.TEXTO_SECUNDARIO);
+        pago.add(cobrarCon);
         for (String f : new String[]{"Efectivo", "Tarjeta", "Yape o Plin"}) {
             JButton b = UI.boton(f);
+            b.setFont(UI.fuente(Font.BOLD, 15));
             b.addActionListener(e -> cobrar(f));
             pago.add(b);
         }
+        pago.setPreferredSize(new Dimension(220, pago.getPreferredSize().height));
+        accionesArriba.setPreferredSize(new Dimension(200, 0));
 
-        sur.add(acciones);
-        sur.add(totales);
-        sur.add(pago);
+        sur.add(accionesArriba, BorderLayout.WEST);
+        sur.add(totales, BorderLayout.CENTER);
+        sur.add(pago, BorderLayout.EAST);
         p.add(sur, BorderLayout.SOUTH);
 
         listaSugerencias.setModel(modeloSugerencias);
@@ -142,16 +174,10 @@ public class PanelVentas extends JPanel {
                 for (ProductoVenta p : encontrados) modeloSugerencias.addElement(p);
                 listaSugerencias.setCellRenderer((list, value, index, isSelected, cellHasFocus) -> {
                     JLabel lbl = new JLabel(value.codigo + " - " + value.nombre + " (Stock: " + value.stock + ")");
-                    lbl.setBorder(new EmptyBorder(4, 8, 4, 8));
-                    if (isSelected) {
-                        lbl.setBackground(UI.AZUL);
-                        lbl.setForeground(Color.WHITE);
-                        lbl.setOpaque(true);
-                    } else {
-                        lbl.setBackground(Color.WHITE);
-                        lbl.setForeground(Color.BLACK);
-                        lbl.setOpaque(true);
-                    }
+                    lbl.setBorder(new EmptyBorder(6, 10, 6, 10));
+                    lbl.setOpaque(true);
+                    lbl.setBackground(isSelected ? UI.ACENTO_OSCURO : UI.SUPERFICIE);
+                    lbl.setForeground(UI.TEXTO);
                     return lbl;
                 });
                 popupSugerencias.show(txtBuscar, 0, txtBuscar.getHeight());
@@ -257,10 +283,10 @@ public class PanelVentas extends JPanel {
         double sub = subtotal();
         double desc = sub * descuentoPct / 100;
         double igv = (sub - desc) * Datos.IGV;
-        lblSub.setText("Subtotal: " + Datos.soles(sub));
-        lblDesc.setText("Descuento: " + Datos.soles(desc));
-        lblIgv.setText("IGV 18%: " + Datos.soles(igv));
-        lblTotal.setText("TOTAL: " + Datos.soles(sub - desc + igv));
+        lblSub.setText(Datos.soles(sub));
+        lblDesc.setText((descuentoPct > 0 ? "− " : "") + Datos.soles(desc) + (descuentoPct > 0 ? "  (" + new java.text.DecimalFormat("#.##").format(descuentoPct) + "%)" : ""));
+        lblIgv.setText(Datos.soles(igv));
+        lblTotal.setText(Datos.soles(sub - desc + igv));
     }
 
     private void cobrar(String forma) {

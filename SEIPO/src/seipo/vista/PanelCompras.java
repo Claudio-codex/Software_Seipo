@@ -25,8 +25,6 @@ import javax.swing.table.DefaultTableModel;
 public class PanelCompras extends JPanel {
 
     private static final DateTimeFormatter FECHA_HORA = DateTimeFormatter.ofPattern("dd/MM/yy HH:mm");
-    private static final Color ROJO = new Color(254, 226, 226), AMBAR = new Color(254, 243, 199),
-            CELESTE = new Color(219, 234, 254), VERDE = new Color(220, 252, 231), GRIS = new Color(241, 245, 249);
     private static final String[] FILTROS = {"Pendientes", "Aprobadas", "Recibidas", "Rechazadas", "Todas"};
     private static final String[] ESTADOS = {ControladorCompras.PENDIENTE, ControladorCompras.APROBADA,
             ControladorCompras.RECIBIDA, ControladorCompras.RECHAZADA, null};
@@ -53,6 +51,10 @@ public class PanelCompras extends JPanel {
     /** alCambiar se ejecuta cuando cambian alertas u órdenes, para actualizar el aviso del menú. */
     public PanelCompras(Runnable alCambiar) {
         this.alCambiar = alCambiar;
+        UI.columnaAncha(tablaAlertas, 1, 240);
+        UI.columnaAncha(tablaOrdenes, 2, 220);
+        UI.columnaAncha(tablaOrdenes, 9, 220);
+        UI.columnaAncha(tablaProveedores, 1, 240);
         setLayout(new BorderLayout());
         JPanel p = UI.base();
         add(p);
@@ -81,10 +83,10 @@ public class PanelCompras extends JPanel {
         JButton crear = UI.boton("Crear orden de compra");
         crear.addActionListener(e -> ordenDesdeAlertas());
         barra.add(crear);
-        JLabel info = new JLabel("💡 Seleccione los productos a reponer (o ninguno para todos). La cantidad sugerida "
-                + "completa el stock máximo descontando lo que ya está en pedido. El sobrestock indica productos para promocionar.");
-        info.setFont(new Font("SansSerif", Font.ITALIC, 12));
-        info.setForeground(new Color(100, 116, 139));
+        JLabel info = new JLabel("<html>Seleccione los productos a reponer (o ninguno para todos). Sugerido: lo que falta "
+                + "para llegar al stock máximo, sin contar lo ya pedido.<br>El sobrestock señala productos para promocionar.</html>");
+        info.setFont(UI.fuente(Font.PLAIN, 12));
+        info.setForeground(UI.TEXTO_SECUNDARIO);
         JPanel norte = new JPanel(new BorderLayout(0, 5));
         norte.setOpaque(false);
         norte.add(barra, BorderLayout.NORTH);
@@ -92,11 +94,11 @@ public class PanelCompras extends JPanel {
         p.add(norte, BorderLayout.NORTH);
 
         tablaAlertas.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-        tablaAlertas.setDefaultRenderer(Object.class, colores(fila -> {
+        UI.colorearFilas(tablaAlertas, fila -> {
             String estado = alertas.get(fila).estado;
-            return ControladorCompras.AGOTADO.equals(estado) ? ROJO
-                    : ControladorCompras.STOCK_BAJO.equals(estado) ? AMBAR : CELESTE;
-        }));
+            return ControladorCompras.AGOTADO.equals(estado) ? UI.FILA_ROJA
+                    : ControladorCompras.STOCK_BAJO.equals(estado) ? UI.FILA_AMBAR : UI.FILA_CELESTE;
+        });
         p.add(new JScrollPane(tablaAlertas), BorderLayout.CENTER);
         return p;
     }
@@ -139,7 +141,7 @@ public class PanelCompras extends JPanel {
         JPanel barra = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
         barra.setOpaque(false);
         JButton nueva = UI.boton("+ Nueva orden");
-        JButton detalle = UI.boton("Ver detalle");
+        JButton detalle = UI.botonSecundario("Ver detalle");
         JButton recibir = UI.boton("Recibir mercadería");
         nueva.addActionListener(e -> dialogoOrden(new ArrayList<>()));
         detalle.addActionListener(e -> verDetalle());
@@ -149,7 +151,7 @@ public class PanelCompras extends JPanel {
         barra.add(recibir);
         if (Sesion.esAdministrador()) {
             JButton aprobar = UI.boton("Aprobar");
-            JButton rechazar = UI.boton("Rechazar");
+            JButton rechazar = UI.botonPeligro("Rechazar");
             aprobar.addActionListener(e -> aprobar());
             rechazar.addActionListener(e -> rechazar());
             barra.add(aprobar);
@@ -160,15 +162,14 @@ public class PanelCompras extends JPanel {
         cmbFiltro.addActionListener(e -> cargarOrdenes());
         p.add(barra, BorderLayout.NORTH);
 
-        tablaOrdenes.setDefaultRenderer(Object.class, colores(fila -> {
-            String estado = ordenes.get(fila).estado;
-            switch (estado) {
-                case ControladorCompras.PENDIENTE: return AMBAR;
-                case ControladorCompras.APROBADA: return CELESTE;
-                case ControladorCompras.RECIBIDA: return VERDE;
-                default: return GRIS;
+        UI.colorearFilas(tablaOrdenes, fila -> {
+            switch (ordenes.get(fila).estado) {
+                case ControladorCompras.PENDIENTE: return UI.FILA_AMBAR;
+                case ControladorCompras.APROBADA: return UI.FILA_CELESTE;
+                case ControladorCompras.RECHAZADA: return UI.FILA_GRIS;
+                default: return null;
             }
-        }));
+        });
         p.add(new JScrollPane(tablaOrdenes), BorderLayout.CENTER);
         return p;
     }
@@ -214,7 +215,7 @@ public class PanelCompras extends JPanel {
 
         JTextField txtCodigo = new JTextField(10);
         JButton agregar = UI.boton("Agregar");
-        JButton quitar = UI.boton("Quitar");
+        JButton quitar = UI.botonPeligro("Quitar");
         Runnable agregarProducto = () -> {
             String codigo = txtCodigo.getText().trim();
             if (codigo.isEmpty()) return;
@@ -437,7 +438,7 @@ public class PanelCompras extends JPanel {
         nuevo.addActionListener(e -> nuevoProveedor());
         barra.add(nuevo);
         if (Sesion.esAdministrador()) {
-            JButton editar = UI.boton("Editar");
+            JButton editar = UI.botonSecundario("Editar");
             editar.addActionListener(e -> editarProveedor());
             barra.add(editar);
         }
@@ -507,19 +508,6 @@ public class PanelCompras extends JPanel {
     }
 
     // ---------------------------------------------------------------- Utilidades
-
-    private interface ColorDeFila { Color de(int filaModelo); }
-
-    private static DefaultTableCellRenderer colores(ColorDeFila color) {
-        return new DefaultTableCellRenderer() {
-            @Override
-            public Component getTableCellRendererComponent(JTable t, Object v, boolean sel, boolean foco, int fila, int col) {
-                Component c = super.getTableCellRendererComponent(t, v, sel, foco, fila, col);
-                if (!sel) c.setBackground(color.de(t.convertRowIndexToModel(fila)));
-                return c;
-            }
-        };
-    }
 
     private static String textoEstado(String estado) {
         switch (estado) {

@@ -30,7 +30,7 @@ public class PanelReportes extends JPanel {
     private static final String[] DIAS_SEMANA = {"Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"};
     private static final int MAX_SEGMENTOS = 6;
     private static final int TOP_PRODUCTOS = 10;
-    private static final Color SUBE = new Color(0x006300), BAJA = new Color(0xd03b3b);
+    private static final Color SUBE = UI.EXITO, BAJA = UI.PELIGRO;
     private static final DateTimeFormatter NOMBRE_ARCHIVO = DateTimeFormatter.ofPattern("yyyy-MM-dd_HHmm");
     private static final DateTimeFormatter FECHA_LARGA = DateTimeFormatter.ofPattern("dd/MM/yyyy");
     private static final String FORMATOS = "formatos"; // propiedad de cada JTable con el formato de sus columnas
@@ -117,7 +117,7 @@ public class PanelReportes extends JPanel {
 
         JPanel der = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
         der.setOpaque(false);
-        JButton pdf = UI.boton("Exportar PDF"), excel = UI.boton("Exportar Excel");
+        JButton pdf = UI.botonSecundario("Exportar PDF"), excel = UI.botonSecundario("Exportar Excel");
         pdf.addActionListener(e -> exportar(true));
         excel.addActionListener(e -> exportar(false));
         for (JButton b : new JButton[]{pdf, excel}) {
@@ -162,14 +162,14 @@ public class PanelReportes extends JPanel {
 
     private JPanel indicador(String titulo, JLabel valor, JLabel delta) {
         JPanel p = new JPanel(new BorderLayout(0, 2));
-        p.setBackground(Color.WHITE);
-        p.setBorder(new CompoundBorder(new LineBorder(Color.LIGHT_GRAY), new EmptyBorder(8, 12, 8, 12)));
+        p.setBackground(UI.SUPERFICIE);
+        p.setBorder(new CompoundBorder(new LineBorder(UI.BORDE, 1, true), new EmptyBorder(8, 12, 8, 12)));
         JLabel t = new JLabel(titulo);
-        t.setFont(new Font("SansSerif", Font.PLAIN, 13));
+        t.setFont(UI.fuente(Font.PLAIN, 13));
         t.setForeground(Graficos.TEXTO2);
-        valor.setFont(new Font("SansSerif", Font.BOLD, 22));
+        valor.setFont(UI.fuente(Font.BOLD, 22));
         valor.setForeground(UI.AZUL);
-        delta.setFont(new Font("SansSerif", Font.PLAIN, 12));
+        delta.setFont(UI.fuente(Font.PLAIN, 12));
         p.add(t, BorderLayout.NORTH);
         p.add(valor, BorderLayout.CENTER);
         p.add(delta, BorderLayout.SOUTH);
@@ -542,7 +542,7 @@ public class PanelReportes extends JPanel {
     private static JPanel seccion(JLabel titulo, JComponent extra, JComponent contenido) {
         JPanel p = new JPanel(new BorderLayout(0, 6));
         p.setBackground(Graficos.SUPERFICIE);
-        p.setBorder(new CompoundBorder(new LineBorder(Color.LIGHT_GRAY), new EmptyBorder(10, 12, 10, 12)));
+        p.setBorder(new CompoundBorder(new LineBorder(UI.BORDE, 1, true), new EmptyBorder(10, 12, 10, 12)));
         JPanel cab = new JPanel(new BorderLayout());
         cab.setOpaque(false);
         cab.add(titulo, BorderLayout.CENTER);
@@ -608,7 +608,7 @@ public class PanelReportes extends JPanel {
     private static JSpinner spinnerFecha() {
         JSpinner s = new JSpinner(new SpinnerDateModel());
         s.setEditor(new JSpinner.DateEditor(s, "dd/MM/yyyy"));
-        s.setPreferredSize(new Dimension(110, s.getPreferredSize().height));
+        s.setPreferredSize(new Dimension(135, s.getPreferredSize().height));
         return s;
     }
 

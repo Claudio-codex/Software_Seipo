@@ -31,9 +31,9 @@ public class PanelClientes extends JPanel {
 
         JPanel centro = new JPanel(new BorderLayout(0, 5));
         centro.setOpaque(false);
-        JLabel lblInfo = new JLabel("💡 Los descuentos VIP se asignan automáticamente según el volumen de compras.");
-        lblInfo.setFont(new Font("SansSerif", Font.ITALIC, 12));
-        lblInfo.setForeground(new Color(100, 116, 139));
+        JLabel lblInfo = new JLabel("Los descuentos VIP se asignan automáticamente según el volumen de compras.");
+        lblInfo.setFont(UI.fuente(Font.PLAIN, 12));
+        lblInfo.setForeground(UI.TEXTO_SECUNDARIO);
 
         centro.add(lblInfo, BorderLayout.NORTH);
         centro.add(new JScrollPane(tabla), BorderLayout.CENTER);

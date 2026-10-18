@@ -19,7 +19,6 @@ public class PanelMermas extends JPanel {
 
     private static final DateTimeFormatter FECHA_HORA = DateTimeFormatter.ofPattern("dd/MM/yy HH:mm");
     private static final String[] FILTROS = {"Pendientes", "Aprobadas", "Rechazadas", "Todas"};
-    private static final Color AMBAR = new Color(254, 243, 199), VERDE = new Color(220, 252, 231), GRIS = new Color(241, 245, 249);
 
     private final JLabel lblPendientes = new JLabel(), lblUnidades = new JLabel(), lblValor = new JLabel();
     private final JComboBox<String> cmbFiltro = new JComboBox<>(FILTROS);
@@ -31,6 +30,8 @@ public class PanelMermas extends JPanel {
 
     public PanelMermas() {
         setLayout(new BorderLayout());
+        UI.columnaAncha(tabla, 2, 220);
+        UI.columnaAncha(tabla, 11, 220);
         JPanel p = UI.base();
         add(p);
 
@@ -43,12 +44,12 @@ public class PanelMermas extends JPanel {
         JPanel barra = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
         barra.setOpaque(false);
         JButton registrar = UI.boton("+ Registrar merma");
-        JButton vencidos = UI.boton("Registrar lotes vencidos");
+        JButton vencidos = UI.botonSecundario("Registrar lotes vencidos");
         barra.add(registrar);
         barra.add(vencidos);
         if (Sesion.esAdministrador()) {
             JButton aprobar = UI.boton("Aprobar");
-            JButton rechazar = UI.boton("Rechazar");
+            JButton rechazar = UI.botonPeligro("Rechazar");
             aprobar.addActionListener(e -> aprobar());
             rechazar.addActionListener(e -> rechazar());
             barra.add(aprobar);
@@ -64,23 +65,16 @@ public class PanelMermas extends JPanel {
         p.add(norte, BorderLayout.NORTH);
 
         JLabel info = new JLabel(Sesion.esAdministrador()
-                ? "💡 Seleccione una o varias mermas pendientes para aprobarlas (descuenta el stock) o rechazarlas."
-                : "💡 Las mermas quedan pendientes hasta que el administrador las autorice; mientras tanto esas unidades no se venden.");
-        info.setFont(new Font("SansSerif", Font.ITALIC, 12));
-        info.setForeground(new Color(100, 116, 139));
+                ? "Seleccione una o varias mermas pendientes para aprobarlas (descuenta el stock) o rechazarlas."
+                : "Las mermas quedan pendientes hasta que el administrador las autorice; mientras tanto esas unidades no se venden.");
+        info.setFont(UI.fuente(Font.PLAIN, 12));
+        info.setForeground(UI.TEXTO_SECUNDARIO);
 
         tabla.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-        tabla.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
-            @Override
-            public Component getTableCellRendererComponent(JTable t, Object v, boolean sel, boolean foco, int fila, int col) {
-                Component c = super.getTableCellRendererComponent(t, v, sel, foco, fila, col);
-                if (!sel) {
-                    String estado = mermas.get(t.convertRowIndexToModel(fila)).estado;
-                    c.setBackground(ControladorMermas.PENDIENTE.equals(estado) ? AMBAR
-                            : ControladorMermas.APROBADA.equals(estado) ? VERDE : GRIS);
-                }
-                return c;
-            }
+        UI.colorearFilas(tabla, fila -> {
+            String estado = mermas.get(fila).estado;
+            return ControladorMermas.PENDIENTE.equals(estado) ? UI.FILA_AMBAR
+                    : ControladorMermas.RECHAZADA.equals(estado) ? UI.FILA_GRIS : null;
         });
 
         JPanel centro = new JPanel(new BorderLayout(0, 5));

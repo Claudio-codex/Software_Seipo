@@ -11,20 +11,21 @@ import javax.swing.*;
 public class Graficos {
 
     /** Paleta categórica en orden fijo: se asigna por posición, nunca se repite. */
+    // Tonos luminosos para que se distingan sobre el fondo oscuro; la primera serie es el color de acento
     public static final Color[] SERIES = {
-            new Color(0x2a78d6), new Color(0xeb6834), new Color(0x1baf7a), new Color(0xeda100),
-            new Color(0xe87ba4), new Color(0x008300), new Color(0x6250d6), new Color(0xe34948)
+            new Color(0x2DD4BF), new Color(0xFB923C), new Color(0x60A5FA), new Color(0xFBBF24),
+            new Color(0xF472B6), new Color(0xA78BFA), new Color(0xA3E635), new Color(0xF87171)
     };
-    public static final Color OTROS = new Color(0xb5b4ad);
-    public static final Color SUPERFICIE = new Color(0xfcfcfb);
-    public static final Color TEXTO = new Color(0x0b0b0b);
-    public static final Color TEXTO2 = new Color(0x52514e);
-    public static final Color TENUE = new Color(0x898781);
-    static final Color GRILLA = new Color(0xe1e0d9);
-    static final Color EJE = new Color(0xc3c2b7);
-    static final Font CHICA = new Font("SansSerif", Font.PLAIN, 11);
-    static final Font ETIQUETA = new Font("SansSerif", Font.PLAIN, 12);
-    static final Font ETIQUETA_NEGRITA = new Font("SansSerif", Font.BOLD, 12);
+    public static final Color OTROS = new Color(0x64748B);
+    public static final Color SUPERFICIE = UI.SUPERFICIE;
+    public static final Color TEXTO = UI.TEXTO;
+    public static final Color TEXTO2 = new Color(0xCBD5E1);
+    public static final Color TENUE = UI.TEXTO_SECUNDARIO;
+    static final Color GRILLA = new Color(0x2C3A4F);
+    static final Color EJE = new Color(0x475569);
+    static final Font CHICA = UI.fuente(Font.PLAIN, 11);
+    static final Font ETIQUETA = UI.fuente(Font.PLAIN, 12);
+    static final Font ETIQUETA_NEGRITA = UI.fuente(Font.BOLD, 12);
 
     /** Comportamiento común: fondo, estado vacío y tooltip propio que sigue al mouse. */
     abstract static class Base extends JPanel {
@@ -91,9 +92,9 @@ public class Graficos {
             if (y + alto > getHeight() - 4) y = mouse.y - alto - 10;
             x = Math.max(4, x);
             y = Math.max(4, y);
-            g.setColor(new Color(0, 0, 0, 28));
+            g.setColor(new Color(0, 0, 0, 90));
             g.fillRoundRect(x + 1, y + 2, ancho, alto, 8, 8);
-            g.setColor(Color.WHITE);
+            g.setColor(UI.SUPERFICIE_ALTA);
             g.fillRoundRect(x, y, ancho, alto, 8, 8);
             g.setColor(EJE);
             g.drawRoundRect(x, y, ancho, alto, 8, 8);
@@ -248,7 +249,7 @@ public class Graficos {
                 if (abierto) { area.lineTo(ultimoX, base); area.closePath(); }
 
                 if (series.length == 1) {
-                    g.setColor(new Color(color.getRed(), color.getGreen(), color.getBlue(), 26));
+                    g.setColor(new Color(color.getRed(), color.getGreen(), color.getBlue(), 40));
                     g.fill(area);
                 }
                 g.setColor(color);

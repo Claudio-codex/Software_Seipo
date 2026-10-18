@@ -18,7 +18,6 @@ import javax.swing.table.DefaultTableModel;
 
 public class PanelInventario extends JPanel {
 
-    private static final Color ROJO = new Color(254, 226, 226), AMBAR = new Color(254, 243, 199);
     private static final String[] FILTROS = {"Todos", "Vencidos", "Por vencer"};
 
     private final JLabel lblTotal = new JLabel(), lblBajo = new JLabel(), lblAgotados = new JLabel(),
@@ -33,6 +32,7 @@ public class PanelInventario extends JPanel {
 
     public PanelInventario() {
         setLayout(new BorderLayout());
+        UI.columnaAncha(tablaLotes, 1, 240);
         JPanel p = UI.base();
         add(p);
 
@@ -64,7 +64,9 @@ public class PanelInventario extends JPanel {
         JLabel t = new JLabel("Movimientos recientes");
         t.setFont(UI.NEGRITA);
         centro.add(t, BorderLayout.NORTH);
-        centro.add(new JScrollPane(UI.tabla(modelo)), BorderLayout.CENTER);
+        JTable tablaMovimientos = UI.tabla(modelo);
+        UI.columnaAncha(tablaMovimientos, 1, 240);
+        centro.add(new JScrollPane(tablaMovimientos), BorderLayout.CENTER);
         p.add(centro, BorderLayout.CENTER);
         return p;
     }
@@ -81,32 +83,25 @@ public class PanelInventario extends JPanel {
         derecha.setOpaque(false);
         derecha.add(new JLabel("Mostrar:"));
         derecha.add(cmbFiltro);
-        JButton merma = UI.boton("Registrar merma");
+        JButton merma = UI.botonSecundario("Registrar merma");
         merma.addActionListener(e -> registrarMerma());
         derecha.add(merma);
         if (Sesion.esAdministrador()) {
-            JButton editar = UI.boton("Editar lote");
+            JButton editar = UI.botonSecundario("Editar lote");
             editar.addActionListener(e -> editarLote());
             derecha.add(editar);
         }
         norte.add(derecha, BorderLayout.EAST);
         p.add(norte, BorderLayout.NORTH);
 
-        JLabel info = new JLabel("💡 Orden FEFO: arriba el lote que vence primero, que es el que se vende primero. "
+        JLabel info = new JLabel("Orden FEFO: arriba el lote que vence primero, que es el que se vende primero. "
                 + "Los lotes vencidos y las unidades en merma no se pueden vender.");
-        info.setFont(new Font("SansSerif", Font.ITALIC, 12));
-        info.setForeground(new Color(100, 116, 139));
+        info.setFont(UI.fuente(Font.PLAIN, 12));
+        info.setForeground(UI.TEXTO_SECUNDARIO);
 
-        tablaLotes.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
-            @Override
-            public Component getTableCellRendererComponent(JTable t, Object v, boolean sel, boolean foco, int fila, int col) {
-                Component c = super.getTableCellRendererComponent(t, v, sel, foco, fila, col);
-                if (!sel) {
-                    String estado = lotes.get(t.convertRowIndexToModel(fila)).estado();
-                    c.setBackground("Vencido".equals(estado) ? ROJO : "Por vencer".equals(estado) ? AMBAR : Color.WHITE);
-                }
-                return c;
-            }
+        UI.colorearFilas(tablaLotes, fila -> {
+            String estado = lotes.get(fila).estado();
+            return "Vencido".equals(estado) ? UI.FILA_ROJA : "Por vencer".equals(estado) ? UI.FILA_AMBAR : null;
         });
 
         JPanel centro = new JPanel(new BorderLayout(0, 5));

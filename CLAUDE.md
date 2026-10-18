@@ -16,7 +16,7 @@ No build tool (Maven/Gradle). The project is built from an IDE: IntelliJ (`Softw
 
 - **Prerequisite:** MySQL running on `localhost:3306`, user `root`, empty password (hard-coded in `seipo.modelo.ConexionBD`).- **Entry point:** `seipo.vista.Login` (`main`). Default login: `admin` / `123` (seeded by `ConexionBD`; `LEEME.txt` wrongly says `1234`).
 - `seipo.modelo.ConexionBD#main` checks the connection and creates the schema.
-- The required jars (MySQL Connector/J, OpenPDF, Apache POI and its dependencies) are in `SEIPO/lib`. IntelliJ uses them through the `seipo-lib` library, and NetBeans lists them in `javac.classpath` in `nbproject/project.properties`. If you add a jar, update both.
+- The required jars (MySQL Connector/J, FlatLaf, OpenPDF, Apache POI and its dependencies) are in `SEIPO/lib`. IntelliJ uses them through the `seipo-lib` library, and NetBeans lists them in `javac.classpath` in `nbproject/project.properties`. If you add a jar, update both.
 - Command-line compile/run (connector jar path required):
   ```
   javac -d out -cp <mysql-connector-j.jar> $(find SEIPO/src -name "*.java")
@@ -33,7 +33,15 @@ The app is a simple three-package MVC under `SEIPO/src/seipo/`:
   - `Sesion` holds the logged-in user (id, name, role). There are two roles, `ADMINISTRADOR` and `PERSONAL`. `Principal` only builds `PanelReportes` and `PanelUsuarios` for administrators.
   - `Datos` holds shared constants (`IGV`, `STOCK_BAJO` low-stock threshold, the `dd/MM/yy` date format), the `ProductoVenta` value object, and the currency formatter.
 - **`controlador`**: one controller per screen (`ControladorVentas`, `ControladorProductos`, etc.). Each one opens its own connection with try-with-resources, uses plain JDBC `PreparedStatement`s, throws `SQLException` up to the view, and returns small nested `*VO` classes with public fields.
-- **`vista`**: Swing views. `Login` opens `Principal`, a `JFrame` with a side menu and a `CardLayout` of `Panel*` screens. `Principal.mostrar()` calls each panel's `refrescar()` when that panel is shown, so new panels need a `refrescar()` and a case in that method. `UI` holds the shared styling and widget factories (`boton`, `modelo` for a read-only table model, `tabla`, `tarjeta`, `base`).
+- **`vista`**: Swing views. `Login` opens `Principal`, a `JFrame` with a side menu and a `CardLayout` of `Panel*` screens. `Principal.mostrar()` calls each panel's `refrescar()` when that panel is shown, so new panels need a `refrescar()` and a case in that method. Each section is registered in `Principal` with a menu group (OPERACIÓN, INVENTARIO, GESTIÓN) and a description, which the header shows. `UI` holds the visual theme and the widget factories:
+  - Dark theme: FlatLaf, installed by `UI.instalarTema()` in `Login.main`, before any window is created.
+  - Palette constants (`FONDO`, `SUPERFICIE`, `TEXTO`, `TEXTO_SECUNDARIO`, `ACENTO`, `BORDE`, `FILA_*` row tints). Use these instead of hard-coded colors, and never use light colors such as `Color.WHITE` for backgrounds.
+  - Fonts via `UI.fuente(estilo, tamaño)`.
+  - Buttons: `boton` (main action), `botonSecundario`, and `botonPeligro` (reject/remove).
+  - Tables: `modelo` (read-only model), `tabla`, `colorearFilas` (tints rows that need attention), `columnaAncha`.
+  - Layout: `tarjeta`, `ayuda`, `base`.
+
+  `Graficos` uses the same palette. `ExportadorReporte` keeps its own light colors for PDF and Excel.
 
 Domain notes:
 - Stock is tracked per batch in `lotes` (FEFO). `productos.stock` is a cached total that **must always equal** `SUM(lotes.cantidad)` for that product, so any code that changes stock updates both in the same transaction. Stock only comes in through `ControladorInventario.registrarRecepcion` (receipt with a delivery guide, `recepciones`). New products start at 0. Batches with no expiry date have `fecha_vencimiento NULL` and sort last.

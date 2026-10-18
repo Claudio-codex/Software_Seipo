@@ -34,6 +34,7 @@ public class PanelRecepcion extends JPanel {
     public PanelRecepcion(Runnable alRegistrar) {
         this.alRegistrar = alRegistrar;
         setLayout(new BorderLayout(0, 10));
+        UI.columnaAncha(tabla, 1, 260);
         setOpaque(false);
 
         JPanel cabecera = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 4));
@@ -44,8 +45,8 @@ public class PanelRecepcion extends JPanel {
         cabecera.add(txtProveedor);
 
         JPanel linea = new JPanel(new GridBagLayout());
-        linea.setBackground(Color.WHITE);
-        linea.setBorder(new CompoundBorder(new LineBorder(Color.LIGHT_GRAY), new EmptyBorder(8, 10, 8, 10)));
+        linea.setBackground(UI.SUPERFICIE);
+        linea.setBorder(new CompoundBorder(new LineBorder(UI.BORDE, 1, true), new EmptyBorder(8, 10, 8, 10)));
         GridBagConstraints g = new GridBagConstraints();
         g.insets = new Insets(2, 4, 2, 4);
         g.anchor = GridBagConstraints.WEST;
@@ -73,7 +74,7 @@ public class PanelRecepcion extends JPanel {
 
         JPanel sur = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
         sur.setOpaque(false);
-        JButton quitar = UI.boton("Quitar línea");
+        JButton quitar = UI.botonPeligro("Quitar línea");
         JButton registrar = UI.boton("Registrar recepción");
         sur.add(quitar);
         sur.add(registrar);
@@ -98,7 +99,7 @@ public class PanelRecepcion extends JPanel {
             producto = controlador.buscarPorCodigo(codigo);
             if (producto == null) {
                 lblProducto.setText("No existe un producto con código " + codigo + ". Regístrelo primero en Productos.");
-                lblProducto.setForeground(new Color(185, 28, 28));
+                lblProducto.setForeground(UI.PELIGRO);
             } else {
                 lblProducto.setText(producto.nombre + " — stock actual: " + producto.stock);
                 lblProducto.setForeground(UI.AZUL);
@@ -155,7 +156,7 @@ public class PanelRecepcion extends JPanel {
         producto = null;
         for (JTextField f : new JTextField[]{txtCodigo, txtLote, txtVencimiento, txtCantidad, txtUbicacion}) f.setText("");
         lblProducto.setText("Escanee o escriba el código y presione Enter");
-        lblProducto.setForeground(Color.BLACK);
+        lblProducto.setForeground(UI.TEXTO_SECUNDARIO);
         txtCodigo.requestFocus();
     }
 

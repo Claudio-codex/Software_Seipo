@@ -41,6 +41,8 @@ import java.util.Map;
 /** Exporta el reporte de ventas a PDF (OpenPDF) y a Excel .xlsx (Apache POI). */
 public class ExportadorReporte {
 
+    /** Azul institucional de los documentos impresos (la pantalla usa el tema oscuro de UI). */
+    static final Color AZUL = new Color(33, 84, 160);
     public static final DateTimeFormatter GENERADO = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
     static {
@@ -110,7 +112,7 @@ public class ExportadorReporte {
             writer.setPageEvent(new PiePagina(r.titulo + " · Generado: " + r.generado.format(GENERADO)));
             doc.open();
 
-            Color azul = UI.AZUL;
+            Color azul = AZUL;
             Paragraph titulo = new Paragraph(r.titulo, fuente(18, com.lowagie.text.Font.BOLD, azul));
             doc.add(titulo);
             doc.add(new Paragraph("Período: " + r.periodo, fuente(11, com.lowagie.text.Font.NORMAL, Color.DARK_GRAY)));
@@ -135,7 +137,7 @@ public class ExportadorReporte {
             c.setBorderColor(Color.LIGHT_GRAY);
             c.setPadding(8);
             c.addElement(new Phrase(i.nombre, fuente(9, com.lowagie.text.Font.NORMAL, Color.DARK_GRAY)));
-            c.addElement(new Phrase(texto(i.valor, i.formato), fuente(14, com.lowagie.text.Font.BOLD, UI.AZUL)));
+            c.addElement(new Phrase(texto(i.valor, i.formato), fuente(14, com.lowagie.text.Font.BOLD, AZUL)));
             t.addCell(c);
         }
         return t;
@@ -153,7 +155,7 @@ public class ExportadorReporte {
         // Una tabla corta no se parte entre páginas
         t.setKeepTogether(s.filas.size() <= 20);
 
-        PdfPCell titulo = new PdfPCell(new Phrase(s.titulo, fuente(13, com.lowagie.text.Font.BOLD, UI.AZUL)));
+        PdfPCell titulo = new PdfPCell(new Phrase(s.titulo, fuente(13, com.lowagie.text.Font.BOLD, AZUL)));
         titulo.setColspan(s.columnas.length);
         titulo.setBorder(Rectangle.NO_BORDER);
         titulo.setPaddingLeft(0);
@@ -163,8 +165,8 @@ public class ExportadorReporte {
         com.lowagie.text.Font encabezado = fuente(10, com.lowagie.text.Font.BOLD, Color.WHITE);
         for (String col : s.columnas) {
             PdfPCell c = new PdfPCell(new Phrase(col, encabezado));
-            c.setBackgroundColor(UI.AZUL);
-            c.setBorderColor(UI.AZUL);
+            c.setBackgroundColor(AZUL);
+            c.setBorderColor(AZUL);
             c.setPadding(5);
             c.setHorizontalAlignment(Element.ALIGN_CENTER);
             t.addCell(c);

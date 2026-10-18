@@ -22,6 +22,7 @@ public class PanelProductos extends JPanel {
 
     public PanelProductos() {
         setLayout(new BorderLayout());
+        UI.columnaAncha(tabla, 1, 260);
         JPanel p = UI.base();
         add(p);
 
@@ -32,7 +33,7 @@ public class PanelProductos extends JPanel {
         JButton nuevo = UI.boton("+ Nuevo Producto");
         botones.add(nuevo);
         if (Sesion.esAdministrador()) {
-            JButton editar = UI.boton("Editar");
+            JButton editar = UI.botonSecundario("Editar");
             editar.addActionListener(e -> editarProducto());
             botones.add(editar);
         }

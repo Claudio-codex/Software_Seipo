@@ -28,8 +28,8 @@ public class PanelUsuarios extends JPanel {
         JPanel norte = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
         norte.setOpaque(false);
         JButton nuevo = UI.boton("+ Nuevo Usuario");
-        JButton editar = UI.boton("Editar");
-        JButton clave = UI.boton("Restablecer contraseña");
+        JButton editar = UI.botonSecundario("Editar");
+        JButton clave = UI.botonSecundario("Restablecer contraseña");
         norte.add(nuevo);
         norte.add(editar);
         norte.add(clave);
@@ -37,10 +37,10 @@ public class PanelUsuarios extends JPanel {
 
         JPanel centro = new JPanel(new BorderLayout(0, 5));
         centro.setOpaque(false);
-        JLabel lblInfo = new JLabel("💡 El personal de tienda accede a Ventas, Productos, Inventario, Mermas, Compras y Clientes. "
+        JLabel lblInfo = new JLabel("El personal de tienda accede a Ventas, Productos, Inventario, Mermas, Compras y Clientes. "
                 + "El administrador además autoriza mermas y órdenes de compra y gestiona Reportes y Usuarios.");
-        lblInfo.setFont(new Font("SansSerif", Font.ITALIC, 12));
-        lblInfo.setForeground(new Color(100, 116, 139));
+        lblInfo.setFont(UI.fuente(Font.PLAIN, 12));
+        lblInfo.setForeground(UI.TEXTO_SECUNDARIO);
         centro.add(lblInfo, BorderLayout.NORTH);
         centro.add(new JScrollPane(tabla), BorderLayout.CENTER);
         p.add(centro, BorderLayout.CENTER);
