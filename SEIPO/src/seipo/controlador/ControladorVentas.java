@@ -10,9 +10,13 @@ import java.util.List;
 
 public class ControladorVentas {
 
-    /** Stock que se puede vender: la suma de los lotes no vencidos (los vencidos se dan de baja como merma). */
+    /**
+     * Stock que se puede vender: lotes no vencidos menos las unidades reservadas por mermas pendientes
+     * (los vencidos se dan de baja como merma).
+     */
     private static final String STOCK_DISPONIBLE =
-            "(SELECT COALESCE(SUM(l.cantidad), 0) FROM lotes l WHERE l.producto_id = p.id " +
+            "(SELECT COALESCE(SUM(l.cantidad - " + ControladorMermas.RESERVADO_EN_LOTE + "), 0) " +
+            "FROM lotes l WHERE l.producto_id = p.id " +
             "AND (l.fecha_vencimiento IS NULL OR l.fecha_vencimiento >= CURDATE())) AS stock";
 
     public List<ProductoVenta> filtrarSugerencias(String texto) throws SQLException {
@@ -73,9 +77,11 @@ public class ControladorVentas {
         String sqlVenta = "INSERT INTO ventas (fecha, total, forma_pago) VALUES (?, ?, ?)";
         String sqlDetalle = "INSERT INTO detalle_ventas (venta_id, producto_nombre, cantidad, importe) VALUES (?, ?, ?, ?)";
         // FEFO: primero el lote que vence antes y al final los que no vencen. FOR UPDATE bloquea los lotes hasta el commit.
-        String sqlLotes = "SELECT id, numero_lote, cantidad FROM lotes WHERE producto_id = ? AND cantidad > 0 " +
-                "AND (fecha_vencimiento IS NULL OR fecha_vencimiento >= CURDATE()) " +
-                "ORDER BY fecha_vencimiento IS NULL, fecha_vencimiento, id FOR UPDATE";
+        // Las unidades reservadas por mermas pendientes no se venden
+        String sqlLotes = "SELECT l.id, l.numero_lote, l.cantidad - " + ControladorMermas.RESERVADO_EN_LOTE + " AS cantidad " +
+                "FROM lotes l WHERE l.producto_id = ? AND l.cantidad > 0 " +
+                "AND (l.fecha_vencimiento IS NULL OR l.fecha_vencimiento >= CURDATE()) " +
+                "ORDER BY l.fecha_vencimiento IS NULL, l.fecha_vencimiento, l.id FOR UPDATE";
         String sqlUpdateLote = "UPDATE lotes SET cantidad = cantidad - ? WHERE id = ?";
         String sqlStockActual = "SELECT stock FROM productos WHERE id = ? FOR UPDATE";
         String sqlUpdateStock = "UPDATE productos SET stock = stock - ? WHERE id = ?";
@@ -126,7 +132,9 @@ public class ControladorVentas {
                         pstLotes.setInt(1, p.id);
                         try (ResultSet rs = pstLotes.executeQuery()) {
                             while (pendiente > 0 && rs.next()) {
-                                int tomar = Math.min(pendiente, rs.getInt("cantidad"));
+                                int enLote = rs.getInt("cantidad");
+                                if (enLote <= 0) continue; // lote reservado completo por mermas pendientes
+                                int tomar = Math.min(pendiente, enLote);
                                 pendiente -= tomar;
                                 stock -= tomar;
 

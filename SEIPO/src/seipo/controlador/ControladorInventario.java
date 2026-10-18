@@ -47,6 +47,7 @@ public class ControladorInventario {
         public String codigo, producto, numeroLote, ubicacion;
         public LocalDate vencimiento; // null si el producto no vence
         public int cantidad;
+        public int enMerma; // unidades reservadas por mermas pendientes
 
         public LoteVO(int id, String codigo, String producto, String numeroLote, LocalDate vencimiento, int cantidad, String ubicacion) {
             this.id = id;
@@ -141,7 +142,8 @@ public class ControladorInventario {
     /** Lotes con existencias, en orden FEFO (primero el que vence antes; los que no vencen al final). */
     public List<LoteVO> listarLotes(String textoBusqueda) throws SQLException {
         List<LoteVO> lista = new ArrayList<>();
-        String sql = "SELECT l.id, p.codigo, p.nombre, l.numero_lote, l.fecha_vencimiento, l.cantidad, l.ubicacion " +
+        String sql = "SELECT l.id, p.codigo, p.nombre, l.numero_lote, l.fecha_vencimiento, l.cantidad, l.ubicacion, " +
+                ControladorMermas.RESERVADO_EN_LOTE + " AS en_merma " +
                 "FROM lotes l JOIN productos p ON p.id = l.producto_id " +
                 "WHERE l.cantidad > 0 AND (p.codigo LIKE ? OR p.nombre LIKE ? OR l.numero_lote LIKE ?) " +
                 "ORDER BY l.fecha_vencimiento IS NULL, l.fecha_vencimiento, p.nombre, l.id";
@@ -154,9 +156,11 @@ public class ControladorInventario {
             try (ResultSet rs = pst.executeQuery()) {
                 while (rs.next()) {
                     Date venc = rs.getDate("fecha_vencimiento");
-                    lista.add(new LoteVO(rs.getInt("id"), rs.getString("codigo"), rs.getString("nombre"),
+                    LoteVO lote = new LoteVO(rs.getInt("id"), rs.getString("codigo"), rs.getString("nombre"),
                             rs.getString("numero_lote"), venc == null ? null : venc.toLocalDate(),
-                            rs.getInt("cantidad"), rs.getString("ubicacion")));
+                            rs.getInt("cantidad"), rs.getString("ubicacion"));
+                    lote.enMerma = rs.getInt("en_merma");
+                    lista.add(lote);
                 }
             }
         }

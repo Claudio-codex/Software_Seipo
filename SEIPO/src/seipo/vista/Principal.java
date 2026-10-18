@@ -14,6 +14,7 @@ public class Principal extends JFrame {
     private final PanelVentas ventas = new PanelVentas();
     private final PanelProductos productos = new PanelProductos();
     private final PanelInventario inventario = new PanelInventario();
+    private final PanelMermas mermas = new PanelMermas();
     private final PanelClientes clientes = new PanelClientes();
     // Solo se crean para el administrador
     private PanelReportes reportes;
@@ -36,10 +37,11 @@ public class Principal extends JFrame {
         menu.add(logo);
         menu.add(Box.createVerticalStrut(20));
 
-        List<String> secciones = new ArrayList<>(List.of("Ventas", "Productos", "Inventario", "Clientes"));
+        List<String> secciones = new ArrayList<>(List.of("Ventas", "Productos", "Inventario", "Mermas", "Clientes"));
         centro.add(ventas, "Ventas");
         centro.add(productos, "Productos");
         centro.add(inventario, "Inventario");
+        centro.add(mermas, "Mermas");
         centro.add(clientes, "Clientes");
         if (Sesion.esAdministrador()) {
             reportes = new PanelReportes();
@@ -93,6 +95,7 @@ public class Principal extends JFrame {
         switch (nombre) {
             case "Productos": productos.refrescar(); break;
             case "Inventario": inventario.refrescar(); break;
+            case "Mermas": mermas.refrescar(); break;
             case "Clientes": clientes.refrescar(); break;
             case "Reportes": reportes.refrescar(); break;
             case "Usuarios": usuarios.refrescar(); break;

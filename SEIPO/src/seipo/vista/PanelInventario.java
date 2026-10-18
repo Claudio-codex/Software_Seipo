@@ -24,7 +24,7 @@ public class PanelInventario extends JPanel {
     private final JLabel lblTotal = new JLabel(), lblBajo = new JLabel(), lblAgotados = new JLabel(),
             lblVencidos = new JLabel(), lblPorVencer = new JLabel();
     private final DefaultTableModel modelo = UI.modelo("Fecha", "Producto", "Tipo", "Lote", "Cantidad", "Stock");
-    private final DefaultTableModel modeloLotes = UI.modelo("Código", "Producto", "Lote", "Vencimiento", "Días", "Cantidad", "Ubicación", "Estado");
+    private final DefaultTableModel modeloLotes = UI.modelo("Código", "Producto", "Lote", "Vencimiento", "Días", "Cantidad", "En merma", "Ubicación", "Estado");
     private final JTable tablaLotes = UI.tabla(modeloLotes);
     private final JTextField txtBuscarLote = new JTextField();
     private final JComboBox<String> cmbFiltro = new JComboBox<>(FILTROS);
@@ -81,6 +81,9 @@ public class PanelInventario extends JPanel {
         derecha.setOpaque(false);
         derecha.add(new JLabel("Mostrar:"));
         derecha.add(cmbFiltro);
+        JButton merma = UI.boton("Registrar merma");
+        merma.addActionListener(e -> registrarMerma());
+        derecha.add(merma);
         if (Sesion.esAdministrador()) {
             JButton editar = UI.boton("Editar lote");
             editar.addActionListener(e -> editarLote());
@@ -90,7 +93,7 @@ public class PanelInventario extends JPanel {
         p.add(norte, BorderLayout.NORTH);
 
         JLabel info = new JLabel("💡 Orden FEFO: arriba el lote que vence primero, que es el que se vende primero. "
-                + "Los lotes vencidos no se pueden vender.");
+                + "Los lotes vencidos y las unidades en merma no se pueden vender.");
         info.setFont(new Font("SansSerif", Font.ITALIC, 12));
         info.setForeground(new Color(100, 116, 139));
 
@@ -154,12 +157,18 @@ public class PanelInventario extends JPanel {
                 Long dias = l.diasParaVencer();
                 modeloLotes.addRow(new Object[]{l.codigo, l.producto, l.numeroLote,
                         l.vencimiento == null ? "—" : l.vencimiento.format(Datos.FECHA_COMPLETA),
-                        dias == null ? "—" : dias, l.cantidad,
+                        dias == null ? "—" : dias, l.cantidad, l.enMerma == 0 ? "" : l.enMerma,
                         l.ubicacion == null ? "" : l.ubicacion, l.estado()});
             }
         } catch (SQLException ex) {
             ex.printStackTrace();
         }
+    }
+
+    private void registrarMerma() {
+        int fila = tablaLotes.getSelectedRow();
+        Integer loteId = fila < 0 ? null : lotes.get(tablaLotes.convertRowIndexToModel(fila)).id;
+        if (PanelMermas.dialogoRegistrar(this, loteId)) refrescar();
     }
 
     private void editarLote() {

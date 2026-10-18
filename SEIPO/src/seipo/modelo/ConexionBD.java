@@ -110,6 +110,28 @@ public class ConexionBD {
                         "    FOREIGN KEY (producto_id) REFERENCES productos(id)," +
                         "    FOREIGN KEY (recepcion_id) REFERENCES recepciones(id)," +
                         "    INDEX idx_lotes_fefo (producto_id, fecha_vencimiento)" +
+                        ");",
+
+                // Bajas de inventario: se registran PENDIENTE (reservan stock) y el administrador las APRUEBA o RECHAZA
+                "CREATE TABLE IF NOT EXISTS mermas (" +
+                        "    id INT AUTO_INCREMENT PRIMARY KEY," +
+                        "    lote_id INT NOT NULL," +
+                        "    producto_id INT NOT NULL," +
+                        "    cantidad INT NOT NULL," +
+                        "    causal VARCHAR(30) NOT NULL," +
+                        "    observacion VARCHAR(255)," +
+                        "    precio_unitario DECIMAL(10, 2) NOT NULL," +
+                        "    estado VARCHAR(20) NOT NULL DEFAULT 'PENDIENTE'," +
+                        "    solicitado_por INT NOT NULL," +
+                        "    solicitado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP," +
+                        "    autorizado_por INT," +
+                        "    autorizado_en DATETIME," +
+                        "    motivo_rechazo VARCHAR(255)," +
+                        "    FOREIGN KEY (lote_id) REFERENCES lotes(id)," +
+                        "    FOREIGN KEY (producto_id) REFERENCES productos(id)," +
+                        "    FOREIGN KEY (solicitado_por) REFERENCES usuarios(id)," +
+                        "    FOREIGN KEY (autorizado_por) REFERENCES usuarios(id)," +
+                        "    INDEX idx_mermas_lote (lote_id, estado)" +
                         ");"
         };
 
@@ -143,13 +165,14 @@ public class ConexionBD {
     /**
      * Prepara una base de la versión anterior para el control FEFO: agrega la columna lote a
      * movimientos y pasa el stock de los productos que aún no tienen lotes a un lote "INICIAL"
-     * sin fecha de vencimiento.
+     * sin fecha de vencimiento. Solo ocurre una vez: cuando la columna lote todavía no existía.
      */
     private static void actualizarInventario(Statement stmt) throws SQLException {
-        agregarColumna(stmt, "ALTER TABLE movimientos ADD COLUMN lote VARCHAR(50)");
-        stmt.execute("INSERT INTO lotes (producto_id, numero_lote, cantidad_inicial, cantidad) " +
-                "SELECT p.id, 'INICIAL', p.stock, p.stock FROM productos p " +
-                "WHERE p.stock > 0 AND NOT EXISTS (SELECT 1 FROM lotes l WHERE l.producto_id = p.id)");
+        if (agregarColumna(stmt, "ALTER TABLE movimientos ADD COLUMN lote VARCHAR(50)")) {
+            stmt.execute("INSERT INTO lotes (producto_id, numero_lote, cantidad_inicial, cantidad) " +
+                    "SELECT p.id, 'INICIAL', p.stock, p.stock FROM productos p " +
+                    "WHERE p.stock > 0 AND NOT EXISTS (SELECT 1 FROM lotes l WHERE l.producto_id = p.id)");
+        }
     }
 
     /** Ejecuta un ALTER TABLE ... ADD COLUMN; devuelve false si la columna ya existía. */
