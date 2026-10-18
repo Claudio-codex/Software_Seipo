@@ -15,3 +15,15 @@ Sistema de venta e inventario
 * Una vez creada la base de datos con el paso anterior, ve al paquete `seipo.vista` y busca la clase **`Login.java`**.
 * Ejecuta esa clase (`Login.java`) para abrir la ventana de inicio de sesión de la aplicación.
 * Puedes iniciar sesión con el usuario administrador por defecto (`admin`) y contraseña (`123`).
+
+4. Abrir el proyecto en el IDE
+* Las librerías necesarias (conector MySQL, OpenPDF y Apache POI) ya vienen en la carpeta `SEIPO/lib`, no hay que descargar nada.
+* **IntelliJ IDEA:** abre la carpeta raíz del repositorio. La librería `seipo-lib` ya apunta a `SEIPO/lib`.
+* **NetBeans:** abre la carpeta `SEIPO` como proyecto. Las librerías y la clase principal (`seipo.vista.Login`) ya están configuradas; basta con *Run Project*.
+* Se requiere JDK 11 o superior.
+
+5. Usuarios y roles
+* **Administrador:** accede a Ventas, Productos, Inventario, Clientes, Reportes y Usuarios.
+* **Personal de tienda:** accede a Ventas, Productos, Inventario y Clientes.
+* Las cuentas del personal se crean desde el módulo **Usuarios** (entrando como `admin`), donde también se edita el rol, se activa/desactiva y se restablece la contraseña.
+* Si ya tenías la base de datos creada con una versión anterior, no hace falta borrarla: al iniciar, el sistema agrega las columnas nuevas y los usuarios existentes quedan como administradores.

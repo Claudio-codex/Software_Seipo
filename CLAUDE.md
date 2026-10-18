@@ -14,10 +14,9 @@ SEIPO is a Java Swing desktop app for sales and inventory ("Sistema de venta e i
 
 No build tool (Maven/Gradle). The project is built from an IDE: IntelliJ (`Software_Seipo.iml` at the repo root, source root `SEIPO/src`) or NetBeans/Ant (`SEIPO/build.xml`, `SEIPO/nbproject/`). There are no tests and no linter.
 
-- **Prerequisite:** MySQL running on `localhost:3306`, user `root`, empty password (hard-coded in `seipo.modelo.ConexionBD`). The MySQL Connector/J jar has to be on the classpath. In IntelliJ it is a project library pointing to a jar outside the repo (`.idea/libraries/`).
-- **Entry point:** `seipo.vista.Login` (`main`). Default login: `admin` / `123` (seeded by `ConexionBD`; `LEEME.txt` wrongly says `1234`).
+- **Prerequisite:** MySQL running on `localhost:3306`, user `root`, empty password (hard-coded in `seipo.modelo.ConexionBD`).- **Entry point:** `seipo.vista.Login` (`main`). Default login: `admin` / `123` (seeded by `ConexionBD`; `LEEME.txt` wrongly says `1234`).
 - `seipo.modelo.ConexionBD#main` checks the connection and creates the schema.
-- `nbproject/project.properties` has `main.class=seipo.Login`, which is outdated. The real class is `seipo.vista.Login`.
+- The required jars (MySQL Connector/J, OpenPDF, Apache POI and its dependencies) are in `SEIPO/lib`. IntelliJ uses them through the `seipo-lib` library, and NetBeans lists them in `javac.classpath` in `nbproject/project.properties`. If you add a jar, update both.
 - Command-line compile/run (connector jar path required):
   ```
   javac -d out -cp <mysql-connector-j.jar> $(find SEIPO/src -name "*.java")
