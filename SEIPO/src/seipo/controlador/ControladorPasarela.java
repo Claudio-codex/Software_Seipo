@@ -184,6 +184,7 @@ public class ControladorPasarela {
 
     /** Transacciones de un rango de fechas, de la más reciente a la más antigua (solo administrador). */
     public List<TransaccionVO> listarTransacciones(LocalDate desde, LocalDate hasta) throws SQLException {
+        if (!Sesion.esAdministrador()) throw new SQLException("Solo un administrador puede ver las transacciones de pago.");
         List<TransaccionVO> lista = new ArrayList<>();
         try (Connection con = ConexionBD.obtenerConexion();
              PreparedStatement pst = con.prepareStatement(SELECT + "WHERE t.creado_en >= ? AND t.creado_en < ? ORDER BY t.id DESC")) {

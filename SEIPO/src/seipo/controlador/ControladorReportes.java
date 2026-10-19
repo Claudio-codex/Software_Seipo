@@ -2,6 +2,7 @@ package seipo.controlador;
 
 import seipo.modelo.ConexionBD;
 import seipo.modelo.Datos;
+import seipo.modelo.Sesion;
 import java.sql.*;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -71,6 +72,7 @@ public class ControladorReportes {
     }
 
     public DatosReporteVO obtenerReporte(LocalDate desde, LocalDate hasta) throws SQLException {
+        if (!Sesion.esAdministrador()) throw new SQLException("Solo un administrador puede consultar los reportes.");
         DatosReporteVO vo = new DatosReporteVO();
         vo.desde = desde;
         vo.hasta = hasta;

@@ -40,6 +40,7 @@ public class ControladorUsuarios {
     }
 
     public void registrarUsuario(String usuario, String nombre, String password, String rol) throws SQLException {
+        exigirAdministrador("crear cuentas de usuario");
         String sql = "INSERT INTO usuarios (usuario, nombre, password, rol) VALUES (?, ?, ?, ?)";
         try (Connection con = ConexionBD.obtenerConexion();
              PreparedStatement pst = con.prepareStatement(sql)) {
@@ -56,6 +57,7 @@ public class ControladorUsuarios {
      * el rol de administrador, y que el sistema se quede sin administradores activos.
      */
     public void actualizarUsuario(int id, String nombre, String rol, boolean activo) throws SQLException {
+        exigirAdministrador("modificar cuentas de usuario");
         boolean quedaAdmin = Sesion.ADMINISTRADOR.equals(rol) && activo;
         if (id == Sesion.getId() && !quedaAdmin) {
             throw new SQLException("No puede desactivarse ni quitarse el rol de administrador a sí mismo.");
@@ -76,6 +78,7 @@ public class ControladorUsuarios {
     }
 
     public void cambiarPassword(int id, String password) throws SQLException {
+        exigirAdministrador("restablecer contraseñas");
         String sql = "UPDATE usuarios SET password = ? WHERE id = ?";
         try (Connection con = ConexionBD.obtenerConexion();
              PreparedStatement pst = con.prepareStatement(sql)) {
@@ -83,6 +86,10 @@ public class ControladorUsuarios {
             pst.setInt(2, id);
             pst.executeUpdate();
         }
+    }
+
+    private static void exigirAdministrador(String accion) throws SQLException {
+        if (!Sesion.esAdministrador()) throw new SQLException("Solo un administrador puede " + accion + ".");
     }
 
     private int contarOtrosAdministradores(Connection con, int id) throws SQLException {

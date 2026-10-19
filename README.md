@@ -101,3 +101,21 @@ Si el programa no puede conectarse, la ventana de inicio de sesión indica qué 
 * **Usuario o contraseña rechazados:** revisa `db.usuario` y `db.clave` en `config.properties`.
 * **Sin acceso a la base:** el usuario necesita permisos sobre la base (`GRANT ALL PRIVILEGES ON seipo_db.* TO 'seipo'@'localhost';`).
 * **Método de autenticación no admitido:** en MariaDB para Windows, `root` puede entrar con la autenticación de Windows, que el programa no admite. Usa el usuario `seipo`.
+
+## Pruebas
+**Qué se probó:** 15 casos de caja negra con JUnit 5 (CP-01 a CP-15) sobre acceso y roles, turno y cierre de caja, ventas con IGV y redondeo, descuento VIP, FEFO, stock límite, pago digital, comprobantes, anulación, mermas, compras y el reporte de mermas.
+
+**Cómo ejecutarlas**
+* Usan su propia base, **`seipo_test`**: la crean desde `SEIPO/bd/seipo_db.sql` y la vuelven a cargar después de cada prueba. No tocan `seipo_db` ni `config.properties`. Antes de la primera ejecución, dale permisos al usuario `seipo` (como `root`):
+  ```sql
+  GRANT ALL PRIVILEGES ON seipo_test.* TO 'seipo'@'localhost';
+  ```
+* **IntelliJ IDEA:** elige la configuración **Pruebas SEIPO** (arriba a la derecha) y pulsa ▶.
+* **Consola:** ejecuta `pruebas.bat` en la raíz del repositorio (unos 15 segundos). Los reportes XML quedan en `out-pruebas\reportes`.
+* La prueba CP-02 abre la ventana principal sin mostrarla, así que necesita un entorno gráfico. Puede aparecer un instante el aviso de alertas del administrador, que se cierra solo.
+
+**Resultados finales:** **15 de 15 casos aprobados (100 %)** en la corrida 3.
+* La corrida 1 dio 13/15. Se corrigió el defecto DEF-01: el control de roles existía solo en la interfaz.
+* La corrida 2 dio 14/15. Se aclaró el requerimiento del descuento VIP (OBS-01) y la prueba CP-06 se ajustó a ese criterio.
+
+Informe completo: [docs/pruebas/Informe_Pruebas.md](docs/pruebas/Informe_Pruebas.md).
