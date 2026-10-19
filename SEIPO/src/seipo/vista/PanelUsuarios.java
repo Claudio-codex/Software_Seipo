@@ -37,8 +37,8 @@ public class PanelUsuarios extends JPanel {
 
         JPanel centro = new JPanel(new BorderLayout(0, 5));
         centro.setOpaque(false);
-        JLabel lblInfo = new JLabel("El personal de tienda accede a Ventas, Productos, Inventario, Mermas, Compras y Clientes. "
-                + "El administrador además autoriza mermas y órdenes de compra y gestiona Reportes y Usuarios.");
+        JLabel lblInfo = new JLabel("El personal de tienda accede a Ventas, Caja, Clientes, Productos, Inventario, Mermas y Compras. "
+                + "El administrador además autoriza mermas y órdenes de compra y gestiona Reportes, Pagos y Usuarios.");
         lblInfo.setFont(UI.fuente(Font.PLAIN, 12));
         lblInfo.setForeground(UI.TEXTO_SECUNDARIO);
         centro.add(lblInfo, BorderLayout.NORTH);

@@ -2,7 +2,7 @@
 
 **Sistema de venta e inventario**
 
-Versión 1.0 · 19 de octubre de 2026
+Versión 1.1 · 19 de octubre de 2026
 
 Autores: Claudio Puente y Francesco Camarena Damián
 
@@ -85,7 +85,7 @@ Este manual está dirigido al **administrador**. El administrador hace todo lo q
 | Pagos | Cobros de la pasarela de pago, su configuración y los datos del comprobante. |
 | Usuarios | Cuentas de acceso y roles del personal. |
 
-> **Nota:** en las ventanas de confirmación los botones aparecen en inglés: **OK** (aceptar), **Cancel** (cancelar), **Yes** (sí), **No** y, al guardar archivos, **Save** (guardar).
+> **Nota:** las ventanas de confirmación tienen los botones **Aceptar**, **Cancelar**, **Sí** y **No**; al guardar archivos, el botón es **Guardar**.
 
 ## 4. Procedimientos paso a paso
 
@@ -106,13 +106,13 @@ Este manual está dirigido al **administrador**. El administrador hace todo lo q
 
 1. En **Ventas**, escanee o escriba el producto en **Producto (F2)** y elíjalo de la lista (`3*CODIGO` agrega 3 unidades). Corrija las cantidades con **+**, **−**, doble clic en **Cant** o **Quitar ítem**.
 2. En **CLIENTE (F4)** pulse **Buscar**, elija al cliente y pulse **Usar cliente**, o regístrelo con **+ Nuevo cliente**.
-3. El descuento VIP se aplica solo: **5 %** con 1 compra completada, **10 %** con 3 y **15 %** con 5. Con **Descuento (F6)** puede escribir otro porcentaje (0 a 100).
+3. El descuento VIP se aplica solo: **5 %** con 1 compra completada, **10 %** con 3 y **15 %** con 5. Con **Descuento (F6)** puede escribir otro porcentaje (0 a 100); el administrador no tiene tope.
 
 [CAPTURA 4.2.1: Ventas — carrito con cliente VIP y el desglose con Descuento, IGV 18%, Redondeo y TOTAL]
 
 **Resultado esperado:** el panel derecho muestra **Subtotal**, **Descuento**, **IGV 18%**, **Redondeo** y **TOTAL**.
 
-> **Advertencia:** el descuento manual con **Descuento (F6)** no pide autorización ni queda registrado quién lo dio, y también lo puede usar el personal. Defina en la tienda quién puede usarlo.
+> **Advertencia:** el personal puede aplicar como máximo **10 %** de descuento manual; el sistema se lo impide en la pantalla y al registrar la venta. El descuento VIP del cliente siempre se respeta, aunque sea mayor (Platino, 15 %). Si corresponde un descuento manual mayor, cobre usted esa venta desde su sesión y su turno.
 
 ### 4.3 Cobrar en efectivo, con Yape o con Plin
 
@@ -145,7 +145,7 @@ Este manual está dirigido al **administrador**. El administrador hace todo lo q
 
 1. Para su propio turno: **Caja** → **Mi turno** → **Cerrar turno y cuadrar caja**. Para el turno de otro usuario: **Caja** → **Historial de turnos**, seleccione la fila celeste (abierta) y pulse **Cerrar turno seleccionado**.
 2. Revise el **Efectivo esperado** (inicial + ventas en efectivo no anuladas; Yape o Plin no entra a caja).
-3. Escriba el **Efectivo contado en caja (S/)**. Si hay diferencia, complete la **Observación** y pulse **OK**.
+3. Escriba el **Efectivo contado en caja (S/)**. Si hay diferencia, complete la **Observación** y pulse **Aceptar**.
 
 [CAPTURA 4.5.1: Caja, pestaña Historial de turnos — turnos con faltante (rojo), sobrante (ámbar) y abierto (celeste)]
 
@@ -157,7 +157,7 @@ Este manual está dirigido al **administrador**. El administrador hace todo lo q
 
 1. Entre a **Caja** → **Mi turno**, o abra el turno en **Historial de turnos** → **Ver ventas del turno**.
 2. Seleccione la venta y pulse **Anular venta**.
-3. Lea el aviso, escriba el **Motivo de la anulación** y pulse **OK**.
+3. Lea el aviso, escriba el **Motivo de la anulación** y pulse **Aceptar**.
 
 [CAPTURA 4.6.1: Caja — ventana "Anular venta" con el motivo de la anulación]
 
@@ -170,7 +170,7 @@ Este manual está dirigido al **administrador**. El administrador hace todo lo q
 **Objetivo:** crear cuentas, cambiar roles, desactivar usuarios y restablecer claves. **Cuándo se usa:** cuando ingresa o se va alguien, o cuando un usuario olvida su clave.
 
 1. Entre a **Usuarios**. La tabla muestra **Usuario**, **Nombre**, **Rol** y **Estado**.
-2. **Crear:** pulse **+ Nuevo Usuario** y complete **Usuario**, **Nombre completo**, **Rol** (Personal de tienda o Administrador), **Contraseña** y **Repetir contraseña**. Pulse **OK**.
+2. **Crear:** pulse **+ Nuevo Usuario** y complete **Usuario**, **Nombre completo**, **Rol** (Personal de tienda o Administrador), **Contraseña** y **Repetir contraseña**. Pulse **Aceptar**.
 3. **Cambiar rol o desactivar:** seleccione la fila, pulse **Editar** y cambie **Nombre completo**, **Rol** o la casilla **Usuario activo**.
 4. **Clave olvidada:** seleccione la fila, pulse **Restablecer contraseña** y escriba la **Nueva contraseña** dos veces.
 
@@ -211,8 +211,8 @@ Este manual está dirigido al **administrador**. El administrador hace todo lo q
 
 1. **Registrar:** en **Mermas**, pulse **+ Registrar merma** y elija **Lote**, **Cantidad**, **Causal** y **Observación**; o pulse **Registrar lotes vencidos**.
 2. **Revisar:** con **Mostrar:** en **Pendientes**, revise las filas ámbar. Puede seleccionar varias.
-3. **Aprobar:** pulse **Aprobar** y confirme con **Yes** ("¿Aprobar N merma(s)? Se darán de baja … unidad(es) por S/ …").
-4. **Rechazar:** pulse **Rechazar**, escriba el **Motivo del rechazo** y pulse **OK**.
+3. **Aprobar:** pulse **Aprobar** y confirme con **Sí** ("¿Aprobar N merma(s)? Se darán de baja … unidad(es) por S/ …").
+4. **Rechazar:** pulse **Rechazar**, escriba el **Motivo del rechazo** y pulse **Aceptar**.
 
 [CAPTURA 4.10.1: Mermas — tarjetas Pendientes de autorizar, Unidades dadas de baja y Valor perdido, con mermas pendientes seleccionadas]
 
@@ -225,8 +225,8 @@ Este manual está dirigido al **administrador**. El administrador hace todo lo q
 **Objetivo:** reponer lo que falta y controlar los pedidos a proveedores. **Cuándo se usa:** cuando **Compras** muestra un número en el menú.
 
 1. **Alertas:** en **Compras** → **Alertas de stock**, revise los productos **Agotado**, **Stock bajo** o **Sobrestock**. **Sugerido** es lo que falta para llegar al máximo (o al doble del mínimo), sin contar lo que ya está **En pedido**.
-2. **Crear la orden:** seleccione los productos (o ninguno, para todos) y pulse **Crear orden de compra**; o vaya a **Órdenes de compra** → **+ Nueva orden**. Elija el **Proveedor**, ajuste las cantidades y pulse **OK**.
-3. **Aprobar o rechazar:** en **Órdenes de compra**, con **Mostrar:** en Pendientes, seleccione la orden y pulse **Aprobar** (confirme con **Yes**) o **Rechazar** (escriba el motivo).
+2. **Crear la orden:** seleccione los productos (o ninguno, para todos) y pulse **Crear orden de compra**; o vaya a **Órdenes de compra** → **+ Nueva orden**. Elija el **Proveedor**, ajuste las cantidades y pulse **Aceptar**.
+3. **Aprobar o rechazar:** en **Órdenes de compra**, con **Mostrar:** en Pendientes, seleccione la orden y pulse **Aprobar** (confirme con **Sí**) o **Rechazar** (escriba el motivo).
 4. **Recibir:** cuando llegue el pedido, seleccione la orden **Aprobada** y pulse **Recibir mercadería**. Escriba la **Guía de remisión** y, por producto, **Recibido**, **Lote**, **Vence (dd/mm/aaaa)** y **Ubicación** (Recibido = 0 si no llegó).
 5. **Proveedores:** en la pestaña **Proveedores**, **+ Nuevo proveedor** pide **RUC (11 dígitos)**, **Razón social**, **Contacto**, **Teléfono** y **Correo**. **Editar** permite desactivarlo con **Proveedor activo**.
 
@@ -253,8 +253,8 @@ Este manual está dirigido al **administrador**. El administrador hace todo lo q
 **Objetivo:** obtener un archivo del reporte para imprimir o compartir. **Cuándo se usa:** para informes periódicos o para archivar.
 
 1. **Reporte de ventas:** en **Reportes**, elija el período y pulse **Exportar PDF** o **Exportar Excel**.
-2. **Reporte de mermas:** en **Mermas**, pulse **Exportar** y elija **Exportar PDF** o **Exportar Excel**. Elija el **Período** (Este mes, Mes anterior, Últimos 30 días o Este año) o escriba **Desde** y **Hasta** (dd/mm/aaaa) y pulse **OK**.
-3. Elija la carpeta y el nombre del archivo y pulse **Save**.
+2. **Reporte de mermas:** en **Mermas**, pulse **Exportar** y elija **Exportar PDF** o **Exportar Excel**. Elija el **Período** (Este mes, Mes anterior, Últimos 30 días o Este año) o escriba **Desde** y **Hasta** (dd/mm/aaaa) y pulse **Aceptar**.
+3. Elija la carpeta y el nombre del archivo y pulse **Guardar**.
 
 [CAPTURA 4.13.1: Mermas — menú Exportar con las opciones Exportar PDF y Exportar Excel]
 
@@ -280,16 +280,16 @@ Este manual está dirigido al **administrador**. El administrador hace todo lo q
 
 **Objetivo:** guardar una copia de todos los datos para recuperarlos ante una falla. **Cuándo se usa:** al cierre de cada día, o antes de cualquier cambio importante.
 
-1. En la carpeta del programa, haga doble clic en **respaldo.bat**. Se abre una ventana negra que se cierra sola al terminar, en pocos segundos.
-2. Abra la carpeta **respaldos** (dentro de la carpeta del programa) y compruebe que hay un archivo nuevo con la fecha y la hora en el nombre, por ejemplo `seipo_db_2026-10-19_2100.sql`.
-3. Copie esa carpeta a otro disco o a la nube de vez en cuando. Si quiere leer el mensaje del respaldo ("Respaldo guardado en …"), ejecute **respaldo.bat** desde una ventana de comandos (`cmd`).
-4. **Programarlo:** abra el **Programador de tareas** de Windows → **Crear tarea básica…** → nombre "SEIPO respaldo" → **Diariamente** a una hora fija (por ejemplo, 21:00) → **Iniciar un programa** → elija **respaldo.bat** → **Finalizar**.
+1. En la carpeta del programa, haga doble clic en **respaldo.bat**. Se abre una ventana negra.
+2. Lea el resultado: "Respaldo guardado en …" con la ruta del archivo, o un mensaje "ERROR: …". Pulse cualquier tecla para cerrar la ventana ("Presione una tecla para continuar").
+3. El archivo queda en la carpeta **respaldos**, con la fecha y la hora en el nombre, por ejemplo `seipo_db_2026-10-19_2100.sql`. Copie esa carpeta a otro disco o a la nube de vez en cuando.
+4. **Programarlo:** abra el **Programador de tareas** de Windows → **Crear tarea básica…** → nombre "SEIPO respaldo" → **Diariamente** a una hora fija (por ejemplo, 21:00) → **Iniciar un programa** → elija **respaldo.bat** y en **Agregar argumentos** escriba `/sinpausa` → **Finalizar**.
 
-[CAPTURA 4.15.1: Carpeta respaldos — archivo seipo_db_AAAA-MM-DD_HHMM.sql recién creado]
+[CAPTURA 4.15.1: Ventana de respaldo.bat — mensaje "Respaldo guardado en" y "Presione una tecla para continuar"]
 
 **Resultado esperado:** un archivo `.sql` nuevo en **respaldos**. En el Programador de tareas, **Resultado de la última ejecución** muestra `0x0` si salió bien y `0x1` si falló.
 
-> **Advertencia:** el respaldo contiene todos los datos, incluidas las claves de los usuarios: guárdelo en un lugar seguro. Para restaurar un respaldo se reemplaza la base completa; pida apoyo al responsable técnico (el README explica cómo). La computadora debe estar encendida a la hora programada.
+> **Advertencia:** sin el argumento `/sinpausa`, la tarea programada quedaría esperando una tecla y no terminaría. El respaldo contiene todos los datos, incluidas las claves de los usuarios: guárdelo en un lugar seguro. Para restaurar un respaldo se reemplaza la base completa; pida apoyo al responsable técnico (el README explica cómo). La computadora debe estar encendida a la hora programada.
 
 ## 5. Reglas del negocio que debe conocer
 
@@ -300,6 +300,7 @@ Este manual está dirigido al **administrador**. El administrador hace todo lo q
 | Stock por lotes | El stock de un producto es la suma de sus lotes. Entra solo por recepción de mercadería. |
 | Mermas | Nacen pendientes y reservan sus unidades. Solo el administrador las aprueba (descuenta el stock) o las rechaza. |
 | Descuento VIP | 5 % desde 1 compra completada, 10 % desde 3 (a partir de la 4.ª compra) y 15 % desde 5. Las anuladas no cuentan. |
+| Descuento manual | El personal puede aplicar como máximo 10 % con **Descuento (F6)**; el administrador no tiene tope. El VIP del cliente siempre se respeta. |
 | IGV y redondeo | IGV 18 % sobre (subtotal − descuento). El total se redondea hacia abajo a 10 céntimos, a favor del cliente. |
 | Comprobante | RUC: factura F001. DNI o sin cliente: boleta B001. Numeración correlativa por serie. |
 | Cobro digital | La venta con Yape o Plin solo se registra si la pasarela aprobó el mismo monto. Del celular se guardan los 3 últimos dígitos. |
@@ -320,6 +321,7 @@ Este manual está dirigido al **administrador**. El administrador hace todo lo q
 | Ya existe un producto con ese código. | Use otro código o edite el producto existente. |
 | El stock máximo debe ser mayor que el mínimo. | Corrija los límites o deje vacío el máximo. |
 | La guía … de … ya fue registrada. | Esa recepción ya se ingresó; revise **Movimientos recientes**. |
+| El personal puede aplicar como máximo 10 % de descuento manual. … | Lo ve el personal. Si corresponde un descuento mayor, cobre usted la venta desde su sesión. |
 | El lote ya está vencido. No se puede recibir. | No ingrese ese lote; coordine la devolución con el proveedor. |
 | Seleccione una o más mermas pendientes. | Marque filas en estado Pendiente antes de aprobar o rechazar. |
 | No hay productos por reponer en la selección (o ya están en pedido). | Esos productos ya tienen una orden pendiente o aprobada. |
@@ -366,5 +368,5 @@ Total: **16 capturas**. Tome cada una con datos de demostración y reemplace el 
 | 4.12.1 | Reportes | Indicadores comparados con el período anterior y el gráfico de ventas del período | 4.12 Consultar los reportes |
 | 4.13.1 | Mermas | Menú Exportar con las opciones Exportar PDF y Exportar Excel | 4.13 Exportar a PDF y a Excel |
 | 4.14.1 | Pagos, pestaña Configuración | Datos del negocio y de la pasarela de pago | 4.14 Configurar los pagos y revisar las transacciones |
-| 4.15.1 | Carpeta respaldos | Archivo seipo_db_AAAA-MM-DD_HHMM.sql recién creado | 4.15 Respaldar la base de datos |
+| 4.15.1 | Ventana de respaldo.bat | Mensaje "Respaldo guardado en" y "Presione una tecla para continuar" | 4.15 Respaldar la base de datos |
 <!-- CAPTURAS:fin -->

@@ -7,6 +7,7 @@ import seipo.controlador.ControladorPasarela;
 import seipo.controlador.ControladorVentas;
 import seipo.modelo.Datos;
 import seipo.modelo.Datos.ProductoVenta;
+import seipo.modelo.Sesion;
 import java.awt.*;
 import java.awt.event.*;
 import java.sql.SQLException;
@@ -533,6 +534,11 @@ public class PanelVentas extends JPanel {
         try {
             double d = Double.parseDouble(s.trim().replace(',', '.'));
             if (d < 0 || d > 100) throw new NumberFormatException();
+            // El personal tiene un tope de descuento manual; el VIP del cliente elegido siempre se respeta
+            if (!Sesion.esAdministrador() && d > Datos.DESCUENTO_MAX_PERSONAL && (cliente == null || d > cliente.porcentajeVIP)) {
+                JOptionPane.showMessageDialog(this, ControladorVentas.mensajeTopeDescuento(), "Descuento no permitido", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
             descuentoPct = d;
             recalcular();
         } catch (NumberFormatException ex) {

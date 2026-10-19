@@ -86,7 +86,7 @@ public class PanelClientes extends JPanel {
             controlador.registrarCliente(nombre, doc, telefono, correo);
             txtBuscar.setText("");
             refrescar();
-            JOptionPane.showMessageDialog(this, "¡Cliente registrado exitosamente con categoría inicial!");
+            JOptionPane.showMessageDialog(this, "¡Cliente registrado exitosamente! Aún no tiene descuento VIP: lo obtiene según sus compras completadas.");
         } catch (SQLException ex) {
             JOptionPane.showMessageDialog(this, "Error al registrar (es posible que el DNI/RUC ya esté registrado):\n" + ex.getMessage(),
                     "Error", JOptionPane.ERROR_MESSAGE);

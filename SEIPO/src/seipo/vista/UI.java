@@ -86,6 +86,19 @@ public class UI {
         UIManager.put("ToolTip.foreground", TEXTO);
         UIManager.put("OptionPane.background", SUPERFICIE);
         UIManager.put("Panel.background", FONDO);
+
+        // Botones de los cuadros de diálogo en español (Login fija Locale.US para el formato de números)
+        UIManager.put("OptionPane.okButtonText", "Aceptar");
+        UIManager.put("OptionPane.cancelButtonText", "Cancelar");
+        UIManager.put("OptionPane.yesButtonText", "Sí");
+        UIManager.put("OptionPane.noButtonText", "No");
+        UIManager.put("FileChooser.saveButtonText", "Guardar");
+        UIManager.put("FileChooser.openButtonText", "Abrir");
+        UIManager.put("FileChooser.cancelButtonText", "Cancelar");
+        UIManager.put("FileChooser.saveInLabelText", "Guardar en:");
+        UIManager.put("FileChooser.lookInLabelText", "Buscar en:");
+        UIManager.put("FileChooser.fileNameLabelText", "Nombre de archivo:");
+        UIManager.put("FileChooser.filesOfTypeLabelText", "Tipo de archivo:");
     }
 
     public static Font fuente(int estilo, int tamano) {

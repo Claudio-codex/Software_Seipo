@@ -1,8 +1,11 @@
 @echo off
 rem Respaldo de la base de datos de SEIPO.
 rem Lee los datos de conexion de config.properties y guarda respaldos\<base>_AAAA-MM-DD_HHMM.sql
+rem Al terminar espera una tecla para que se lea el mensaje; el Programador de tareas lo ejecuta con /sinpausa
 setlocal EnableExtensions
 cd /d "%~dp0"
+set "PAUSA=1"
+if /i "%~1"=="/sinpausa" set "PAUSA="
 
 if not exist "config.properties" (
     echo ERROR: no se encontro config.properties en %CD%
@@ -61,8 +64,10 @@ if not "%RESULTADO%"=="0" (
     goto :error
 )
 echo Respaldo guardado en %CD%\%ARCHIVO%
+if defined PAUSA pause
 exit /b 0
 
 rem Sale con codigo 1 para que el Programador de tareas registre la falla
 :error
+if defined PAUSA pause
 exit /b 1

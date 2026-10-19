@@ -52,9 +52,9 @@ Detalle completo en [`Informe_Pruebas.md`](Informe_Pruebas.md) y [`Defectos.md`]
 ## Diapositiva 6 — Historial de corridas y resultados
 - **Corrida 1:** 13/15 (86,7 %); fallan CP-02 y CP-06
 - **Corrida 2:** 14/15 (93,3 %); se corrige DEF-01 y pasa CP-02
-- **Corrida 3:** **15/15 (100 %)**; se aclara el requerimiento VIP y pasa CP-06
-- Cada corrida dura unos 15 segundos y se puede repetir
-- Las tres salidas se guardan como evidencia en `docs/pruebas/evidencias/`
+- **Corrida 3:** 15/15 (100 %); se aclara el requerimiento VIP y pasa CP-06
+- **Corrida 4:** **15/15 (100 %)**; regresión tras corregir OBS-02 a OBS-05, sin fallas
+- Cada corrida dura unos 15 s; las cuatro salidas están en `docs/pruebas/evidencias/`
 
 ---
 
@@ -67,7 +67,25 @@ Detalle completo en [`Informe_Pruebas.md`](Informe_Pruebas.md) y [`Defectos.md`]
 
 ---
 
-## Diapositiva 8 — Adaptaciones respecto al diseño original
+## Diapositiva 8 — Observaciones menores (OBS-02 a OBS-05)
+- Se encontraron al revisar el código para escribir los manuales de usuario
+- **OBS-02 (media):** descuento manual sin tope; ahora el personal aplica como máximo 10 % (el VIP no cambia)
+- **OBS-03 (baja):** botones de los diálogos en inglés; ahora dicen Aceptar, Cancelar, Sí, No y Guardar
+- **OBS-04 y OBS-05 (bajas):** pausa al final de respaldo.bat y textos de ayuda y de registro corregidos
+- Todas corregidas y verificadas; la corrida 4 sigue en 15/15
+
+---
+
+## Diapositiva 9 — Limitaciones conocidas
+- El personal puede crear productos y proveedores, aunque solo el administrador los edita
+- El personal puede exportar el reporte de mermas
+- No existe recuperación de contraseña: solo un administrador restablece claves
+- Recomendación: mantener al menos dos administradores activos
+- Se dejan documentadas para que el equipo decida si las restringe
+
+---
+
+## Diapositiva 10 — Adaptaciones respecto al diseño original
 - El documento retiró la tarjeta como forma de pago en esta versión
 - **CP-09:** la tarjeta 4111 1111 1111 1111 se prueba como pago que debe rechazarse
 - **CP-09:** el rechazo se prueba con el código 000000 de la pasarela (no existe la tarjeta 0002)
@@ -76,9 +94,9 @@ Detalle completo en [`Informe_Pruebas.md`](Informe_Pruebas.md) y [`Defectos.md`]
 
 ---
 
-## Diapositiva 9 — Conclusiones
-- Los procesos centrales cumplen el documento: 15/15 casos aprobados
+## Diapositiva 11 — Conclusiones
+- Los procesos centrales cumplen el documento: 15/15 casos aprobados en las corridas 3 y 4
 - Todas las operaciones rechazadas se revierten sin dejar registros parciales
 - Las pruebas encontraron un defecto de seguridad real, que ya está corregido
-- También revelaron un requerimiento ambiguo, que se aclaró en el documento
+- También aclararon un requerimiento ambiguo y, con los manuales, cuatro observaciones menores
 - Recomendación: ejecutar `pruebas.bat` antes de cada entrega

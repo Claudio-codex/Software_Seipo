@@ -14,6 +14,8 @@ public class Datos {
     /** Días antes del vencimiento en que un lote se marca como "Por vencer". */
     public static final int DIAS_POR_VENCER = 30;
     public static final double IGV = 0.18;
+    /** Descuento manual máximo (%) que puede aplicar el personal; el administrador no tiene tope y el VIP no cuenta. */
+    public static final double DESCUENTO_MAX_PERSONAL = 10;
     public static final String EFECTIVO = "Efectivo";
     /** Billeteras digitales: el único cobro que pasa por la pasarela de pago. */
     public static final String YAPE_PLIN = "Yape o Plin";

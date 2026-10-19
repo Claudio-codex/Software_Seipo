@@ -78,7 +78,7 @@ El archivo `SEIPO/bd/seipo_db.sql` es una copia de la base de datos con datos de
 * La copia es una foto del momento en que se generó; lo que cada uno registre después queda solo en su propia computadora.
 
 10. Respaldos
-* `respaldo.bat` (en la raíz del repositorio) guarda una copia completa de la base en `respaldos\seipo_db_AAAA-MM-DD_HHMM.sql`. Basta con hacerle doble clic o ejecutarlo en `cmd`.
+* `respaldo.bat` (en la raíz del repositorio) guarda una copia completa de la base en `respaldos\seipo_db_AAAA-MM-DD_HHMM.sql`. Basta con hacerle doble clic o ejecutarlo en `cmd`. Al terminar muestra el resultado y espera una tecla (`Presione una tecla para continuar`).
 * Lee el host, el puerto, la base, el usuario y la clave de `config.properties`.
 * Usa `mariadb-dump.exe` o `mysqldump.exe`. Los busca en `C:\Program Files\MariaDB 12.3\bin`, luego en `C:\xampp\mysql\bin` y después en el PATH. Si están en otra carpeta, indica la ruta en `config.properties`:
   ```
@@ -88,10 +88,10 @@ El archivo `SEIPO/bd/seipo_db.sql` es una copia de la base de datos con datos de
 * Para restaurar un respaldo, impórtalo igual que la copia de ejemplo: `mariadb.exe -u seipo -p < respaldos\seipo_db_AAAA-MM-DD_HHMM.sql` (reemplaza la base actual).
 
 **Programarlo con el Programador de tareas de Windows**
-* **Por la ventana:** abre el **Programador de tareas** → **Crear tarea básica…** → nombre `SEIPO respaldo` → **Diariamente** a la hora que prefieras (por ejemplo 21:00, al cierre) → **Iniciar un programa** → en **Programa o script** elige `respaldo.bat` del repositorio → **Finalizar**.
+* **Por la ventana:** abre el **Programador de tareas** → **Crear tarea básica…** → nombre `SEIPO respaldo` → **Diariamente** a la hora que prefieras (por ejemplo 21:00, al cierre) → **Iniciar un programa** → en **Programa o script** elige `respaldo.bat` del repositorio y en **Agregar argumentos** escribe `/sinpausa` (sin esto la tarea quedaría esperando una tecla) → **Finalizar**.
 * **Por consola** (`cmd`, cambia la ruta por la de tu repositorio):
   ```
-  schtasks /create /tn "SEIPO respaldo" /tr "\"C:\ruta\a\Software_Seipo\respaldo.bat\"" /sc daily /st 21:00
+  schtasks /create /tn "SEIPO respaldo" /tr "\"C:\ruta\a\Software_Seipo\respaldo.bat\" /sinpausa" /sc daily /st 21:00
   ```
 * La computadora debe estar encendida a esa hora. En la columna **Resultado de la última ejecución** se ve `0x0` si salió bien y `0x1` si falló.
 
@@ -114,9 +114,10 @@ Si el programa no puede conectarse, la ventana de inicio de sesión indica qué 
 * **Consola:** ejecuta `pruebas.bat` en la raíz del repositorio (unos 15 segundos). Los reportes XML quedan en `out-pruebas\reportes`.
 * La prueba CP-02 abre la ventana principal sin mostrarla, así que necesita un entorno gráfico. Puede aparecer un instante el aviso de alertas del administrador, que se cierra solo.
 
-**Resultados finales:** **15 de 15 casos aprobados (100 %)** en la corrida 3.
+**Resultados finales:** **15 de 15 casos aprobados (100 %)** en las corridas 3 y 4.
 * La corrida 1 dio 13/15. Se corrigió el defecto DEF-01: el control de roles existía solo en la interfaz.
 * La corrida 2 dio 14/15. Se aclaró el requerimiento del descuento VIP (OBS-01) y la prueba CP-06 se ajustó a ese criterio.
+* La corrida 4 (15/15) confirmó que las correcciones menores OBS-02 a OBS-05 no rompieron nada: tope de 10 % al descuento manual del personal, diálogos en español, pausa de `respaldo.bat` y textos corregidos.
 
 Informe completo: [docs/pruebas/Informe_Pruebas.md](docs/pruebas/Informe_Pruebas.md).
 

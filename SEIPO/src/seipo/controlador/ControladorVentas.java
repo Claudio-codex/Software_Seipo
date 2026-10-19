@@ -139,6 +139,7 @@ public class ControladorVentas {
         try (Connection con = ConexionBD.obtenerConexion()) {
             con.setAutoCommit(false);
             try {
+                validarDescuento(con, descuentoPct, clienteId);
                 int turnoId;
                 try (PreparedStatement pst = con.prepareStatement(sqlTurno)) {
                     pst.setInt(1, Sesion.getId());
@@ -254,6 +255,31 @@ public class ControladorVentas {
                 throw e;
             }
         }
+    }
+
+    /**
+     * El personal puede dar como máximo {@link Datos#DESCUENTO_MAX_PERSONAL} % de descuento manual; más solo si es el
+     * descuento VIP que ya le corresponde al cliente. El administrador no tiene tope.
+     */
+    private static void validarDescuento(Connection con, double descuentoPct, Integer clienteId) throws SQLException {
+        if (Sesion.esAdministrador() || descuentoPct <= Datos.DESCUENTO_MAX_PERSONAL) return;
+        double vip = 0;
+        if (clienteId != null) {
+            try (PreparedStatement pst = con.prepareStatement("SELECT COUNT(*) FROM ventas WHERE cliente_id = ? AND estado = 'COMPLETADA'")) {
+                pst.setInt(1, clienteId);
+                try (ResultSet rs = pst.executeQuery()) {
+                    rs.next();
+                    vip = new ControladorClientes.ClienteVO(clienteId, null, null, null, null, rs.getInt(1)).porcentajeVIP;
+                }
+            }
+        }
+        if (descuentoPct > vip) throw new SQLException(mensajeTopeDescuento());
+    }
+
+    /** Mensaje cuando el personal intenta un descuento manual mayor al permitido. */
+    public static String mensajeTopeDescuento() {
+        return "El personal puede aplicar como máximo " + (int) Datos.DESCUENTO_MAX_PERSONAL
+                + " % de descuento manual. Para un descuento mayor, pida al administrador que lo aplique.";
     }
 
     /** Comprueba el cobro digital dentro de la transacción de la venta y devuelve el id de la transacción de pago. */

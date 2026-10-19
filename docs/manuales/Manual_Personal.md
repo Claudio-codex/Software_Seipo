@@ -2,7 +2,7 @@
 
 **Sistema de venta e inventario**
 
-Versión 1.0 · 19 de octubre de 2026
+Versión 1.1 · 19 de octubre de 2026
 
 Autores: Claudio Puente y Francesco Camarena Damián
 
@@ -82,7 +82,7 @@ La pantalla principal tiene tres partes:
 | Mermas | Bajas por productos vencidos o dañados y su autorización. |
 | Compras | Alertas de stock, órdenes de compra y proveedores. |
 
-> **Nota:** el personal de tienda no ve las secciones Reportes, Pagos ni Usuarios; son exclusivas del administrador. En las ventanas de confirmación los botones aparecen en inglés: **OK** (aceptar), **Cancel** (cancelar), **Yes** (sí) y **No**.
+> **Nota:** el personal de tienda no ve las secciones Reportes, Pagos ni Usuarios; son exclusivas del administrador. Las ventanas de confirmación tienen los botones **Aceptar**, **Cancelar**, **Sí** y **No**.
 
 ## 4. Procedimientos paso a paso
 
@@ -123,7 +123,7 @@ La pantalla principal tiene tres partes:
 1. En la tarjeta **CLIENTE (F4)** pulse **Buscar** (o `F4`). Se abre la ventana **Cliente de la venta**.
 2. Escriba el nombre, DNI o RUC. Cada cliente muestra sus compras y su nivel VIP.
 3. Seleccione al cliente y pulse **Usar cliente** (o doble clic o `Enter`).
-4. Si el cliente no está registrado, pulse **+ Nuevo cliente** y complete **Nombre**, **DNI / RUC**, **Teléfono** y **Correo**. Pulse **OK**.
+4. Si el cliente no está registrado, pulse **+ Nuevo cliente** y complete **Nombre**, **DNI / RUC**, **Teléfono** y **Correo**. Pulse **Aceptar**.
 
 [CAPTURA 4.3.1: Ventana "Cliente de la venta" — lista de clientes con sus compras y nivel VIP]
 
@@ -136,7 +136,7 @@ La pantalla principal tiene tres partes:
 | 3 o 4 | Oro | 10 % |
 | 5 o más | Platino | 15 % |
 
-> **Nota:** el botón **Descuento (F6)** permite escribir un porcentaje (0 a 100) para toda la venta. El sistema no pide autorización para usarlo; aplíquelo solo cuando la tienda lo haya autorizado.
+> **Advertencia:** con el botón **Descuento (F6)** puede escribir un descuento manual para toda la venta, **como máximo 10 %**. Si escribe más, aparece "El personal puede aplicar como máximo 10 % de descuento manual. Para un descuento mayor, pida al administrador que lo aplique.". El descuento VIP del cliente siempre se respeta, aunque sea mayor (Platino, 15 %).
 
 ### 4.4 Cobrar en efectivo y dar el vuelto
 
@@ -191,7 +191,7 @@ La pantalla principal tiene tres partes:
 2. En **Lote**, elija el lote (se ve el producto, el vencimiento y lo disponible).
 3. Indique la **Cantidad** y la **Causal**: Vencido, Dañado, Deteriorado u Otro.
 4. Escriba la **Observación** (qué ocurrió, dónde se encontró). Es obligatoria, salvo en "Vencido".
-5. Pulse **OK**.
+5. Pulse **Aceptar**.
 
 [CAPTURA 4.7.1: Ventana "Registrar merma" — lote, cantidad, causal y observación]
 
@@ -221,7 +221,7 @@ La pantalla principal tiene tres partes:
 1. Entre a **Inventario** → **Recepción de mercadería**.
 2. Escriba la **Guía de remisión** y el **Proveedor**.
 3. Para cada producto: escanee el **Código** y pulse `Enter`, y complete **Lote**, **Vencimiento (dd/mm/aaaa)** (vacío si no vence), **Cantidad** y **Ubicación**. Pulse **Agregar**.
-4. Revise las líneas (**Quitar línea** borra una) y pulse **Registrar recepción**. Confirme con **Yes**.
+4. Revise las líneas (**Quitar línea** borra una) y pulse **Registrar recepción**. Confirme con **Sí**.
 
 [CAPTURA 4.9.1: Inventario, pestaña Recepción de mercadería — guía, proveedor y líneas con lote y vencimiento]
 
@@ -237,7 +237,7 @@ La pantalla principal tiene tres partes:
 2. Revise el resumen: **Efectivo inicial**, **Ventas en efectivo**, **Yape o Plin (no entra a caja)** y **Efectivo esperado**.
 3. Cuente el efectivo y escríbalo en **Efectivo contado en caja (S/)**. El sistema muestra **Cuadrado**, **Falta S/ …** o **Sobra S/ …**.
 4. Si hay diferencia, explique el motivo en **Observación (obligatoria si hay diferencia)**.
-5. Pulse **OK**.
+5. Pulse **Aceptar**.
 
 [CAPTURA 4.10.1: Ventana "Cerrar turno N°" — efectivo esperado, efectivo contado y diferencia]
 
@@ -253,6 +253,7 @@ La pantalla principal tiene tres partes:
 | FEFO (lo que vence primero, sale primero) | Al vender, el sistema descuenta solo del lote que vence antes. Los lotes vencidos no se pueden vender. |
 | Mermas pendientes | Las unidades de una merma pendiente quedan reservadas y no se venden hasta que el administrador decida. |
 | Descuento VIP | Se aplica solo según las compras completadas del cliente: 5 % desde 1 compra, 10 % desde 3 y 15 % desde 5 (es decir, 10 % a partir de la 4.ª compra). Las ventas anuladas no cuentan. |
+| Descuento manual | Con **Descuento (F6)** el personal puede aplicar como máximo 10 %. Un descuento mayor solo lo aplica el administrador. |
 | IGV | El IGV es el 18 % de (subtotal − descuento) y se suma al total. |
 | Redondeo | El total se redondea hacia abajo a 10 céntimos, porque no circulan monedas de 1 ni 5 céntimos. El redondeo favorece al cliente. |
 | Montos en efectivo | Efectivo recibido, inicial y contado: sin céntimos sueltos de 1 o 5. |
@@ -274,8 +275,9 @@ La pantalla principal tiene tres partes:
 | El celular debe tener 9 dígitos y empezar con 9. | Corrija el celular del cliente. |
 | Rechazada: Código de aprobación incorrecto o vencido | Pida al cliente un código nuevo y pulse **Reintentar**, o cobre con otro medio. |
 | Describa en la observación qué le ocurrió al producto. | Complete la observación de la merma. |
-| Hay una diferencia de caja: explique el motivo en la observación. | Escriba el motivo del faltante o sobrante y pulse **OK**. |
+| Hay una diferencia de caja: explique el motivo en la observación. | Escriba el motivo del faltante o sobrante y pulse **Aceptar**. |
 | Nombre obligatorio y DNI (8 dígitos) o RUC (11 dígitos). | Corrija los datos del cliente. |
+| El personal puede aplicar como máximo 10 % de descuento manual. Para un descuento mayor, pida al administrador que lo aplique. | Escriba un descuento de 10 % o menos. Si corresponde uno mayor, el administrador debe cobrar esa venta desde su propia sesión y turno. |
 
 ## 7. Preguntas frecuentes
 
