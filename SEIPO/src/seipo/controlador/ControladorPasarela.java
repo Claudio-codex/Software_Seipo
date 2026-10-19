@@ -7,14 +7,13 @@ import java.security.SecureRandom;
 import java.sql.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 /**
- * Pasarela de pago simulada para los cobros con tarjeta y con Yape o Plin. Sigue el flujo de una API real:
+ * Pasarela de pago simulada para los cobros con Yape o Plin. Sigue el flujo de una API real:
  * solicitud de cobro (se genera un token de pago), respuesta de autorización (aprobada o rechazada con su código)
  * y estado de la transacción. No se conecta a ningún servicio externo: la respuesta depende de los datos de prueba.
  */
@@ -24,9 +23,6 @@ public class ControladorPasarela {
             REVERTIDA = "REVERTIDA", REEMBOLSADA = "REEMBOLSADA";
     public static final String YAPE = "Yape", PLIN = "Plin";
 
-    // Datos de prueba: cualquier tarjeta válida se aprueba, salvo las que terminan en estos dígitos
-    public static final String TARJETA_PRUEBA = "4111 1111 1111 1111";
-    public static final String FIN_SIN_FONDOS = "0002", FIN_BLOQUEADA = "0069";
     /** Código de aprobación de billetera que la pasarela de prueba rechaza. */
     public static final String CODIGO_RECHAZADO = "000000";
     /** Tiempo que tarda la respuesta simulada de la pasarela. */
@@ -113,11 +109,11 @@ public class ControladorPasarela {
 
     /** Paso 1: envía la solicitud de cobro y devuelve la transacción PENDIENTE con su token de pago. */
     public TransaccionVO solicitarCobro(String forma, double monto) throws SQLException {
-        if (Datos.EFECTIVO.equals(forma)) throw new SQLException("El efectivo no pasa por la pasarela de pago.");
+        if (!Datos.YAPE_PLIN.equals(forma)) throw new SQLException("La pasarela de pago solo atiende cobros con " + Datos.YAPE_PLIN + ".");
         if (monto <= 0) throw new SQLException("El monto a cobrar debe ser mayor que cero.");
         try (Connection con = ConexionBD.obtenerConexion()) {
             ConfiguracionVO c = leerConfiguracion(con);
-            if (!c.activa) throw new SQLException("El cobro con tarjeta y billetera está desactivado. Pida al administrador que lo active en Pagos.");
+            if (!c.activa) throw new SQLException("El cobro con " + Datos.YAPE_PLIN + " está desactivado. Pida al administrador que lo active en Pagos.");
             validarCredenciales(c);
             TransaccionVO t = new TransaccionVO();
             t.token = "tok_" + hex(12);
@@ -141,22 +137,6 @@ public class ControladorPasarela {
             }
             return t;
         }
-    }
-
-    /**
-     * Paso 2 con tarjeta: la pasarela responde con la autorización. Solo se guarda la marca y los últimos 4 dígitos;
-     * el CVV se valida y se descarta.
-     */
-    public TransaccionVO autorizarTarjeta(String token, String numero, String vencimiento, String cvv) throws SQLException {
-        String digitos = soloDigitos(numero);
-        String medio = marca(digitos) + " •••• " + (digitos.length() >= 4 ? digitos.substring(digitos.length() - 4) : digitos);
-        String error = validarTarjeta(numero);
-        if (error == null) error = validarVencimiento(vencimiento);
-        if (error == null) error = validarCvv(cvv);
-        String rechazo = error != null ? error
-                : digitos.endsWith(FIN_SIN_FONDOS) ? "Fondos insuficientes"
-                : digitos.endsWith(FIN_BLOQUEADA) ? "Tarjeta bloqueada por el banco emisor" : null;
-        return responder(token, medio, rechazo);
     }
 
     /** Paso 2 con Yape o Plin: el cliente da su celular y el código de aprobación que ve en su aplicación. */
@@ -249,47 +229,12 @@ public class ControladorPasarela {
 
     // ---------- Validaciones del formulario (la vista las usa para avisar antes de enviar) ----------
 
-    /** Devuelve el error del número de tarjeta, o null si es válido (largo y dígito verificador de Luhn). */
-    public static String validarTarjeta(String numero) {
-        String d = soloDigitos(numero);
-        if (d.length() < 13 || d.length() > 19) return "El número de tarjeta debe tener entre 13 y 19 dígitos.";
-        int suma = 0;
-        for (int i = 0; i < d.length(); i++) {
-            int n = d.charAt(d.length() - 1 - i) - '0';
-            if (i % 2 == 1) n = n * 2 > 9 ? n * 2 - 9 : n * 2;
-            suma += n;
-        }
-        return suma % 10 == 0 ? null : "El número de tarjeta no es válido. Revise los dígitos.";
-    }
-
-    /** Vencimiento en formato MM/AA; la tarjeta vale hasta el último día de ese mes. */
-    public static String validarVencimiento(String texto) {
-        String t = texto == null ? "" : texto.trim();
-        if (!t.matches("(0[1-9]|1[0-2])/\\d{2}")) return "Ingrese el vencimiento como MM/AA (por ejemplo 08/28).";
-        YearMonth vence = YearMonth.of(2000 + Integer.parseInt(t.substring(3)), Integer.parseInt(t.substring(0, 2)));
-        return vence.isBefore(YearMonth.now()) ? "La tarjeta está vencida." : null;
-    }
-
-    public static String validarCvv(String cvv) {
-        return cvv != null && cvv.trim().matches("\\d{3,4}") ? null : "El CVV tiene 3 o 4 dígitos (al reverso de la tarjeta).";
-    }
-
     public static String validarCelular(String celular) {
         return soloDigitos(celular).matches("9\\d{8}") ? null : "El celular debe tener 9 dígitos y empezar con 9.";
     }
 
     public static String validarCodigo(String codigo) {
         return codigo != null && codigo.trim().matches("\\d{6}") ? null : "El código de aprobación tiene 6 dígitos.";
-    }
-
-    /** Marca de la tarjeta según sus primeros dígitos. */
-    public static String marca(String numero) {
-        String d = soloDigitos(numero);
-        if (d.startsWith("4")) return "Visa";
-        if (d.matches("5[1-5].*") || d.matches("2[2-7].*")) return "Mastercard";
-        if (d.matches("3[47].*")) return "American Express";
-        if (d.matches("3[068].*")) return "Diners Club";
-        return "Tarjeta";
     }
 
     static String soloDigitos(String texto) {

@@ -10,11 +10,9 @@ import java.awt.event.WindowEvent;
 import java.util.List;
 import javax.swing.*;
 import javax.swing.border.*;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 
 /**
- * Cobro con tarjeta o con Yape o Plin a través de la pasarela: envía la solicitud de cobro, muestra el token de pago
+ * Cobro con Yape o Plin a través de la pasarela: envía la solicitud de cobro, muestra el token de pago
  * y espera la respuesta de autorización. Si se rechaza, se puede corregir los datos y reintentar.
  */
 class DialogoPasarela extends JDialog {
@@ -22,14 +20,11 @@ class DialogoPasarela extends JDialog {
     private final ControladorPasarela pasarela = new ControladorPasarela();
     private final String forma;
     private final double total;
-    private final boolean conTarjeta;
 
-    private final JTextField txtNumero = new JTextField(), txtVence = new JTextField(), txtCelular = new JTextField(),
-            txtCodigo = new JTextField();
-    private final JPasswordField txtCvv = new JPasswordField();
+    private final JTextField txtCelular = new JTextField(), txtCodigo = new JTextField();
     private final JRadioButton rbYape = new JRadioButton(ControladorPasarela.YAPE, true),
             rbPlin = new JRadioButton(ControladorPasarela.PLIN);
-    private final JLabel lblMarca = UI.ayuda(" "), lblError = new JLabel(" ");
+    private final JLabel lblError = new JLabel(" ");
     private final JPanel pasos = new JPanel(new GridLayout(3, 1, 0, 4));
     private final JButton enviar = UI.boton("Enviar cobro"), cancelar = UI.botonSecundario("Cancelar");
     private boolean procesando;
@@ -46,7 +41,6 @@ class DialogoPasarela extends JDialog {
         super(duenio, "Cobro con " + forma, ModalityType.APPLICATION_MODAL);
         this.forma = forma;
         this.total = total;
-        this.conTarjeta = "Tarjeta".equals(forma);
 
         JPanel c = UI.base();
         JPanel norte = new JPanel(new GridLayout(0, 1, 0, 2));
@@ -59,7 +53,7 @@ class DialogoPasarela extends JDialog {
 
         JPanel centro = new JPanel(new BorderLayout(0, 10));
         centro.setOpaque(false);
-        centro.add(conTarjeta ? formularioTarjeta() : formularioBilletera(), BorderLayout.NORTH);
+        centro.add(formularioBilletera(), BorderLayout.NORTH);
         lblError.setForeground(UI.PELIGRO);
         lblError.setFont(UI.fuente(Font.PLAIN, 13));
         centro.add(lblError, BorderLayout.CENTER);
@@ -72,11 +66,7 @@ class DialogoPasarela extends JDialog {
 
         JPanel sur = new JPanel(new BorderLayout(0, 10));
         sur.setOpaque(false);
-        sur.add(UI.ayuda(conTarjeta
-                ? "<html>Prueba: " + ControladorPasarela.TARJETA_PRUEBA + " se aprueba · terminada en "
-                  + ControladorPasarela.FIN_SIN_FONDOS + ": sin fondos · en " + ControladorPasarela.FIN_BLOQUEADA + ": bloqueada</html>"
-                : "<html>Prueba: cualquier código de 6 dígitos se aprueba, salvo " + ControladorPasarela.CODIGO_RECHAZADO + "</html>"),
-                BorderLayout.NORTH);
+        sur.add(UI.ayuda("<html>Prueba: cualquier código de 6 dígitos se aprueba, salvo " + ControladorPasarela.CODIGO_RECHAZADO + "</html>"), BorderLayout.NORTH);
         JPanel botones = new JPanel(new FlowLayout(FlowLayout.RIGHT, 6, 0));
         botones.setOpaque(false);
         botones.add(cancelar);
@@ -96,30 +86,6 @@ class DialogoPasarela extends JDialog {
         pack();
         setSize(Math.max(getWidth(), 520), getHeight());
         setLocationRelativeTo(duenio);
-    }
-
-    private JPanel formularioTarjeta() {
-        txtNumero.putClientProperty("JTextField.placeholderText", "0000 0000 0000 0000");
-        txtVence.putClientProperty("JTextField.placeholderText", "MM/AA");
-        txtCvv.putClientProperty("JTextField.placeholderText", "123");
-        txtNumero.setFont(UI.fuente(Font.BOLD, 16));
-        txtNumero.getDocument().addDocumentListener(new DocumentListener() {
-            @Override public void insertUpdate(DocumentEvent e) { mostrarMarca(); }
-            @Override public void removeUpdate(DocumentEvent e) { mostrarMarca(); }
-            @Override public void changedUpdate(DocumentEvent e) { mostrarMarca(); }
-        });
-        JPanel f = formulario();
-        fila(f, 0, "Número de tarjeta", txtNumero, 3);
-        GridBagConstraints g = restricciones(3, 1);
-        f.add(lblMarca, g);
-        fila(f, 2, "Vencimiento", txtVence, 1);
-        g = restricciones(2, 2);
-        g.insets = new Insets(4, 14, 4, 6);
-        g.weightx = 0;
-        f.add(new JLabel("CVV"), g);
-        g = restricciones(3, 2);
-        f.add(txtCvv, g);
-        return f;
     }
 
     private JPanel formularioBilletera() {
@@ -171,23 +137,10 @@ class DialogoPasarela extends JDialog {
         return g;
     }
 
-    private void mostrarMarca() {
-        String digitos = txtNumero.getText().replaceAll("\\D", "");
-        lblMarca.setText(digitos.isEmpty() ? " " : ControladorPasarela.marca(digitos) + " · " + digitos.length() + " dígitos");
-    }
-
     /** Error del formulario antes de enviar, o null si los datos tienen el formato correcto. */
     private String validar() {
-        String error;
-        if (conTarjeta) {
-            error = ControladorPasarela.validarTarjeta(txtNumero.getText());
-            if (error == null) error = ControladorPasarela.validarVencimiento(txtVence.getText());
-            if (error == null) error = ControladorPasarela.validarCvv(new String(txtCvv.getPassword()));
-        } else {
-            error = ControladorPasarela.validarCelular(txtCelular.getText());
-            if (error == null) error = ControladorPasarela.validarCodigo(txtCodigo.getText());
-        }
-        return error;
+        String error = ControladorPasarela.validarCelular(txtCelular.getText());
+        return error != null ? error : ControladorPasarela.validarCodigo(txtCodigo.getText());
     }
 
     private void enviar() {
@@ -201,15 +154,13 @@ class DialogoPasarela extends JDialog {
         pasos.removeAll();
         paso("Enviando solicitud de cobro por " + Datos.soles(total) + "…", UI.TEXTO_SECUNDARIO);
 
-        String numero = txtNumero.getText(), vence = txtVence.getText(), cvv = new String(txtCvv.getPassword());
         String billetera = rbPlin.isSelected() ? ControladorPasarela.PLIN : ControladorPasarela.YAPE;
         String celular = txtCelular.getText(), codigo = txtCodigo.getText();
         new SwingWorker<TransaccionVO, String>() {
             @Override protected TransaccionVO doInBackground() throws Exception {
                 TransaccionVO t = pasarela.solicitarCobro(forma, total);
                 publish(t.token);
-                return conTarjeta ? pasarela.autorizarTarjeta(t.token, numero, vence, cvv)
-                        : pasarela.autorizarBilletera(t.token, billetera, celular, codigo);
+                return pasarela.autorizarBilletera(t.token, billetera, celular, codigo);
             }
 
             @Override protected void process(List<String> tokens) {
@@ -256,7 +207,7 @@ class DialogoPasarela extends JDialog {
     }
 
     private void habilitar(boolean si) {
-        for (JComponent comp : new JComponent[]{txtNumero, txtVence, txtCvv, txtCelular, txtCodigo, rbYape, rbPlin, enviar, cancelar}) {
+        for (JComponent comp : new JComponent[]{txtCelular, txtCodigo, rbYape, rbPlin, enviar, cancelar}) {
             comp.setEnabled(si);
         }
     }

@@ -18,11 +18,13 @@ public class ControladorCaja {
         public int id, usuarioId, numVentas, numAnuladas;
         public String usuario, estado, observacion;
         public LocalDateTime abiertoEn, cerradoEn;
-        public double montoInicial, efectivo, tarjeta, yapePlin;
+        public double montoInicial, efectivo, yapePlin;
+        /** Todo lo vendido en el turno (incluye ventas antiguas con formas de pago que ya no se usan, como tarjeta). */
+        public double vendido;
         /** Solo para turnos cerrados: lo que debía haber en caja y lo que se contó. */
         public Double esperado, contado;
 
-        public double totalVendido() { return Datos.redondear(efectivo + tarjeta + yapePlin); }
+        public double totalVendido() { return Datos.redondear(vendido); }
 
         /** Efectivo que debe haber en caja ahora: el inicial más las ventas en efectivo. */
         public double efectivoEnCaja() { return Datos.redondear(montoInicial + efectivo); }
@@ -35,8 +37,8 @@ public class ControladorCaja {
             "SELECT t.id, t.usuario_id, COALESCE(NULLIF(u.nombre, ''), u.usuario) AS usuario, t.estado, t.abierto_en, " +
             "t.cerrado_en, t.monto_inicial, t.efectivo_esperado, t.efectivo_contado, t.observacion, " +
             "(SELECT COALESCE(SUM(v.total), 0) FROM ventas v WHERE v.turno_id = t.id AND v.estado = 'COMPLETADA' AND v.forma_pago = 'Efectivo') AS efectivo, " +
-            "(SELECT COALESCE(SUM(v.total), 0) FROM ventas v WHERE v.turno_id = t.id AND v.estado = 'COMPLETADA' AND v.forma_pago = 'Tarjeta') AS tarjeta, " +
             "(SELECT COALESCE(SUM(v.total), 0) FROM ventas v WHERE v.turno_id = t.id AND v.estado = 'COMPLETADA' AND v.forma_pago = 'Yape o Plin') AS yape, " +
+            "(SELECT COALESCE(SUM(v.total), 0) FROM ventas v WHERE v.turno_id = t.id AND v.estado = 'COMPLETADA') AS total_vendido, " +
             "(SELECT COUNT(*) FROM ventas v WHERE v.turno_id = t.id AND v.estado = 'COMPLETADA') AS num_ventas, " +
             "(SELECT COUNT(*) FROM ventas v WHERE v.turno_id = t.id AND v.estado = 'ANULADA') AS num_anuladas " +
             "FROM turnos t JOIN usuarios u ON u.id = t.usuario_id ";
@@ -164,7 +166,7 @@ public class ControladorCaja {
         t.contado = decimal(rs, "efectivo_contado");
         t.observacion = rs.getString("observacion");
         t.efectivo = rs.getDouble("efectivo");
-        t.tarjeta = rs.getDouble("tarjeta");
+        t.vendido = rs.getDouble("total_vendido");
         t.yapePlin = rs.getDouble("yape");
         t.numVentas = rs.getInt("num_ventas");
         t.numAnuladas = rs.getInt("num_anuladas");

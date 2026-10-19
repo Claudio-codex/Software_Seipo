@@ -8,6 +8,7 @@ import java.sql.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class ControladorVentas {
@@ -98,12 +99,13 @@ public class ControladorVentas {
      *
      * @param clienteId     cliente registrado, o null para "Clientes varios"
      * @param montoRecibido efectivo que entregó el cliente (solo en pagos en efectivo), o null
-     * @param tokenPago     token del cobro aprobado por la pasarela (tarjeta o billetera), o null en efectivo
+     * @param tokenPago     token del cobro aprobado por la pasarela (Yape o Plin), o null en efectivo
      */
     public int cobrarVenta(List<ProductoVenta> items, List<Integer> cantidades, double descuentoPct, String forma,
                            Integer clienteId, Double montoRecibido, String tokenPago) throws SQLException {
         if (items.isEmpty() || items.size() != cantidades.size()) throw new SQLException("La venta no tiene productos.");
         for (int c : cantidades) if (c <= 0) throw new SQLException("Las cantidades deben ser mayores que 0.");
+        if (!Arrays.asList(Datos.FORMAS_PAGO).contains(forma)) throw new SQLException("Forma de pago no válida: " + forma + ".");
         double sub = 0;
         for (int i = 0; i < items.size(); i++) {
             sub += items.get(i).precio * cantidades.get(i);
@@ -433,7 +435,7 @@ public class ControladorVentas {
                     pst.setInt(4, ventaId);
                     pst.executeUpdate();
                 }
-                // Si se pagó con tarjeta o billetera, el cobro queda reembolsado
+                // Si se pagó con Yape o Plin, el cobro queda reembolsado
                 try (PreparedStatement pst = con.prepareStatement("UPDATE transacciones_pago SET estado = 'REEMBOLSADA', " +
                         "mensaje = 'Reembolsado por anulación de la venta' WHERE venta_id = ? AND estado = 'APROBADA'")) {
                     pst.setInt(1, ventaId);

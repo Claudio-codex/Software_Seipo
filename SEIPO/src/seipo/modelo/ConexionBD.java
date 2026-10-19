@@ -213,7 +213,7 @@ public class ConexionBD {
                         "    valor VARCHAR(255) NOT NULL DEFAULT ''" +
                         ");",
 
-                // Cobros digitales enviados a la pasarela. No se guarda el número de tarjeta: solo la marca y los últimos 4 dígitos
+                // Cobros digitales enviados a la pasarela. Del celular del cliente solo se guardan los últimos 3 dígitos
                 "CREATE TABLE IF NOT EXISTS transacciones_pago (" +
                         "    id INT AUTO_INCREMENT PRIMARY KEY," +
                         "    token VARCHAR(40) NOT NULL UNIQUE," +

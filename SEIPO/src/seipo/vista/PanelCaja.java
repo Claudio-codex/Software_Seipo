@@ -34,7 +34,7 @@ public class PanelCaja extends JPanel {
     private final CardLayout tarjetasTurno = new CardLayout();
     private final JPanel panelTurno = new JPanel(tarjetasTurno);
     private final JTextField txtMontoInicial = new JTextField("100.00");
-    private final JLabel lblInicial = new JLabel(), lblEfectivo = new JLabel(), lblTarjeta = new JLabel(),
+    private final JLabel lblInicial = new JLabel(), lblEfectivo = new JLabel(),
             lblYape = new JLabel(), lblEnCaja = new JLabel(), lblInfoTurno = UI.ayuda(" ");
     private final TablaVentas ventasTurno = new TablaVentas(this::refrescar);
     private TurnoVO turno;
@@ -90,7 +90,6 @@ public class PanelCaja extends JPanel {
         kpis.setOpaque(false);
         kpis.add(UI.tarjeta("Efectivo inicial", lblInicial));
         kpis.add(UI.tarjeta("Ventas en efectivo", lblEfectivo));
-        kpis.add(UI.tarjeta("Tarjeta", lblTarjeta));
         kpis.add(UI.tarjeta("Yape o Plin", lblYape));
         kpis.add(UI.tarjeta("Efectivo en caja", lblEnCaja));
         norte.add(kpis, BorderLayout.CENTER);
@@ -176,7 +175,6 @@ public class PanelCaja extends JPanel {
         } else {
             lblInicial.setText(Datos.soles(turno.montoInicial));
             lblEfectivo.setText(Datos.soles(turno.efectivo));
-            lblTarjeta.setText(Datos.soles(turno.tarjeta));
             lblYape.setText(Datos.soles(turno.yapePlin));
             lblEnCaja.setText(Datos.soles(turno.efectivoEnCaja()));
             lblInfoTurno.setText("Turno N° " + turno.id + " abierto el " + turno.abiertoEn.format(Datos.FECHA_HORA)
@@ -280,7 +278,6 @@ public class PanelCaja extends JPanel {
                 + filaResumen("Usuario", t.usuario)
                 + filaResumen("Efectivo inicial", Datos.soles(t.montoInicial))
                 + filaResumen("Ventas en efectivo", Datos.soles(t.efectivo))
-                + filaResumen("Tarjeta (no entra a caja)", Datos.soles(t.tarjeta))
                 + filaResumen("Yape o Plin (no entra a caja)", Datos.soles(t.yapePlin))
                 + filaResumen("<b>Efectivo esperado</b>", "<b>" + Datos.soles(esperado) + "</b>")
                 + "</table></html>");

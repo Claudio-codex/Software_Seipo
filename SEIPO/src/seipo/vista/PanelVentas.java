@@ -241,10 +241,8 @@ public class PanelVentas extends JPanel {
         pago.add(titulo, BorderLayout.NORTH);
         JPanel fila = new JPanel(new GridLayout(1, 0, 8, 0));
         fila.setOpaque(false);
-        String[] teclas = {"F9", "F10", "F11"};
-        for (int i = 0; i < Datos.FORMAS_PAGO.length; i++) {
-            String f = Datos.FORMAS_PAGO[i];
-            JButton b = UI.boton("<html><center>" + f + "<br><span style='font-size:9px'>" + teclas[i] + "</span></center></html>");
+        for (String f : Datos.FORMAS_PAGO) {
+            JButton b = UI.boton("<html><center>" + f + "<br><span style='font-size:9px'>" + teclaDe(f) + "</span></center></html>");
             b.setFont(UI.fuente(Font.BOLD, 14));
             b.setMargin(new Insets(8, 4, 8, 4));
             b.addActionListener(e -> cobrar(f));
@@ -330,9 +328,8 @@ public class PanelVentas extends JPanel {
         atajo(KeyStroke.getKeyStroke(KeyEvent.VK_F2, 0), "buscar", () -> txtBuscar.requestFocusInWindow());
         atajo(KeyStroke.getKeyStroke(KeyEvent.VK_F4, 0), "cliente", this::elegirCliente);
         atajo(KeyStroke.getKeyStroke(KeyEvent.VK_F6, 0), "descuento", this::aplicarDescuento);
-        atajo(KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0), "efectivo", () -> cobrar(Datos.FORMAS_PAGO[0]));
-        atajo(KeyStroke.getKeyStroke(KeyEvent.VK_F10, 0), "tarjeta", () -> cobrar(Datos.FORMAS_PAGO[1]));
-        atajo(KeyStroke.getKeyStroke(KeyEvent.VK_F11, 0), "yape", () -> cobrar(Datos.FORMAS_PAGO[2]));
+        atajo(KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0), "efectivo", () -> cobrar(Datos.EFECTIVO));
+        atajo(KeyStroke.getKeyStroke(KeyEvent.VK_F11, 0), "yape", () -> cobrar(Datos.YAPE_PLIN));
 
         // Teclas sobre el carrito: + y − cambian la cantidad, Supr quita el ítem
         InputMap im = tabla.getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
@@ -343,6 +340,11 @@ public class PanelVentas extends JPanel {
         am.put("mas", accion(() -> sumar(1)));
         am.put("menos", accion(() -> sumar(-1)));
         am.put("quitar", accion(this::quitar));
+    }
+
+    /** Tecla de atajo que se muestra en el botón de cada forma de pago. */
+    private static String teclaDe(String forma) {
+        return Datos.EFECTIVO.equals(forma) ? "F9" : "F11";
     }
 
     private void atajo(KeyStroke tecla, String nombre, Runnable r) {
@@ -383,7 +385,7 @@ public class PanelVentas extends JPanel {
             lblTurno.setText("No tiene un turno de caja abierto. Puede armar la venta, pero para cobrar debe abrir su turno.");
             irCaja.setText("Abrir turno");
         }
-        // Tarjeta y Yape o Plin pasan por la pasarela: solo se habilitan si el administrador la activó
+        // Yape o Plin pasa por la pasarela: solo se habilita si el administrador la activó
         boolean digital = configPasarela != null && configPasarela.activa;
         for (int i = 0; i < botonesCobro.size(); i++) {
             JButton b = botonesCobro.get(i);
@@ -713,7 +715,7 @@ public class PanelVentas extends JPanel {
             if (recibido == null) return;
         }
 
-        // Tarjeta y Yape o Plin: la pasarela debe aprobar el cobro antes de registrar la venta
+        // Yape o Plin: la pasarela debe aprobar el cobro antes de registrar la venta
         String token = null;
         if (!Datos.EFECTIVO.equals(forma)) {
             if (configPasarela == null || !configPasarela.activa) {

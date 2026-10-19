@@ -34,13 +34,14 @@ Sistema de venta e inventario
 * En **Ventas** se agregan productos escaneando el código o escribiendo el nombre (`3*CODIGO` agrega 3 unidades). La cantidad se cambia en la tabla con doble clic o con las teclas `+` y `-`; `Supr` quita el ítem.
 * Se puede elegir un **cliente** registrado (o registrarlo ahí mismo): su descuento VIP se aplica solo. En efectivo se ingresa el monto recibido y se muestra el **vuelto**.
 * El total se **redondea hacia abajo a 10 céntimos** (no se usan monedas de 1 ni de 5 céntimos) y la rebaja aparece como "Redondeo". Los montos en efectivo (recibido, inicial y contado) tampoco aceptan céntimos sueltos.
-* Atajos: `F2` buscar producto, `F4` cliente, `F6` descuento, `F9` efectivo, `F10` tarjeta, `F11` Yape o Plin.
-* Solo el **administrador** puede **anular** una venta (desde Caja), y solo mientras el turno siga abierto; el stock vuelve a los mismos lotes. Si se pagó con tarjeta o billetera, el cobro queda reembolsado.
+* Formas de pago: **Efectivo** y **Yape o Plin**. El cobro con tarjeta se retiró del sistema por ahora.
+* Atajos: `F2` buscar producto, `F4` cliente, `F6` descuento, `F9` efectivo, `F11` Yape o Plin.
+* Solo el **administrador** puede **anular** una venta (desde Caja), y solo mientras el turno siga abierto; el stock vuelve a los mismos lotes. Si se pagó con Yape o Plin, el cobro queda reembolsado.
 
 7. Pagos digitales y comprobantes
-* Los cobros con **Tarjeta** y **Yape o Plin** pasan por una **pasarela de pago simulada**: se envía la solicitud de cobro, la pasarela genera un **token de pago** y responde si autoriza el cobro (con su código de autorización) o lo rechaza (por ejemplo, por fondos insuficientes). Recién con el cobro aprobado se registra la venta. No se conecta a ningún servicio real ni se hacen cargos.
-* Datos de prueba: la tarjeta `4111 1111 1111 1111` (o cualquier número válido) se aprueba; si termina en `0002` se rechaza por fondos insuficientes y si termina en `0069`, por tarjeta bloqueada. Para Yape o Plin, cualquier celular de 9 dígitos que empiece con 9 y cualquier código de aprobación de 6 dígitos se aprueba, salvo `000000`.
-* No se guarda el número de tarjeta ni el CVV: solo la marca y los últimos 4 dígitos.
+* Los cobros con **Yape o Plin** pasan por una **pasarela de pago simulada**: se envía la solicitud de cobro, la pasarela genera un **token de pago** y responde si autoriza el cobro (con su código de autorización) o lo rechaza (por ejemplo, por un código de aprobación incorrecto). Recién con el cobro aprobado se registra la venta. No se conecta a ningún servicio real ni se hacen cargos.
+* Datos de prueba: cualquier celular de 9 dígitos que empiece con 9 y cualquier código de aprobación de 6 dígitos se aprueba, salvo `000000`.
+* Del celular del cliente solo se guardan los últimos 3 dígitos.
 * Cada venta emite su **comprobante digital**: **boleta** (B001) si el cliente tiene DNI o es "Clientes varios", y **factura** (F001) si tiene RUC. Se puede ver, imprimir o guardar en PDF al cobrar y después desde Caja. Incluye un código de verificación. Es un documento de prueba: no se envía a SUNAT.
 * En la sección **Pagos** (solo administrador) se revisan todas las transacciones (aprobadas, rechazadas, revertidas y reembolsadas) y se configuran la pasarela y los datos del negocio que salen en el comprobante. La clave secreta de la pasarela se guarda sin cifrar, igual que las contraseñas.
 

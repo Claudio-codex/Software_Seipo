@@ -30,7 +30,7 @@ public class ControladorComprobantes {
         public LocalDateTime emitido;
         public VentaVO venta;
         public List<DetalleVO> detalle;
-        /** Cobro con tarjeta o billetera; null si se pagó en efectivo. */
+        /** Cobro con Yape o Plin; null si se pagó en efectivo. */
         public TransaccionVO pago;
 
         public String numeroCompleto() { return serie + "-" + String.format("%08d", numero); }

@@ -390,7 +390,7 @@ public class PanelReportes extends JPanel {
             mPagos.addRow(new Object[]{g.nombre, g.cantidad, g.importe, g.importe / g.cantidad, total == 0 ? 0.0 : g.importe / total});
         }
         // Color fijo por forma de pago, para que no cambie al filtrar
-        dona(donaPagos, vo.formasPago, Arrays.asList("Efectivo", "Tarjeta", "Yape o Plin"));
+        dona(donaPagos, vo.formasPago, Arrays.asList(Datos.FORMAS_PAGO));
     }
 
     /** Dona con los primeros segmentos y el resto agrupado en "Otros". */

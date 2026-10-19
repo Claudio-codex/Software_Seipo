@@ -15,7 +15,9 @@ public class Datos {
     public static final int DIAS_POR_VENCER = 30;
     public static final double IGV = 0.18;
     public static final String EFECTIVO = "Efectivo";
-    public static final String[] FORMAS_PAGO = {EFECTIVO, "Tarjeta", "Yape o Plin"};
+    /** Billeteras digitales: el único cobro que pasa por la pasarela de pago. */
+    public static final String YAPE_PLIN = "Yape o Plin";
+    public static final String[] FORMAS_PAGO = {EFECTIVO, YAPE_PLIN};
     /** Fecha y hora para el historial de ventas y turnos. */
     public static final DateTimeFormatter FECHA_HORA = DateTimeFormatter.ofPattern("dd/MM/yy HH:mm");
 

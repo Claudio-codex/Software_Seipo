@@ -34,7 +34,7 @@ public class PanelPagos extends JPanel {
     private final JTextField txtNombre = new JTextField(), txtRuc = new JTextField(), txtDireccion = new JTextField(),
             txtProveedor = new JTextField(), txtComercio = new JTextField();
     private final JPasswordField txtClave = new JPasswordField();
-    private final JCheckBox chkActiva = new JCheckBox("Aceptar cobros con tarjeta y con Yape o Plin");
+    private final JCheckBox chkActiva = new JCheckBox("Aceptar cobros con Yape o Plin");
 
     public PanelPagos() {
         setLayout(new BorderLayout());
@@ -131,12 +131,9 @@ public class PanelPagos extends JPanel {
         form.add(botones, g);
 
         JLabel pruebas = UI.ayuda("<html><b>Datos de prueba de la pasarela</b><br>"
-                + "Tarjeta: " + ControladorPasarela.TARJETA_PRUEBA + " (o cualquier número válido) se aprueba; "
-                + "si termina en " + ControladorPasarela.FIN_SIN_FONDOS + " se rechaza por fondos insuficientes y si termina en "
-                + ControladorPasarela.FIN_BLOQUEADA + ", por tarjeta bloqueada. Vencimiento futuro (MM/AA) y CVV de 3 dígitos.<br>"
                 + "Yape o Plin: celular de 9 dígitos que empiece con 9 y cualquier código de aprobación de 6 dígitos, salvo "
                 + ControladorPasarela.CODIGO_RECHAZADO + ".<br>"
-                + "No se guarda el número de tarjeta ni el CVV: solo la marca y los últimos 4 dígitos.</html>");
+                + "Del celular del cliente solo se guardan los últimos 3 dígitos.</html>");
         pruebas.setBorder(new EmptyBorder(12, 2, 0, 0));
 
         JPanel columna = new JPanel(new BorderLayout());
