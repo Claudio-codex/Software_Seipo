@@ -83,9 +83,13 @@ public class ExportadorReporte {
 
     public static class Reporte {
         public String titulo, periodo;
+        /** Aclaración opcional que va debajo de los indicadores (por ejemplo, qué se suma en un total). */
+        public String nota;
         public LocalDateTime generado = LocalDateTime.now();
         public final List<Indicador> indicadores = new ArrayList<>();
         public final List<Seccion> secciones = new ArrayList<>();
+        /** Líneas de firma al final del PDF: {rótulo, nombre}; el nombre puede ir vacío para escribirlo a mano. */
+        public final List<String[]> firmas = new ArrayList<>();
     }
 
     /** Texto de una celda tal como se ve en pantalla. */
@@ -122,7 +126,13 @@ public class ExportadorReporte {
             doc.add(generado);
 
             doc.add(tablaIndicadores(r.indicadores));
+            if (r.nota != null) {
+                Paragraph nota = new Paragraph(r.nota, fuente(9, com.lowagie.text.Font.ITALIC, Color.DARK_GRAY));
+                nota.setSpacingBefore(4);
+                doc.add(nota);
+            }
             for (Seccion s : r.secciones) doc.add(tablaPdf(s));
+            if (!r.firmas.isEmpty()) doc.add(tablaFirmas(r.firmas));
             doc.close();
         } catch (DocumentException ex) {
             throw new IOException("No se pudo generar el PDF: " + ex.getMessage(), ex);
@@ -191,6 +201,36 @@ public class ExportadorReporte {
             vacio.setPadding(6);
             vacio.setBorderColor(Color.LIGHT_GRAY);
             t.addCell(vacio);
+        }
+        return t;
+    }
+
+    /** Líneas de firma lado a lado: espacio para firmar, la línea, el rótulo y el nombre debajo. */
+    private static PdfPTable tablaFirmas(List<String[]> firmas) {
+        PdfPTable t = new PdfPTable(firmas.size() * 2 - 1);
+        t.setWidthPercentage(firmas.size() == 1 ? 35 : 80);
+        t.setSpacingBefore(36);
+        t.setKeepTogether(true);
+        com.lowagie.text.Font rotulo = fuente(10, com.lowagie.text.Font.BOLD, Color.BLACK);
+        com.lowagie.text.Font nombre = fuente(9, com.lowagie.text.Font.NORMAL, Color.DARK_GRAY);
+        for (int i = 0; i < firmas.size(); i++) {
+            if (i > 0) {
+                PdfPCell separacion = new PdfPCell();
+                separacion.setBorder(Rectangle.NO_BORDER);
+                t.addCell(separacion);
+            }
+            PdfPCell c = new PdfPCell();
+            c.setBorder(Rectangle.TOP);
+            c.setBorderColor(Color.DARK_GRAY);
+            c.setPaddingTop(4);
+            Paragraph p = new Paragraph(firmas.get(i)[0], rotulo);
+            p.setAlignment(Element.ALIGN_CENTER);
+            c.addElement(p);
+            String n = firmas.get(i)[1];
+            Paragraph pn = new Paragraph(n == null || n.isEmpty() ? "Nombre y firma" : n, nombre);
+            pn.setAlignment(Element.ALIGN_CENTER);
+            c.addElement(pn);
+            t.addCell(c);
         }
         return t;
     }
@@ -298,6 +338,8 @@ public class ExportadorReporte {
                 c.setCellStyle(estilos.get(i.formato));
             }
             ajustar(resumen, 2);
+            // Después de ajustar los anchos, para que el texto largo de la nota no ensanche la columna
+            if (r.nota != null) celda(resumen.createRow(fila + 1), 0, r.nota);
 
             // Una hoja por tabla
             for (Seccion s : r.secciones) {

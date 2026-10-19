@@ -5,12 +5,21 @@ import seipo.controlador.ControladorMermas.LoteDisponibleVO;
 import seipo.controlador.ControladorMermas.MermaVO;
 import seipo.modelo.Datos;
 import seipo.modelo.Sesion;
+import seipo.vista.ExportadorReporte.Formato;
 import java.awt.*;
+import java.io.File;
+import java.io.IOException;
 import java.sql.SQLException;
+import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 
@@ -55,13 +64,28 @@ public class PanelMermas extends JPanel {
             barra.add(aprobar);
             barra.add(rechazar);
         }
-        barra.add(new JLabel("   Mostrar:"));
-        barra.add(cmbFiltro);
+        // Reporte de mermas de un período: un solo botón con las dos opciones, para que la barra quepa en la ventana mínima
+        JButton exportar = UI.botonSecundario("Exportar");
+        exportar.setIcon(new FlechaAbajo());
+        exportar.setHorizontalTextPosition(SwingConstants.LEFT);
+        exportar.setIconTextGap(8);
+        exportar.setToolTipText("Reporte de mermas de un período en PDF o Excel");
+        JPopupMenu opcionesExportar = new JPopupMenu();
+        JMenuItem pdf = new JMenuItem("Exportar PDF"), excel = new JMenuItem("Exportar Excel");
+        pdf.addActionListener(e -> exportar(true));
+        excel.addActionListener(e -> exportar(false));
+        opcionesExportar.add(pdf);
+        opcionesExportar.add(excel);
+        exportar.addActionListener(e -> opcionesExportar.show(exportar, 0, exportar.getHeight()));
+        JPanel filaBotones = new JPanel(new BorderLayout());
+        filaBotones.setOpaque(false);
+        filaBotones.add(barra, BorderLayout.CENTER);
+        filaBotones.add(exportar, BorderLayout.EAST);
 
         JPanel norte = new JPanel(new BorderLayout(0, 10));
         norte.setOpaque(false);
         norte.add(tarjetas, BorderLayout.NORTH);
-        norte.add(barra, BorderLayout.CENTER);
+        norte.add(filaBotones, BorderLayout.CENTER);
         p.add(norte, BorderLayout.NORTH);
 
         JLabel info = new JLabel(Sesion.esAdministrador()
@@ -77,9 +101,19 @@ public class PanelMermas extends JPanel {
                     : ControladorMermas.RECHAZADA.equals(estado) ? UI.FILA_GRIS : null;
         });
 
+        // Texto de ayuda a la izquierda y el filtro de la tabla a la derecha
+        JPanel filtro = new JPanel(new FlowLayout(FlowLayout.RIGHT, 6, 0));
+        filtro.setOpaque(false);
+        filtro.add(new JLabel("Mostrar:"));
+        filtro.add(cmbFiltro);
+        JPanel lineaInfo = new JPanel(new BorderLayout(10, 0));
+        lineaInfo.setOpaque(false);
+        lineaInfo.add(info, BorderLayout.CENTER);
+        lineaInfo.add(filtro, BorderLayout.EAST);
+
         JPanel centro = new JPanel(new BorderLayout(0, 5));
         centro.setOpaque(false);
-        centro.add(info, BorderLayout.NORTH);
+        centro.add(lineaInfo, BorderLayout.NORTH);
         centro.add(new JScrollPane(tabla), BorderLayout.CENTER);
         p.add(centro, BorderLayout.CENTER);
 
@@ -269,5 +303,173 @@ public class PanelMermas extends JPanel {
 
     private static void error(Component padre, String titulo, SQLException ex) {
         JOptionPane.showMessageDialog(padre, titulo + ":\n" + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+    }
+
+    /** Triángulo hacia abajo para el botón con menú desplegable (no depende de que la fuente tenga el símbolo). */
+    private static class FlechaAbajo implements Icon {
+        @Override public int getIconWidth() { return 9; }
+        @Override public int getIconHeight() { return 5; }
+        @Override public void paintIcon(Component c, Graphics g0, int x, int y) {
+            Graphics2D g = (Graphics2D) g0.create();
+            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g.setColor(c.getForeground());
+            g.fillPolygon(new int[]{x, x + 9, x + 4}, new int[]{y, y, y + 5}, 3);
+            g.dispose();
+        }
+    }
+
+    // ---------- Reporte de mermas ----------
+
+    private void exportar(boolean pdf) {
+        LocalDate[] periodo = pedirPeriodo();
+        if (periodo == null) return;
+        List<MermaVO> lista;
+        try {
+            lista = controlador.listarMermas(periodo[0], periodo[1]);
+        } catch (SQLException ex) {
+            error(this, "Error al cargar las mermas del período", ex);
+            return;
+        }
+        if (lista.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "No hay mermas solicitadas entre el " + periodo[0].format(Datos.FECHA_COMPLETA)
+                    + " y el " + periodo[1].format(Datos.FECHA_COMPLETA) + ".");
+            return;
+        }
+
+        String ext = pdf ? "pdf" : "xlsx";
+        JFileChooser fc = new JFileChooser();
+        fc.setDialogTitle(pdf ? "Exportar reporte de mermas a PDF" : "Exportar reporte de mermas a Excel");
+        fc.setFileFilter(new FileNameExtensionFilter(pdf ? "Documento PDF (*.pdf)" : "Libro de Excel (*.xlsx)", ext));
+        fc.setSelectedFile(new File("Reporte_mermas_" + periodo[0] + "_a_" + periodo[1] + "." + ext));
+        if (fc.showSaveDialog(this) != JFileChooser.APPROVE_OPTION) return;
+        File archivo = fc.getSelectedFile();
+        if (!archivo.getName().toLowerCase(Locale.ROOT).endsWith("." + ext)) {
+            archivo = new File(archivo.getParentFile(), archivo.getName() + "." + ext);
+        }
+        if (archivo.exists() && JOptionPane.showConfirmDialog(this, "El archivo ya existe. ¿Desea reemplazarlo?",
+                "Confirmar", JOptionPane.YES_NO_OPTION) != JOptionPane.YES_OPTION) return;
+
+        try {
+            ExportadorReporte.Reporte r = armarReporte(periodo[0], periodo[1], lista);
+            if (pdf) ExportadorReporte.pdf(r, archivo);
+            else ExportadorReporte.excel(r, archivo);
+            JOptionPane.showMessageDialog(this, "Reporte exportado:\n" + archivo.getAbsolutePath());
+        } catch (IOException ex) {
+            JOptionPane.showMessageDialog(this, "No se pudo exportar el reporte (¿está abierto en otro programa?):\n"
+                    + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    /** Pide el período del reporte (por fecha de solicitud de la merma); devuelve {desde, hasta} o null si se cancela. */
+    private LocalDate[] pedirPeriodo() {
+        String[] rapidos = {"Este mes", "Mes anterior", "Últimos 30 días", "Este año"};
+        JComboBox<String> cmbRapido = new JComboBox<>(rapidos);
+        JTextField txtDesde = new JTextField(), txtHasta = new JTextField();
+        Runnable aplicar = () -> {
+            LocalDate hoy = LocalDate.now(), desde = hoy.withDayOfMonth(1), hasta = hoy;
+            switch (cmbRapido.getSelectedIndex()) {
+                case 1: desde = hoy.minusMonths(1).withDayOfMonth(1); hasta = desde.plusMonths(1).minusDays(1); break;
+                case 2: desde = hoy.minusDays(29); break;
+                case 3: desde = hoy.withDayOfYear(1); break;
+                default: break;
+            }
+            txtDesde.setText(desde.format(Datos.FECHA_COMPLETA));
+            txtHasta.setText(hasta.format(Datos.FECHA_COMPLETA));
+        };
+        cmbRapido.addActionListener(e -> aplicar.run());
+        aplicar.run();
+        Object[] campos = {"Período:", cmbRapido, "Desde (dd/mm/aaaa):", txtDesde, "Hasta (dd/mm/aaaa):", txtHasta,
+                UI.ayuda("Se incluyen las mermas solicitadas en esas fechas, en cualquier estado.")};
+        while (true) {
+            if (JOptionPane.showConfirmDialog(this, campos, "Reporte de mermas", JOptionPane.OK_CANCEL_OPTION,
+                    JOptionPane.PLAIN_MESSAGE) != JOptionPane.OK_OPTION) return null;
+            try {
+                LocalDate desde = LocalDate.parse(txtDesde.getText().trim(), Datos.FECHA_COMPLETA);
+                LocalDate hasta = LocalDate.parse(txtHasta.getText().trim(), Datos.FECHA_COMPLETA);
+                if (hasta.isBefore(desde)) {
+                    JOptionPane.showMessageDialog(this, "La fecha final no puede ser anterior a la inicial.");
+                    continue;
+                }
+                return new LocalDate[]{desde, hasta};
+            } catch (DateTimeParseException ex) {
+                JOptionPane.showMessageDialog(this, "Fecha inválida. Use el formato dd/mm/aaaa.");
+            }
+        }
+    }
+
+    /**
+     * Resumen, desglose por causal y detalle de las mermas del período. El valor perdido y las unidades dadas de baja
+     * cuentan solo las aprobadas: las pendientes todavía pueden rechazarse y las rechazadas no salieron del stock.
+     */
+    private static ExportadorReporte.Reporte armarReporte(LocalDate desde, LocalDate hasta, List<MermaVO> lista) {
+        ExportadorReporte.Reporte r = new ExportadorReporte.Reporte();
+        r.titulo = "Reporte de mermas";
+        r.periodo = desde.format(Datos.FECHA_COMPLETA) + " al " + hasta.format(Datos.FECHA_COMPLETA) + " (por fecha de solicitud)";
+
+        int aprobadas = 0, pendientes = 0, rechazadas = 0, unidades = 0;
+        double valor = 0;
+        // Por causal: registradas, aprobadas, unidades dadas de baja y valor perdido (en el orden de las causales)
+        Map<String, double[]> porCausal = new LinkedHashMap<>();
+        for (String c : ControladorMermas.CAUSALES) porCausal.put(c, new double[4]);
+        for (MermaVO m : lista) {
+            double[] c = porCausal.computeIfAbsent(m.causal, k -> new double[4]);
+            c[0]++;
+            if (ControladorMermas.APROBADA.equals(m.estado)) {
+                aprobadas++;
+                unidades += m.cantidad;
+                valor += m.valor();
+                c[1]++;
+                c[2] += m.cantidad;
+                c[3] += m.valor();
+            } else if (ControladorMermas.PENDIENTE.equals(m.estado)) {
+                pendientes++;
+            } else {
+                rechazadas++;
+            }
+        }
+        // Se redondea a céntimos para que Excel no guarde restos de punto flotante (583.3999…)
+        valor = Datos.redondear(valor);
+        for (double[] c : porCausal.values()) c[3] = Datos.redondear(c[3]);
+        r.indicadores.add(new ExportadorReporte.Indicador("Valor perdido", valor, Formato.SOLES));
+        r.indicadores.add(new ExportadorReporte.Indicador("Unidades dadas de baja", unidades, Formato.ENTERO));
+        r.indicadores.add(new ExportadorReporte.Indicador("Mermas registradas", lista.size(), Formato.ENTERO));
+        r.indicadores.add(new ExportadorReporte.Indicador("Pendientes", pendientes, Formato.ENTERO));
+        r.indicadores.add(new ExportadorReporte.Indicador("Rechazadas", rechazadas, Formato.ENTERO));
+        r.nota = "El valor perdido y las unidades dadas de baja consideran solo las mermas aprobadas ("
+                + aprobadas + " de " + lista.size() + ").";
+
+        ExportadorReporte.Seccion causales = new ExportadorReporte.Seccion("Desglose por causal",
+                new String[]{"Causal", "Registradas", "Aprobadas", "Unidades dadas de baja", "Valor perdido", "% del valor perdido"},
+                Formato.TEXTO, Formato.ENTERO, Formato.ENTERO, Formato.ENTERO, Formato.SOLES, Formato.PORCENTAJE);
+        for (Map.Entry<String, double[]> e : porCausal.entrySet()) {
+            double[] c = e.getValue();
+            if (c[0] == 0) continue;
+            causales.filas.add(new Object[]{e.getKey(), (int) c[0], (int) c[1], (int) c[2], c[3], valor == 0 ? Double.NaN : c[3] / valor});
+        }
+        causales.filas.add(new Object[]{"Total", lista.size(), aprobadas, unidades, valor, valor == 0 ? Double.NaN : 1.0});
+        r.secciones.add(causales);
+
+        ExportadorReporte.Seccion detalle = new ExportadorReporte.Seccion("Detalle de mermas",
+                new String[]{"Solicitada", "Código", "Producto", "Lote", "Cant.", "Causal", "Estado", "Valor perdido",
+                        "Solicitó", "Autorizó", "Autorizada", "Observación"},
+                Formato.TEXTO, Formato.TEXTO, Formato.TEXTO, Formato.TEXTO, Formato.ENTERO, Formato.TEXTO, Formato.TEXTO,
+                Formato.SOLES, Formato.TEXTO, Formato.TEXTO, Formato.TEXTO, Formato.TEXTO);
+        detalle.anchos = new float[]{1.05f, 0.95f, 1.9f, 1.05f, 0.75f, 0.85f, 1.0f, 0.95f, 1.2f, 1.2f, 1.25f, 1.75f};
+        for (MermaVO m : lista) {
+            String obs = m.observacion == null ? "" : m.observacion;
+            if (m.motivoRechazo != null && !m.motivoRechazo.isEmpty()) obs += (obs.isEmpty() ? "" : " · ") + "Rechazo: " + m.motivoRechazo;
+            detalle.filas.add(new Object[]{
+                    m.solicitadoEn == null ? "" : m.solicitadoEn.format(FECHA_HORA), m.codigo, m.producto, m.lote,
+                    m.cantidad, m.causal, textoEstado(m.estado),
+                    // Las pendientes y rechazadas no son pérdida: se muestran con "—" (celda vacía en Excel)
+                    ControladorMermas.APROBADA.equals(m.estado) ? Datos.redondear(m.valor()) : Double.NaN,
+                    m.solicitante, m.autorizador == null ? "" : m.autorizador,
+                    m.autorizadoEn == null ? "" : m.autorizadoEn.format(FECHA_HORA), obs});
+        }
+        r.secciones.add(detalle);
+
+        r.firmas.add(new String[]{"Elaborado por", Sesion.getNombre()});
+        r.firmas.add(new String[]{"Autorizado por", ""});
+        return r;
     }
 }

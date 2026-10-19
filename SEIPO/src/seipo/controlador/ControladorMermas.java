@@ -41,19 +41,29 @@ public class ControladorMermas {
         }
     }
 
-    /** Lista las mermas, opcionalmente filtradas por estado (null = todas), de la más reciente a la más antigua. */
+    /** Lista las mermas, opcionalmente filtradas por estado (null = todas): primero las pendientes y luego de la más reciente a la más antigua. */
     public List<MermaVO> listarMermas(String estado) throws SQLException {
+        String orden = "ORDER BY m.estado <> 'PENDIENTE', m.solicitado_en DESC, m.id DESC";
+        return estado == null ? listar("", orden) : listar("WHERE m.estado = ? ", orden, estado);
+    }
+
+    /** Mermas solicitadas entre dos fechas (inclusive), en cualquier estado y en orden cronológico; para el reporte. */
+    public List<MermaVO> listarMermas(LocalDate desde, LocalDate hasta) throws SQLException {
+        return listar("WHERE m.solicitado_en >= ? AND m.solicitado_en < ? ", "ORDER BY m.solicitado_en, m.id",
+                Timestamp.valueOf(desde.atStartOfDay()), Timestamp.valueOf(hasta.plusDays(1).atStartOfDay()));
+    }
+
+    private List<MermaVO> listar(String filtro, String orden, Object... parametros) throws SQLException {
         List<MermaVO> lista = new ArrayList<>();
         String sql = "SELECT m.id, p.codigo, p.nombre, l.numero_lote, l.fecha_vencimiento, m.cantidad, m.causal, " +
                 "m.observacion, m.precio_unitario, m.estado, m.solicitado_en, m.autorizado_en, m.motivo_rechazo, " +
-                "us.usuario AS solicitante, ua.usuario AS autorizador " +
+                "COALESCE(NULLIF(us.nombre, ''), us.usuario) AS solicitante, COALESCE(NULLIF(ua.nombre, ''), ua.usuario) AS autorizador " +
                 "FROM mermas m JOIN productos p ON p.id = m.producto_id JOIN lotes l ON l.id = m.lote_id " +
                 "JOIN usuarios us ON us.id = m.solicitado_por LEFT JOIN usuarios ua ON ua.id = m.autorizado_por " +
-                (estado == null ? "" : "WHERE m.estado = ? ") +
-                "ORDER BY m.estado <> 'PENDIENTE', m.solicitado_en DESC, m.id DESC";
+                filtro + orden;
         try (Connection con = ConexionBD.obtenerConexion();
              PreparedStatement pst = con.prepareStatement(sql)) {
-            if (estado != null) pst.setString(1, estado);
+            for (int i = 0; i < parametros.length; i++) pst.setObject(i + 1, parametros[i]);
             try (ResultSet rs = pst.executeQuery()) {
                 while (rs.next()) {
                     MermaVO m = new MermaVO();

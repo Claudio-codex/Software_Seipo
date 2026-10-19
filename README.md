@@ -25,6 +25,7 @@ Sistema de venta e inventario
 5. Usuarios y roles
 * **Administrador:** accede a todas las secciones y además autoriza mermas, aprueba órdenes de compra y gestiona Reportes, Pagos y Usuarios.
 * **Personal de tienda:** accede a Ventas, Caja, Clientes, Productos, Inventario, Mermas y Compras.
+* En **Mermas**, el botón **Exportar** genera el reporte de mermas de un período (por fecha de solicitud) en PDF o Excel: resumen, desglose por causal y detalle con quién solicitó y quién autorizó. El valor perdido cuenta solo las mermas aprobadas. El PDF termina con las líneas de firma "Elaborado por" y "Autorizado por".
 * Las cuentas del personal se crean desde el módulo **Usuarios** (entrando como `admin`), donde también se edita el rol, se activa/desactiva y se restablece la contraseña.
 * Si ya tenías la base de datos creada con una versión anterior, no hace falta borrarla: al iniciar, el sistema agrega las columnas nuevas y los usuarios existentes quedan como administradores.
 
