@@ -199,6 +199,49 @@ public class ConexionBD {
                         "    FOREIGN KEY (venta_id) REFERENCES ventas(id) ON DELETE CASCADE," +
                         "    FOREIGN KEY (lote_id) REFERENCES lotes(id)," +
                         "    FOREIGN KEY (producto_id) REFERENCES productos(id)" +
+                        ");",
+
+                // Parámetros que configura el administrador: datos del negocio para el comprobante y la pasarela de pago
+                "CREATE TABLE IF NOT EXISTS configuracion (" +
+                        "    clave VARCHAR(50) PRIMARY KEY," +
+                        "    valor VARCHAR(255) NOT NULL DEFAULT ''" +
+                        ");",
+
+                // Cobros digitales enviados a la pasarela. No se guarda el número de tarjeta: solo la marca y los últimos 4 dígitos
+                "CREATE TABLE IF NOT EXISTS transacciones_pago (" +
+                        "    id INT AUTO_INCREMENT PRIMARY KEY," +
+                        "    token VARCHAR(40) NOT NULL UNIQUE," +
+                        "    venta_id INT," +
+                        "    forma_pago VARCHAR(50) NOT NULL," +
+                        "    monto DECIMAL(10, 2) NOT NULL," +
+                        "    estado VARCHAR(20) NOT NULL DEFAULT 'PENDIENTE'," +
+                        "    medio VARCHAR(60)," +
+                        "    codigo_autorizacion VARCHAR(12)," +
+                        "    mensaje VARCHAR(150)," +
+                        "    usuario_id INT NOT NULL," +
+                        "    creado_en DATETIME NOT NULL," +
+                        "    respondido_en DATETIME," +
+                        "    FOREIGN KEY (venta_id) REFERENCES ventas(id)," +
+                        "    FOREIGN KEY (usuario_id) REFERENCES usuarios(id)," +
+                        "    INDEX idx_transacciones_fecha (creado_en)" +
+                        ");",
+
+                // Boleta o factura de cada venta; guarda los datos del emisor tal como estaban al emitirla
+                "CREATE TABLE IF NOT EXISTS comprobantes (" +
+                        "    id INT AUTO_INCREMENT PRIMARY KEY," +
+                        "    venta_id INT NOT NULL UNIQUE," +
+                        "    tipo VARCHAR(10) NOT NULL," +
+                        "    serie VARCHAR(4) NOT NULL," +
+                        "    numero INT NOT NULL," +
+                        "    emitido_en DATETIME NOT NULL," +
+                        "    emisor_ruc VARCHAR(11) NOT NULL," +
+                        "    emisor_nombre VARCHAR(150) NOT NULL," +
+                        "    emisor_direccion VARCHAR(200) NOT NULL," +
+                        "    cliente_documento VARCHAR(20)," +
+                        "    cliente_nombre VARCHAR(100)," +
+                        "    codigo_verificacion VARCHAR(20) NOT NULL," +
+                        "    FOREIGN KEY (venta_id) REFERENCES ventas(id)," +
+                        "    UNIQUE KEY uk_comprobante_numero (serie, numero)" +
                         ");"
         };
 
@@ -211,6 +254,11 @@ public class ConexionBD {
             actualizarUsuarios(stmt);
             actualizarInventario(stmt);
             actualizarVentas(stmt);
+            stmt.execute("INSERT IGNORE INTO configuracion (clave, valor) VALUES " +
+                    "('empresa_nombre', 'Bazar Seipo'), ('empresa_ruc', '20999999991'), " +
+                    "('empresa_direccion', 'Jr. Lima 000, Tarma, Junín'), ('pasarela_activa', '1'), " +
+                    "('pasarela_proveedor', 'Pasarela de prueba'), ('pasarela_comercio', 'COM-000123'), " +
+                    "('pasarela_clave', 'sk_test_seipo_4f9a2c7e')");
         } catch (SQLException e) {
             System.err.println("Aviso/Error al autoinicializar la BD: " + e.getMessage());
         }

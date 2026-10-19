@@ -3,6 +3,7 @@ package seipo.vista;
 import seipo.controlador.ControladorCaja;
 import seipo.controlador.ControladorClientes;
 import seipo.controlador.ControladorClientes.ClienteVO;
+import seipo.controlador.ControladorPasarela;
 import seipo.controlador.ControladorVentas;
 import seipo.modelo.Datos;
 import seipo.modelo.Datos.ProductoVenta;
@@ -55,6 +56,8 @@ public class PanelVentas extends JPanel {
     private final ControladorVentas controlador = new ControladorVentas();
     private final ControladorCaja caja = new ControladorCaja();
     private final ControladorClientes clientes = new ControladorClientes();
+    private final ControladorPasarela pasarela = new ControladorPasarela();
+    private ControladorPasarela.ConfiguracionVO configPasarela;
 
     /** @param abrirCaja muestra la sección Caja (para abrir el turno) */
     public PanelVentas(Runnable abrirCaja) {
@@ -353,6 +356,12 @@ public class PanelVentas extends JPanel {
             turno = null;
             ex.printStackTrace();
         }
+        try {
+            configPasarela = pasarela.leerConfiguracion();
+        } catch (SQLException ex) {
+            configPasarela = null;
+            ex.printStackTrace();
+        }
         if (turno != null) {
             barraTurno.setBackground(UI.FILA_VERDE);
             lblTurnoIcono.setForeground(UI.EXITO);
@@ -366,9 +375,14 @@ public class PanelVentas extends JPanel {
             lblTurno.setText("No tiene un turno de caja abierto. Puede armar la venta, pero para cobrar debe abrir su turno.");
             irCaja.setText("Abrir turno");
         }
-        for (JButton b : botonesCobro) {
-            b.setEnabled(turno != null);
-            b.setToolTipText(turno != null ? null : "Abra su turno en la sección Caja para cobrar");
+        // Tarjeta y Yape o Plin pasan por la pasarela: solo se habilitan si el administrador la activó
+        boolean digital = configPasarela != null && configPasarela.activa;
+        for (int i = 0; i < botonesCobro.size(); i++) {
+            JButton b = botonesCobro.get(i);
+            boolean efectivo = Datos.EFECTIVO.equals(Datos.FORMAS_PAGO[i]);
+            b.setEnabled(turno != null && (efectivo || digital));
+            b.setToolTipText(turno == null ? "Abra su turno en la sección Caja para cobrar"
+                    : efectivo || digital ? null : "El cobro digital está desactivado (se activa en Pagos)");
         }
         SwingUtilities.invokeLater(txtBuscar::requestFocusInWindow);
     }
@@ -668,7 +682,7 @@ public class PanelVentas extends JPanel {
         lblDesc.setText((descuentoPct > 0 ? "− " : "") + Datos.soles(desc) + (descuentoPct > 0 ? "  (" + PORCENTAJE.format(descuentoPct) + "%)" : ""));
         lblIgv.setText(Datos.soles(Datos.igvVenta(sub, desc)));
         double redondeo = Datos.redondeoVenta(sub, desc);
-        lblRedondeo.setText((redondeo < 0 ? "− " : "") + Datos.soles(-redondeo));
+        lblRedondeo.setText((redondeo < 0 ? "− " : "") + Datos.soles(Math.abs(redondeo)));
         lblTotal.setText(Datos.soles(total));
         int unidades = cantidades.stream().mapToInt(Integer::intValue).sum();
         lblArticulos.setText(items.isEmpty() ? "Sin productos" : items.size() + " producto(s) · " + unidades + " unidad(es)");
@@ -689,20 +703,39 @@ public class PanelVentas extends JPanel {
         if (Datos.EFECTIVO.equals(forma)) {
             recibido = pedirEfectivo(total);
             if (recibido == null) return;
-        } else if (JOptionPane.showConfirmDialog(this, "¿Confirmar el cobro de " + Datos.soles(total) + " con " + forma + "?",
-                "Cobrar con " + forma, JOptionPane.OK_CANCEL_OPTION) != JOptionPane.OK_OPTION) {
-            return;
+        }
+
+        // Tarjeta y Yape o Plin: la pasarela debe aprobar el cobro antes de registrar la venta
+        String token = null;
+        if (!Datos.EFECTIVO.equals(forma)) {
+            if (configPasarela == null || !configPasarela.activa) {
+                JOptionPane.showMessageDialog(this, "El cobro con " + forma + " está desactivado. Pida al administrador que lo active en Pagos.");
+                return;
+            }
+            token = DialogoPasarela.cobrar(this, forma, total, configPasarela.proveedor);
+            if (token == null) return;
         }
 
         try {
             int ventaId = controlador.cobrarVenta(items, cantidades, descuentoPct, forma,
-                    cliente == null ? null : cliente.id, recibido);
-            mostrarResumen(ventaId, forma, total, recibido);
+                    cliente == null ? null : cliente.id, recibido, token);
             limpiarVenta();
             refrescar();
+            DialogoComprobante.mostrar(this, ventaId, true);
         } catch (SQLException ex) {
-            JOptionPane.showMessageDialog(this, "Error al registrar la venta en la base de datos:\n" + ex.getMessage(),
+            String revertido = token == null ? "" : revertirCobro(token);
+            JOptionPane.showMessageDialog(this, "Error al registrar la venta en la base de datos:\n" + ex.getMessage() + revertido,
                     "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    /** Si la venta no se pudo registrar después de aprobado el cobro, se revierte en la pasarela. */
+    private String revertirCobro(String token) {
+        try {
+            pasarela.revertir(token);
+            return "\n\nEl cobro aprobado se revirtió: no se cargó nada al cliente.";
+        } catch (SQLException ex) {
+            return "\n\nNo se pudo revertir el cobro " + token + ": " + ex.getMessage();
         }
     }
 
@@ -794,32 +827,6 @@ public class PanelVentas extends JPanel {
 
     private static Double leerMonto(String texto) {
         return PanelCaja.leerMonto(texto);
-    }
-
-    private void mostrarResumen(int ventaId, String forma, double total, Double recibido) {
-        StringBuilder sb = new StringBuilder("<html><body style='width:300px'>");
-        sb.append("<h2 style='margin:0'>Venta N° ").append(ventaId).append(" registrada</h2>");
-        sb.append("<p style='color:#94A3B8'>").append(cliente == null ? "Clientes varios" : cliente.nombre + " · " + cliente.documento)
-                .append("</p><table width='100%'>");
-        for (int i = 0; i < items.size(); i++) {
-            ProductoVenta p = items.get(i);
-            sb.append("<tr><td>").append(cantidades.get(i)).append(" × ").append(p.nombre)
-                    .append("</td><td align='right'>").append(Datos.soles(p.precio * cantidades.get(i))).append("</td></tr>");
-        }
-        sb.append("</table><hr><table width='100%'>");
-        if (descuentoPct > 0) fila(sb, "Descuento (" + PORCENTAJE.format(descuentoPct) + "%)", "− " + Datos.soles(descuento()));
-        fila(sb, "<b>Total</b>", "<b>" + Datos.soles(total) + "</b>");
-        fila(sb, "Pago", forma);
-        if (recibido != null) {
-            fila(sb, "Recibido", Datos.soles(recibido));
-            fila(sb, "<b>Vuelto</b>", "<b style='color:#4ADE80'>" + Datos.soles(recibido - total) + "</b>");
-        }
-        sb.append("</table></body></html>");
-        JOptionPane.showMessageDialog(this, sb.toString(), "Venta registrada", JOptionPane.INFORMATION_MESSAGE);
-    }
-
-    private static void fila(StringBuilder sb, String concepto, String valor) {
-        sb.append("<tr><td>").append(concepto).append("</td><td align='right'>").append(valor).append("</td></tr>");
     }
 
     private void limpiarVenta() {

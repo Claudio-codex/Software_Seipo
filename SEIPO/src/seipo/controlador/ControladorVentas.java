@@ -28,6 +28,8 @@ public class ControladorVentas {
         public int id, turnoId;
         public LocalDateTime fecha;
         public String cliente, documentoCliente, vendedor, formaPago, estado, anuladoPor, motivoAnulacion;
+        /** Número del comprobante (B001-00000001); null en ventas anteriores a los comprobantes. */
+        public String comprobante;
         public double subtotal, descuento, total;
         public Double recibido;
 
@@ -96,9 +98,10 @@ public class ControladorVentas {
      *
      * @param clienteId     cliente registrado, o null para "Clientes varios"
      * @param montoRecibido efectivo que entregó el cliente (solo en pagos en efectivo), o null
+     * @param tokenPago     token del cobro aprobado por la pasarela (tarjeta o billetera), o null en efectivo
      */
     public int cobrarVenta(List<ProductoVenta> items, List<Integer> cantidades, double descuentoPct, String forma,
-                           Integer clienteId, Double montoRecibido) throws SQLException {
+                           Integer clienteId, Double montoRecibido, String tokenPago) throws SQLException {
         double sub = 0;
         for (int i = 0; i < items.size(); i++) {
             sub += items.get(i).precio * cantidades.get(i);
@@ -141,6 +144,12 @@ public class ControladorVentas {
                     }
                 }
 
+                // El cobro digital debe estar aprobado por la pasarela, por el mismo monto y sin otra venta asociada
+                Integer transaccionId = null;
+                if (!Datos.EFECTIVO.equals(forma)) {
+                    transaccionId = validarCobroDigital(con, tokenPago, forma, totalVenta);
+                }
+
                 int ventaId = -1;
                 try (PreparedStatement pstVenta = con.prepareStatement(sqlVenta, Statement.RETURN_GENERATED_KEYS)) {
                     pstVenta.setDate(1, java.sql.Date.valueOf(LocalDate.now()));
@@ -155,6 +164,13 @@ public class ControladorVentas {
                     pstVenta.executeUpdate();
                     try (ResultSet rsKeys = pstVenta.getGeneratedKeys()) {
                         if (rsKeys.next()) ventaId = rsKeys.getInt(1);
+                    }
+                }
+                if (transaccionId != null) {
+                    try (PreparedStatement pst = con.prepareStatement("UPDATE transacciones_pago SET venta_id = ? WHERE id = ?")) {
+                        pst.setInt(1, ventaId);
+                        pst.setInt(2, transaccionId);
+                        pst.executeUpdate();
                     }
                 }
 
@@ -226,6 +242,7 @@ public class ControladorVentas {
                         pstStock.executeUpdate();
                     }
                 }
+                ControladorComprobantes.emitir(con, ventaId, clienteId, totalVenta);
                 con.commit();
                 return ventaId;
             } catch (SQLException e) {
@@ -233,6 +250,33 @@ public class ControladorVentas {
                 throw e;
             }
         }
+    }
+
+    /** Comprueba el cobro digital dentro de la transacción de la venta y devuelve el id de la transacción de pago. */
+    private static int validarCobroDigital(Connection con, String token, String forma, double total) throws SQLException {
+        if (token == null) throw new SQLException("Falta la autorización de la pasarela de pago para cobrar con " + forma + ".");
+        try (PreparedStatement pst = con.prepareStatement("SELECT id, estado, forma_pago, monto, venta_id, usuario_id " +
+                "FROM transacciones_pago WHERE token = ? FOR UPDATE")) {
+            pst.setString(1, token);
+            try (ResultSet rs = pst.executeQuery()) {
+                if (!rs.next()) throw new SQLException("El token de pago no existe.");
+                if (!ControladorPasarela.APROBADA.equals(rs.getString("estado"))) {
+                    throw new SQLException("El cobro no está aprobado por la pasarela (" + rs.getString("estado") + ").");
+                }
+                if (rs.getObject("venta_id") != null) throw new SQLException("Ese cobro ya pertenece a otra venta.");
+                if (rs.getInt("usuario_id") != Sesion.getId() || !forma.equals(rs.getString("forma_pago"))
+                        || Math.abs(rs.getDouble("monto") - total) > 0.001) {
+                    throw new SQLException("El cobro aprobado no coincide con la venta (monto o forma de pago).");
+                }
+                return rs.getInt("id");
+            }
+        }
+    }
+
+    /** Una venta con su desglose, o null si no existe. */
+    public VentaVO obtenerVenta(int ventaId) throws SQLException {
+        List<VentaVO> l = listar("WHERE v.id = ?", pst -> pst.setInt(1, ventaId));
+        return l.isEmpty() ? null : l.get(0);
     }
 
     /** Ventas de un turno, de la más reciente a la más antigua. */
@@ -258,8 +302,8 @@ public class ControladorVentas {
         String sql = "SELECT v.id, v.turno_id, v.creado_en, v.forma_pago, v.estado, v.motivo_anulacion, " +
                 "COALESCE(v.subtotal, v.total / (1 + " + Datos.IGV + ")) AS subtotal, v.descuento, v.total, v.monto_recibido, " +
                 "c.nombre AS cliente, c.documento, COALESCE(NULLIF(u.nombre, ''), u.usuario) AS vendedor, " +
-                "COALESCE(NULLIF(a.nombre, ''), a.usuario) AS anulado_por " +
-                "FROM ventas v LEFT JOIN clientes c ON c.id = v.cliente_id " +
+                "COALESCE(NULLIF(a.nombre, ''), a.usuario) AS anulado_por, cp.serie, cp.numero " +
+                "FROM ventas v LEFT JOIN clientes c ON c.id = v.cliente_id LEFT JOIN comprobantes cp ON cp.venta_id = v.id " +
                 "LEFT JOIN usuarios u ON u.id = v.usuario_id LEFT JOIN usuarios a ON a.id = v.anulado_por " +
                 filtro + " ORDER BY v.id DESC";
         List<VentaVO> lista = new ArrayList<>();
@@ -283,6 +327,7 @@ public class ControladorVentas {
                     v.documentoCliente = rs.getString("documento");
                     v.vendedor = rs.getString("vendedor");
                     v.anuladoPor = rs.getString("anulado_por");
+                    if (rs.getString("serie") != null) v.comprobante = rs.getString("serie") + "-" + String.format("%08d", rs.getInt("numero"));
                     lista.add(v);
                 }
             }
@@ -384,6 +429,12 @@ public class ControladorVentas {
                     pst.setTimestamp(2, Timestamp.valueOf(LocalDateTime.now()));
                     pst.setString(3, motivo);
                     pst.setInt(4, ventaId);
+                    pst.executeUpdate();
+                }
+                // Si se pagó con tarjeta o billetera, el cobro queda reembolsado
+                try (PreparedStatement pst = con.prepareStatement("UPDATE transacciones_pago SET estado = 'REEMBOLSADA', " +
+                        "mensaje = 'Reembolsado por anulación de la venta' WHERE venta_id = ? AND estado = 'APROBADA'")) {
+                    pst.setInt(1, ventaId);
                     pst.executeUpdate();
                 }
                 con.commit();

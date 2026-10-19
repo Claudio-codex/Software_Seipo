@@ -23,7 +23,7 @@ Sistema de venta e inventario
 * Se requiere JDK 11 o superior.
 
 5. Usuarios y roles
-* **Administrador:** accede a todas las secciones y además autoriza mermas, aprueba órdenes de compra y gestiona Reportes y Usuarios.
+* **Administrador:** accede a todas las secciones y además autoriza mermas, aprueba órdenes de compra y gestiona Reportes, Pagos y Usuarios.
 * **Personal de tienda:** accede a Ventas, Caja, Clientes, Productos, Inventario, Mermas y Compras.
 * Las cuentas del personal se crean desde el módulo **Usuarios** (entrando como `admin`), donde también se edita el rol, se activa/desactiva y se restablece la contraseña.
 * Si ya tenías la base de datos creada con una versión anterior, no hace falta borrarla: al iniciar, el sistema agrega las columnas nuevas y los usuarios existentes quedan como administradores.
@@ -34,10 +34,17 @@ Sistema de venta e inventario
 * Se puede elegir un **cliente** registrado (o registrarlo ahí mismo): su descuento VIP se aplica solo. En efectivo se ingresa el monto recibido y se muestra el **vuelto**.
 * El total se **redondea hacia abajo a 10 céntimos** (no se usan monedas de 1 ni de 5 céntimos) y la rebaja aparece como "Redondeo". Los montos en efectivo (recibido, inicial y contado) tampoco aceptan céntimos sueltos.
 * Atajos: `F2` buscar producto, `F4` cliente, `F6` descuento, `F9` efectivo, `F10` tarjeta, `F11` Yape o Plin.
-* Solo el **administrador** puede **anular** una venta (desde Caja), y solo mientras el turno siga abierto; el stock vuelve a los mismos lotes.
+* Solo el **administrador** puede **anular** una venta (desde Caja), y solo mientras el turno siga abierto; el stock vuelve a los mismos lotes. Si se pagó con tarjeta o billetera, el cobro queda reembolsado.
 
-7. Cargar los datos de ejemplo (opcional)
-El archivo `SEIPO/bd/seipo_db.sql` es una copia de la base de datos con datos de demostración de un bazar (útiles escolares, limpieza, ferretería, cocina, accesorios, juguetes, perfumería y relojería): 55 productos, unas 7 700 ventas desde enero de 2025 con sus temporadas (campaña escolar, Día de la Madre, Navidad), más de 1 200 turnos de caja con su cuadre, lotes vencidos y por vencer, mermas, proveedores, órdenes de compra y usuarios. Sirve para ver el sistema funcionando sin cargar datos a mano.
+7. Pagos digitales y comprobantes
+* Los cobros con **Tarjeta** y **Yape o Plin** pasan por una **pasarela de pago simulada**: se envía la solicitud de cobro, la pasarela genera un **token de pago** y responde si autoriza el cobro (con su código de autorización) o lo rechaza (por ejemplo, por fondos insuficientes). Recién con el cobro aprobado se registra la venta. No se conecta a ningún servicio real ni se hacen cargos.
+* Datos de prueba: la tarjeta `4111 1111 1111 1111` (o cualquier número válido) se aprueba; si termina en `0002` se rechaza por fondos insuficientes y si termina en `0069`, por tarjeta bloqueada. Para Yape o Plin, cualquier celular de 9 dígitos que empiece con 9 y cualquier código de aprobación de 6 dígitos se aprueba, salvo `000000`.
+* No se guarda el número de tarjeta ni el CVV: solo la marca y los últimos 4 dígitos.
+* Cada venta emite su **comprobante digital**: **boleta** (B001) si el cliente tiene DNI o es "Clientes varios", y **factura** (F001) si tiene RUC. Se puede ver, imprimir o guardar en PDF al cobrar y después desde Caja. Incluye un código de verificación. Es un documento de prueba: no se envía a SUNAT.
+* En la sección **Pagos** (solo administrador) se revisan todas las transacciones (aprobadas, rechazadas, revertidas y reembolsadas) y se configuran la pasarela y los datos del negocio que salen en el comprobante. La clave secreta de la pasarela se guarda sin cifrar, igual que las contraseñas.
+
+8. Cargar los datos de ejemplo (opcional)
+El archivo `SEIPO/bd/seipo_db.sql` es una copia de la base de datos con datos de demostración de un bazar (útiles escolares, limpieza, ferretería, cocina, accesorios, juguetes, perfumería y relojería): 55 productos, unas 7 800 ventas desde enero de 2025 con sus temporadas (campaña escolar, Día de la Madre, Navidad), más de 1 200 turnos de caja con su cuadre, sus comprobantes y los cobros de la pasarela, lotes vencidos y por vencer, mermas, proveedores, órdenes de compra y usuarios. Sirve para ver el sistema funcionando sin cargar datos a mano.
 
 > ⚠️ Al importarlo se **reemplaza por completo** la base `seipo_db` que tengas en tu computadora.
 

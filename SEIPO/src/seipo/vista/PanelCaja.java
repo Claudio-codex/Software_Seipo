@@ -343,7 +343,7 @@ public class PanelCaja extends JPanel {
 
     /** Tabla de ventas de un turno con su detalle y la anulación (solo administrador). */
     private class TablaVentas extends JPanel {
-        private final DefaultTableModel modelo = UI.modelo("N°", "Hora", "Cliente", "Vendedor", "Pago", "Total", "Recibido", "Vuelto", "Estado");
+        private final DefaultTableModel modelo = UI.modelo("N°", "Hora", "Comprobante", "Cliente", "Vendedor", "Pago", "Total", "Recibido", "Vuelto", "Estado");
         private final JTable tabla = UI.tabla(modelo);
         private final List<VentaVO> lista = new ArrayList<>();
         private final Runnable alAnular;
@@ -353,7 +353,7 @@ public class PanelCaja extends JPanel {
             super(new BorderLayout(0, 8));
             this.alAnular = alAnular;
             setOpaque(false);
-            int[] anchos = {60, 60, 230, 150, 100, 90, 90, 90, 100};
+            int[] anchos = {55, 55, 120, 190, 130, 95, 85, 85, 80, 90};
             for (int i = 0; i < anchos.length; i++) UI.columnaAncha(tabla, i, anchos[i]);
             UI.colorearFilas(tabla, f -> lista.get(f).anulada() ? UI.FILA_GRIS : null);
             tabla.addMouseListener(new MouseAdapter() {
@@ -364,7 +364,7 @@ public class PanelCaja extends JPanel {
             add(new JScrollPane(tabla), BorderLayout.CENTER);
             JPanel botones = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
             botones.setOpaque(false);
-            JButton detalle = UI.botonSecundario("Ver detalle");
+            JButton detalle = UI.botonSecundario("Ver comprobante");
             detalle.addActionListener(e -> verDetalle());
             botones.add(detalle);
             if (Sesion.esAdministrador()) {
@@ -389,7 +389,7 @@ public class PanelCaja extends JPanel {
             }
             for (VentaVO v : lista) {
                 Double vuelto = v.vuelto();
-                modelo.addRow(new Object[]{v.id, v.fecha.format(HORA), v.cliente == null ? "Clientes varios" : v.cliente,
+                modelo.addRow(new Object[]{v.id, v.fecha.format(HORA), v.comprobante == null ? "—" : v.comprobante, v.cliente == null ? "Clientes varios" : v.cliente,
                         v.vendedor, v.formaPago, Datos.soles(v.total), v.recibido == null ? "—" : Datos.soles(v.recibido),
                         vuelto == null ? "—" : Datos.soles(vuelto), v.anulada() ? "Anulada" : "Completada"});
             }
@@ -404,39 +404,10 @@ public class PanelCaja extends JPanel {
             return lista.get(tabla.convertRowIndexToModel(f));
         }
 
+        /** El comprobante muestra el detalle, el pago y, si corresponde, la anulación. */
         private void verDetalle() {
             VentaVO v = seleccionada();
-            if (v == null) return;
-            try {
-                StringBuilder sb = new StringBuilder("<html><body style='width:340px'><h2 style='margin:0'>Venta N° ")
-                        .append(v.id).append("</h2><p style='color:#94A3B8'>").append(v.fecha.format(Datos.FECHA_HORA))
-                        .append(" · ").append(v.vendedor).append("<br>")
-                        .append(v.cliente == null ? "Clientes varios" : v.cliente + " · " + v.documentoCliente)
-                        .append("</p><table width='100%'>");
-                for (ControladorVentas.DetalleVO d : ventas.detalleVenta(v.id)) {
-                    sb.append(filaResumen(d.cantidad + " × " + d.producto + " <span style='color:#94A3B8'>("
-                            + Datos.soles(d.precio) + ")</span>", Datos.soles(d.importe)));
-                }
-                sb.append("</table><hr><table width='100%'>")
-                        .append(filaResumen("Subtotal", Datos.soles(v.subtotal)));
-                if (v.descuento > 0) sb.append(filaResumen("Descuento", "− " + Datos.soles(v.descuento)));
-                sb.append(filaResumen("IGV 18%", Datos.soles(v.igv())));
-                if (v.redondeo() < 0) sb.append(filaResumen("Redondeo", "− " + Datos.soles(-v.redondeo())));
-                sb
-                        .append(filaResumen("<b>Total</b>", "<b>" + Datos.soles(v.total) + "</b>"))
-                        .append(filaResumen("Pago", v.formaPago));
-                if (v.recibido != null) {
-                    sb.append(filaResumen("Recibido", Datos.soles(v.recibido))).append(filaResumen("Vuelto", Datos.soles(v.vuelto())));
-                }
-                sb.append("</table>");
-                if (v.anulada()) {
-                    sb.append("<p style='color:#F87171'><b>ANULADA</b> por ").append(v.anuladoPor).append(": ")
-                            .append(v.motivoAnulacion).append("</p>");
-                }
-                JOptionPane.showMessageDialog(this, sb.append("</body></html>").toString(), "Detalle de la venta", JOptionPane.PLAIN_MESSAGE);
-            } catch (SQLException ex) {
-                JOptionPane.showMessageDialog(this, "Error al cargar el detalle:\n" + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-            }
+            if (v != null) DialogoComprobante.mostrar(this, v.id, false);
         }
 
         private void anular() {
@@ -447,7 +418,9 @@ public class PanelCaja extends JPanel {
                 return;
             }
             String motivo = JOptionPane.showInputDialog(this, "Anular la venta N° " + v.id + " por " + Datos.soles(v.total)
-                    + ".\nEl stock vuelve a sus lotes y el monto sale del cuadre del turno.\n\nMotivo de la anulación:",
+                    + ".\nEl stock vuelve a sus lotes y el monto sale del cuadre del turno."
+                    + (Datos.EFECTIVO.equals(v.formaPago) ? "" : "\nEl cobro con " + v.formaPago + " queda reembolsado en la pasarela.")
+                    + "\n\nMotivo de la anulación:",
                     "Anular venta", JOptionPane.WARNING_MESSAGE);
             if (motivo == null) return;
             if (motivo.trim().isEmpty()) {

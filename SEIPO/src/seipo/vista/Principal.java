@@ -45,6 +45,7 @@ public class Principal extends JFrame {
     // Solo se crean para el administrador
     private PanelReportes reportes;
     private PanelUsuarios usuarios;
+    private PanelPagos pagos;
 
     private final Map<String, Seccion> secciones = new LinkedHashMap<>();
     private final Map<String, ItemMenu> items = new LinkedHashMap<>();
@@ -69,7 +70,9 @@ public class Principal extends JFrame {
         if (Sesion.esAdministrador()) {
             reportes = new PanelReportes();
             usuarios = new PanelUsuarios();
+            pagos = new PanelPagos();
             secciones.put("Reportes", new Seccion("GESTIÓN", "Indicadores de ventas e inventario, gráficos y exportación.", reportes));
+            secciones.put("Pagos", new Seccion("GESTIÓN", "Cobros de la pasarela de pago, su configuración y los datos del comprobante.", pagos));
             secciones.put("Usuarios", new Seccion("GESTIÓN", "Cuentas de acceso y roles del personal.", usuarios));
         }
         for (Map.Entry<String, Seccion> s : secciones.entrySet()) centro.add(s.getValue().panel, s.getKey());
@@ -87,11 +90,18 @@ public class Principal extends JFrame {
     }
 
     private JPanel menu() {
-        JPanel menu = new JPanel();
-        menu.setLayout(new BoxLayout(menu, BoxLayout.Y_AXIS));
-        menu.setBackground(UI.MENU);
-        menu.setBorder(new CompoundBorder(new MatteBorder(0, 0, 0, 1, UI.BORDE), new EmptyBorder(20, 12, 16, 12)));
-        menu.setPreferredSize(new Dimension(220, 0));
+        // Logo arriba y usuario abajo quedan fijos; si la ventana es baja, la lista de secciones se desplaza
+        JPanel lateral = new JPanel(new BorderLayout(0, 8));
+        lateral.setBackground(UI.MENU);
+        lateral.setBorder(new CompoundBorder(new MatteBorder(0, 0, 0, 1, UI.BORDE), new EmptyBorder(20, 12, 16, 12)));
+        lateral.setPreferredSize(new Dimension(220, 0));
+        JPanel arriba = new JPanel();
+        arriba.setLayout(new BoxLayout(arriba, BoxLayout.Y_AXIS));
+        arriba.setOpaque(false);
+        ListaMenu menu = new ListaMenu();
+        JPanel abajo = new JPanel();
+        abajo.setLayout(new BoxLayout(abajo, BoxLayout.Y_AXIS));
+        abajo.setOpaque(false);
 
         JLabel logo = new JLabel("Seipo");
         logo.setFont(UI.fuente(Font.BOLD, 28));
@@ -103,8 +113,8 @@ public class Principal extends JFrame {
         lema.setForeground(UI.TEXTO_SECUNDARIO);
         lema.setBorder(new EmptyBorder(0, 11, 0, 0));
         lema.setAlignmentX(LEFT_ALIGNMENT);
-        menu.add(logo);
-        menu.add(lema);
+        arriba.add(logo);
+        arriba.add(lema);
 
         String grupoActual = null;
         for (Map.Entry<String, Seccion> s : secciones.entrySet()) {
@@ -113,7 +123,7 @@ public class Principal extends JFrame {
                 JLabel g = new JLabel(grupoActual);
                 g.setFont(UI.fuente(Font.BOLD, 11));
                 g.setForeground(new Color(0x64748B));
-                g.setBorder(new EmptyBorder(22, 12, 6, 0));
+                g.setBorder(new EmptyBorder(menu.getComponentCount() == 0 ? 10 : 14, 12, 4, 0));
                 g.setAlignmentX(LEFT_ALIGNMENT);
                 menu.add(g);
             }
@@ -126,6 +136,10 @@ public class Principal extends JFrame {
         }
 
         menu.add(Box.createVerticalGlue());
+        JScrollPane desplazable = new JScrollPane(menu, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
+                ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        desplazable.setBorder(null);
+        desplazable.getViewport().setBackground(UI.MENU);
 
         // Tarjeta del usuario con sus iniciales
         JPanel usuario = new JPanel(new BorderLayout(10, 0));
@@ -138,15 +152,19 @@ public class Principal extends JFrame {
                 + Sesion.textoRol(Sesion.getRol()) + "</span></html>");
         datos.setFont(UI.fuente(Font.PLAIN, 12));
         usuario.add(datos, BorderLayout.CENTER);
-        menu.add(usuario);
-        menu.add(Box.createVerticalStrut(8));
+        abajo.add(usuario);
+        abajo.add(Box.createVerticalStrut(8));
 
         JButton salir = UI.botonSecundario("Cerrar sesión");
         salir.setAlignmentX(LEFT_ALIGNMENT);
         salir.setMaximumSize(new Dimension(Integer.MAX_VALUE, 36));
         salir.addActionListener(e -> cerrarSesion());
-        menu.add(salir);
-        return menu;
+        abajo.add(salir);
+
+        lateral.add(arriba, BorderLayout.NORTH);
+        lateral.add(desplazable, BorderLayout.CENTER);
+        lateral.add(abajo, BorderLayout.SOUTH);
+        return lateral;
     }
 
     private JPanel cabecera() {
@@ -219,6 +237,7 @@ public class Principal extends JFrame {
             case "Clientes": clientes.refrescar(); break;
             case "Reportes": reportes.refrescar(); break;
             case "Usuarios": usuarios.refrescar(); break;
+            case "Pagos": pagos.refrescar(); break;
             default: break;
         }
         cards.show(centro, nombre);
@@ -253,6 +272,22 @@ public class Principal extends JFrame {
         return sb.length() == 0 ? "?" : sb.toString();
     }
 
+    /** Lista de secciones: ocupa el ancho del menú y, si sobra alto, también todo el alto (la barra aparece solo si falta). */
+    private static class ListaMenu extends JPanel implements Scrollable {
+        ListaMenu() {
+            setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+            setBackground(UI.MENU);
+        }
+
+        @Override public Dimension getPreferredScrollableViewportSize() { return getPreferredSize(); }
+        @Override public int getScrollableUnitIncrement(Rectangle r, int o, int d) { return 16; }
+        @Override public int getScrollableBlockIncrement(Rectangle r, int o, int d) { return r.height; }
+        @Override public boolean getScrollableTracksViewportWidth() { return true; }
+        @Override public boolean getScrollableTracksViewportHeight() {
+            return getParent() instanceof JViewport && getParent().getHeight() > getPreferredSize().height;
+        }
+    }
+
     /** Ítem del menú lateral: resalta la sección activa con una barra de acento y muestra un aviso numérico. */
     private static class ItemMenu extends JButton {
         private boolean activo, encima;
@@ -263,11 +298,11 @@ public class Principal extends JFrame {
             setFont(UI.fuente(Font.PLAIN, 14));
             setForeground(UI.TEXTO_SECUNDARIO);
             setHorizontalAlignment(SwingConstants.LEFT);
-            setBorder(new EmptyBorder(9, 14, 9, 14));
+            setBorder(new EmptyBorder(7, 14, 7, 14));
             setContentAreaFilled(false);
             setFocusPainted(false);
             setAlignmentX(LEFT_ALIGNMENT);
-            setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
+            setMaximumSize(new Dimension(Integer.MAX_VALUE, 36));
             setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
             addMouseListener(new MouseAdapter() {
                 @Override public void mouseEntered(MouseEvent e) { encima = true; repaint(); }
