@@ -172,6 +172,33 @@ public class ConexionBD {
                         "    cantidad INT NOT NULL," +
                         "    FOREIGN KEY (orden_id) REFERENCES ordenes_compra(id) ON DELETE CASCADE," +
                         "    FOREIGN KEY (producto_id) REFERENCES productos(id)" +
+                        ");",
+
+                // Turno de caja: cada usuario abre uno con el efectivo inicial y al cerrarlo cuadra lo contado contra lo esperado
+                "CREATE TABLE IF NOT EXISTS turnos (" +
+                        "    id INT AUTO_INCREMENT PRIMARY KEY," +
+                        "    usuario_id INT NOT NULL," +
+                        "    estado VARCHAR(20) NOT NULL DEFAULT 'ABIERTO'," +
+                        "    abierto_en DATETIME NOT NULL," +
+                        "    monto_inicial DECIMAL(10, 2) NOT NULL," +
+                        "    cerrado_en DATETIME," +
+                        "    efectivo_esperado DECIMAL(10, 2)," +
+                        "    efectivo_contado DECIMAL(10, 2)," +
+                        "    observacion VARCHAR(255)," +
+                        "    FOREIGN KEY (usuario_id) REFERENCES usuarios(id)," +
+                        "    INDEX idx_turnos_usuario (usuario_id, estado)" +
+                        ");",
+
+                // Unidades que cada venta tomó de cada lote, para devolverlas al mismo lote si la venta se anula
+                "CREATE TABLE IF NOT EXISTS venta_lotes (" +
+                        "    id INT AUTO_INCREMENT PRIMARY KEY," +
+                        "    venta_id INT NOT NULL," +
+                        "    lote_id INT NOT NULL," +
+                        "    producto_id INT NOT NULL," +
+                        "    cantidad INT NOT NULL," +
+                        "    FOREIGN KEY (venta_id) REFERENCES ventas(id) ON DELETE CASCADE," +
+                        "    FOREIGN KEY (lote_id) REFERENCES lotes(id)," +
+                        "    FOREIGN KEY (producto_id) REFERENCES productos(id)" +
                         ");"
         };
 
@@ -183,6 +210,7 @@ public class ConexionBD {
             }
             actualizarUsuarios(stmt);
             actualizarInventario(stmt);
+            actualizarVentas(stmt);
         } catch (SQLException e) {
             System.err.println("Aviso/Error al autoinicializar la BD: " + e.getMessage());
         }
@@ -215,6 +243,25 @@ public class ConexionBD {
                     "SELECT p.id, 'INICIAL', p.stock, p.stock FROM productos p " +
                     "WHERE p.stock > 0 AND NOT EXISTS (SELECT 1 FROM lotes l WHERE l.producto_id = p.id)");
         }
+    }
+
+    /**
+     * Agrega a las ventas el desglose de importes, el cliente, quién vendió, el turno de caja, el efectivo recibido
+     * y los datos de anulación. Las ventas anteriores quedan COMPLETADAS y sin turno.
+     */
+    private static void actualizarVentas(Statement stmt) throws SQLException {
+        agregarColumna(stmt, "ALTER TABLE ventas ADD COLUMN subtotal DECIMAL(10, 2)");
+        agregarColumna(stmt, "ALTER TABLE ventas ADD COLUMN descuento DECIMAL(10, 2) NOT NULL DEFAULT 0");
+        agregarColumna(stmt, "ALTER TABLE ventas ADD COLUMN cliente_id INT");
+        agregarColumna(stmt, "ALTER TABLE ventas ADD COLUMN usuario_id INT");
+        agregarColumna(stmt, "ALTER TABLE ventas ADD COLUMN turno_id INT");
+        agregarColumna(stmt, "ALTER TABLE ventas ADD COLUMN monto_recibido DECIMAL(10, 2)");
+        agregarColumna(stmt, "ALTER TABLE ventas ADD COLUMN estado VARCHAR(20) NOT NULL DEFAULT 'COMPLETADA'");
+        agregarColumna(stmt, "ALTER TABLE ventas ADD COLUMN anulado_por INT");
+        agregarColumna(stmt, "ALTER TABLE ventas ADD COLUMN anulado_en DATETIME");
+        agregarColumna(stmt, "ALTER TABLE ventas ADD COLUMN motivo_anulacion VARCHAR(255)");
+        agregarColumna(stmt, "ALTER TABLE detalle_ventas ADD COLUMN producto_id INT");
+        agregarColumna(stmt, "ALTER TABLE detalle_ventas ADD COLUMN precio_unitario DECIMAL(10, 2)");
     }
 
     /** Ejecuta un ALTER TABLE ... ADD COLUMN; devuelve false si la columna ya existía. */

@@ -11,25 +11,38 @@ import java.util.List;
 public class ControladorClientes {
 
     public static class ClienteVO {
+        public int id;
         public String nombre, documento, telefono, correo;
         public int numCompras;
         public String descuentoVIP;
+        /** Porcentaje de descuento VIP que se aplica al venderle. */
+        public double porcentajeVIP;
 
-        public ClienteVO(String nombre, String documento, String telefono, String correo, int numCompras, String descuentoVIP) {
+        public ClienteVO(int id, String nombre, String documento, String telefono, String correo, int numCompras) {
+            this.id = id;
             this.nombre = nombre;
             this.documento = documento;
             this.telefono = telefono;
             this.correo = correo;
             this.numCompras = numCompras;
-            this.descuentoVIP = descuentoVIP;
+            if (numCompras >= 5) { porcentajeVIP = 15; descuentoVIP = "Platino (15%)"; }
+            else if (numCompras >= 3) { porcentajeVIP = 10; descuentoVIP = "Oro (10%)"; }
+            else if (numCompras >= 1) { porcentajeVIP = 5; descuentoVIP = "Plata (5%)"; }
+            else { porcentajeVIP = 0; descuentoVIP = "Sin Descuento (0%)"; }
+        }
+
+        @Override
+        public String toString() {
+            return nombre + " · " + documento;
         }
     }
 
     public List<ClienteVO> buscarClientes(String textoBusqueda) throws SQLException {
         List<ClienteVO> lista = new ArrayList<>();
-        String sql = "SELECT c.nombre, c.documento, c.telefono, c.correo, " +
-                "(SELECT COUNT(*) FROM ventas v WHERE v.forma_pago IS NOT NULL) AS total_ventas " +
-                "FROM clientes c WHERE c.nombre LIKE ? OR c.documento LIKE ?";
+        // Solo cuentan las compras no anuladas del propio cliente
+        String sql = "SELECT c.id, c.nombre, c.documento, c.telefono, c.correo, " +
+                "(SELECT COUNT(*) FROM ventas v WHERE v.cliente_id = c.id AND v.estado = 'COMPLETADA') AS total_ventas " +
+                "FROM clientes c WHERE c.nombre LIKE ? OR c.documento LIKE ? ORDER BY c.nombre";
 
         try (Connection con = ConexionBD.obtenerConexion();
              PreparedStatement pst = con.prepareStatement(sql)) {
@@ -39,18 +52,8 @@ public class ControladorClientes {
 
             try (ResultSet rs = pst.executeQuery()) {
                 while (rs.next()) {
-                    String nombre = rs.getString("nombre");
-                    String documento = rs.getString("documento");
-                    String telefono = rs.getString("telefono");
-                    String correo = rs.getString("correo");
-                    int numCompras = rs.getInt("total_ventas");
-
-                    String descuentoVIP = "Sin Descuento (0%)";
-                    if (numCompras >= 5) descuentoVIP = "Platino (15%)";
-                    else if (numCompras >= 3) descuentoVIP = "Oro (10%)";
-                    else if (numCompras >= 1) descuentoVIP = "Plata (5%)";
-
-                    lista.add(new ClienteVO(nombre, documento, telefono, correo, numCompras, descuentoVIP));
+                    lista.add(new ClienteVO(rs.getInt("id"), rs.getString("nombre"), rs.getString("documento"),
+                            rs.getString("telefono"), rs.getString("correo"), rs.getInt("total_ventas")));
                 }
             }
         }

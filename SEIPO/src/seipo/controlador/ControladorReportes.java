@@ -96,9 +96,9 @@ public class ControladorReportes {
 
     private KpisVO kpis(Connection con, LocalDate desde, LocalDate hasta) throws SQLException {
         String sql = "SELECT v.n, v.ingresos, d.unidades, d.importe FROM " +
-                "(SELECT COUNT(*) n, COALESCE(SUM(total), 0) ingresos FROM ventas WHERE fecha BETWEEN ? AND ?) v, " +
+                "(SELECT COUNT(*) n, COALESCE(SUM(total), 0) ingresos FROM ventas WHERE estado = 'COMPLETADA' AND fecha BETWEEN ? AND ?) v, " +
                 "(SELECT COALESCE(SUM(dv.cantidad), 0) unidades, COALESCE(SUM(dv.importe), 0) importe " +
-                " FROM detalle_ventas dv JOIN ventas x ON x.id = dv.venta_id WHERE x.fecha BETWEEN ? AND ?) d";
+                " FROM detalle_ventas dv JOIN ventas x ON x.id = dv.venta_id WHERE x.estado = 'COMPLETADA' AND x.fecha BETWEEN ? AND ?) d";
         KpisVO k = new KpisVO();
         try (PreparedStatement pst = con.prepareStatement(sql)) {
             rango(pst, 2, desde, hasta);
@@ -116,7 +116,7 @@ public class ControladorReportes {
 
     private void cargarSerie(Connection con, DatosReporteVO vo) throws SQLException {
         Map<LocalDate, Double> porFecha = new HashMap<>();
-        String sql = "SELECT fecha, SUM(total) FROM ventas WHERE fecha BETWEEN ? AND ? GROUP BY fecha";
+        String sql = "SELECT fecha, SUM(total) FROM ventas WHERE estado = 'COMPLETADA' AND fecha BETWEEN ? AND ? GROUP BY fecha";
         try (PreparedStatement pst = con.prepareStatement(sql)) {
             rango(pst, 1, vo.desde, vo.hasta);
             try (ResultSet rs = pst.executeQuery()) {
@@ -155,7 +155,7 @@ public class ControladorReportes {
     }
 
     private void cargarPorHora(Connection con, DatosReporteVO vo) throws SQLException {
-        String sql = "SELECT HOUR(creado_en), SUM(total) FROM ventas WHERE fecha BETWEEN ? AND ? GROUP BY HOUR(creado_en)";
+        String sql = "SELECT HOUR(creado_en), SUM(total) FROM ventas WHERE estado = 'COMPLETADA' AND fecha BETWEEN ? AND ? GROUP BY HOUR(creado_en)";
         try (PreparedStatement pst = con.prepareStatement(sql)) {
             rango(pst, 1, vo.desde, vo.hasta);
             try (ResultSet rs = pst.executeQuery()) {
@@ -170,7 +170,7 @@ public class ControladorReportes {
         if (vo.anio == hoy.getYear()) {
             for (int m = hoy.getMonthValue(); m < 12; m++) vo.mesesActual[m] = Double.NaN;
         }
-        String sql = "SELECT YEAR(fecha), MONTH(fecha), SUM(total) FROM ventas WHERE fecha BETWEEN ? AND ? " +
+        String sql = "SELECT YEAR(fecha), MONTH(fecha), SUM(total) FROM ventas WHERE estado = 'COMPLETADA' AND fecha BETWEEN ? AND ? " +
                 "GROUP BY YEAR(fecha), MONTH(fecha)";
         try (PreparedStatement pst = con.prepareStatement(sql)) {
             rango(pst, 1, LocalDate.of(vo.anio - 1, 1, 1), LocalDate.of(vo.anio, 12, 31));
@@ -208,7 +208,7 @@ public class ControladorReportes {
     private void cargarProductos(Connection con, DatosReporteVO vo, Map<String, String> categoriaDe,
                                  Map<String, InventarioVO> inventario) throws SQLException {
         String sql = "SELECT d.producto_nombre, SUM(d.cantidad), SUM(d.importe) FROM detalle_ventas d " +
-                "JOIN ventas v ON v.id = d.venta_id WHERE v.fecha BETWEEN ? AND ? " +
+                "JOIN ventas v ON v.id = d.venta_id WHERE v.estado = 'COMPLETADA' AND v.fecha BETWEEN ? AND ? " +
                 "GROUP BY d.producto_nombre ORDER BY SUM(d.cantidad) DESC";
         Map<String, GrupoVO> categorias = new HashMap<>();
         try (PreparedStatement pst = con.prepareStatement(sql)) {
@@ -235,7 +235,7 @@ public class ControladorReportes {
     }
 
     private void cargarFormasPago(Connection con, DatosReporteVO vo) throws SQLException {
-        String sql = "SELECT forma_pago, COUNT(*), SUM(total) FROM ventas WHERE fecha BETWEEN ? AND ? " +
+        String sql = "SELECT forma_pago, COUNT(*), SUM(total) FROM ventas WHERE estado = 'COMPLETADA' AND fecha BETWEEN ? AND ? " +
                 "GROUP BY forma_pago ORDER BY SUM(total) DESC";
         try (PreparedStatement pst = con.prepareStatement(sql)) {
             rango(pst, 1, vo.desde, vo.hasta);

@@ -1,5 +1,6 @@
 package seipo.vista;
 
+import seipo.controlador.ControladorCaja;
 import seipo.controlador.ControladorCompras;
 import seipo.controlador.ControladorMermas;
 import seipo.modelo.Datos;
@@ -34,7 +35,8 @@ public class Principal extends JFrame {
 
     private final CardLayout cards = new CardLayout();
     private final JPanel centro = new JPanel(cards);
-    private final PanelVentas ventas = new PanelVentas();
+    private final PanelVentas ventas = new PanelVentas(() -> mostrar("Caja"));
+    private final PanelCaja caja = new PanelCaja(this::actualizarAviso);
     private final PanelProductos productos = new PanelProductos();
     private final PanelInventario inventario = new PanelInventario();
     private final PanelMermas mermas = new PanelMermas();
@@ -57,7 +59,8 @@ public class Principal extends JFrame {
         setMinimumSize(new Dimension(1050, 650));
         setLocationRelativeTo(null);
 
-        secciones.put("Ventas", new Seccion("OPERACIÓN", "Busque productos, arme la venta y cobre en caja.", ventas));
+        secciones.put("Ventas", new Seccion("OPERACIÓN", "Busque productos, arme la venta, elija el cliente y cobre.", ventas));
+        secciones.put("Caja", new Seccion("OPERACIÓN", "Apertura y cierre de turno, cuadre de caja y ventas del turno.", caja));
         secciones.put("Clientes", new Seccion("OPERACIÓN", "Consulte y registre clientes con su DNI o RUC.", clientes));
         secciones.put("Productos", new Seccion("INVENTARIO", "Catálogo de productos, precios y stock mínimo y máximo.", productos));
         secciones.put("Inventario", new Seccion("INVENTARIO", "Resumen del almacén, lotes en orden FEFO y recepción de mercadería.", inventario));
@@ -207,6 +210,8 @@ public class Principal extends JFrame {
 
     private void mostrar(String nombre) {
         switch (nombre) {
+            case "Ventas": ventas.refrescar(); break;
+            case "Caja": caja.refrescar(); break;
             case "Productos": productos.refrescar(); break;
             case "Inventario": inventario.refrescar(); break;
             case "Mermas": mermas.refrescar(); break;
@@ -224,7 +229,15 @@ public class Principal extends JFrame {
     }
 
     private void cerrarSesion() {
-        if (JOptionPane.showConfirmDialog(this, "¿Desea cerrar la sesión?", "Cerrar sesión",
+        String pregunta = "¿Desea cerrar la sesión?";
+        try {
+            if (new ControladorCaja().turnoAbierto() != null) {
+                pregunta = "Su turno de caja sigue abierto (puede cerrarlo en la sección Caja).\n" + pregunta;
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+        if (JOptionPane.showConfirmDialog(this, pregunta, "Cerrar sesión",
                 JOptionPane.YES_NO_OPTION) != JOptionPane.YES_OPTION) return;
         revisionAlertas.stop();
         Sesion.cerrar();

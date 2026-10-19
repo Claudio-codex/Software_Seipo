@@ -152,6 +152,8 @@ public class UI {
         t.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
             @Override
             public Component getTableCellRendererComponent(JTable tabla, Object v, boolean sel, boolean foco, int fila, int col) {
+                // El renderer se reutiliza: sin esto, el color de una fila marcada pasa a las filas siguientes
+                setBackground(null);
                 Component c = super.getTableCellRendererComponent(tabla, v, sel, foco, fila, col);
                 if (!sel) {
                     Color fondo = fondoDeFila.apply(tabla.convertRowIndexToModel(fila));

@@ -14,6 +14,10 @@ public class Datos {
     /** Días antes del vencimiento en que un lote se marca como "Por vencer". */
     public static final int DIAS_POR_VENCER = 30;
     public static final double IGV = 0.18;
+    public static final String EFECTIVO = "Efectivo";
+    public static final String[] FORMAS_PAGO = {EFECTIVO, "Tarjeta", "Yape o Plin"};
+    /** Fecha y hora para el historial de ventas y turnos. */
+    public static final DateTimeFormatter FECHA_HORA = DateTimeFormatter.ofPattern("dd/MM/yy HH:mm");
 
     public static class ProductoVenta {
         public int id;
@@ -38,5 +42,15 @@ public class Datos {
 
     public static String soles(double v) {
         return String.format("S/ %.2f", v);
+    }
+
+    /** Redondea a céntimos, como se guarda en la base de datos. */
+    public static double redondear(double v) {
+        return Math.round(v * 100) / 100.0;
+    }
+
+    /** Total de una venta: (subtotal - descuento) más IGV, redondeado. PanelVentas y ControladorVentas lo usan. */
+    public static double totalVenta(double subtotal, double descuento) {
+        return redondear((subtotal - descuento) * (1 + IGV));
     }
 }
