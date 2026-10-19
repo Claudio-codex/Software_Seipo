@@ -119,3 +119,10 @@ Si el programa no puede conectarse, la ventana de inicio de sesión indica qué 
 * La corrida 2 dio 14/15. Se aclaró el requerimiento del descuento VIP (OBS-01) y la prueba CP-06 se ajustó a ese criterio.
 
 Informe completo: [docs/pruebas/Informe_Pruebas.md](docs/pruebas/Informe_Pruebas.md).
+
+## Manuales
+Manuales de usuario en lenguaje simple, con los procedimientos paso a paso, las reglas del negocio, los mensajes de error y las preguntas frecuentes:
+* [Manual del Personal de Tienda](docs/manuales/Manual_Personal.md) ([Word](docs/manuales/Manual_Personal.docx))
+* [Manual del Administrador](docs/manuales/Manual_Administrador.md) ([Word](docs/manuales/Manual_Administrador.docx))
+
+Las capturas de pantalla están marcadas como `[CAPTURA …]`; al final de cada manual hay una lista de las capturas pendientes.
