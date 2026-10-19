@@ -32,6 +32,7 @@ Sistema de venta e inventario
 * Para cobrar, cada usuario debe **abrir su turno** en la sección **Caja** indicando el efectivo inicial. Al terminar, **cierra el turno** contando el efectivo: el sistema calcula lo esperado (inicial + ventas en efectivo) y registra si sobra o falta dinero (con una observación obligatoria si hay diferencia).
 * En **Ventas** se agregan productos escaneando el código o escribiendo el nombre (`3*CODIGO` agrega 3 unidades). La cantidad se cambia en la tabla con doble clic o con las teclas `+` y `-`; `Supr` quita el ítem.
 * Se puede elegir un **cliente** registrado (o registrarlo ahí mismo): su descuento VIP se aplica solo. En efectivo se ingresa el monto recibido y se muestra el **vuelto**.
+* El total se **redondea hacia abajo a 10 céntimos** (no se usan monedas de 1 ni de 5 céntimos) y la rebaja aparece como "Redondeo". Los montos en efectivo (recibido, inicial y contado) tampoco aceptan céntimos sueltos.
 * Atajos: `F2` buscar producto, `F4` cliente, `F6` descuento, `F9` efectivo, `F10` tarjeta, `F11` Yape o Plin.
 * Solo el **administrador** puede **anular** una venta (desde Caja), y solo mientras el turno siga abierto; el stock vuelve a los mismos lotes.
 

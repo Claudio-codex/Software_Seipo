@@ -54,6 +54,7 @@ public class ControladorCaja {
 
     public void abrirTurno(double montoInicial) throws SQLException {
         if (montoInicial < 0) throw new SQLException("El monto inicial no puede ser negativo.");
+        if (!Datos.esMontoEnMonedas(montoInicial)) throw new SQLException("El monto inicial no puede tener monedas de 1 ni 5 céntimos.");
         try (Connection con = ConexionBD.obtenerConexion()) {
             con.setAutoCommit(false);
             try {
@@ -85,6 +86,7 @@ public class ControladorCaja {
      */
     public void cerrarTurno(int turnoId, double contado, String observacion) throws SQLException {
         if (contado < 0) throw new SQLException("El efectivo contado no puede ser negativo.");
+        if (!Datos.esMontoEnMonedas(contado)) throw new SQLException("El efectivo contado no puede tener monedas de 1 ni 5 céntimos.");
         try (Connection con = ConexionBD.obtenerConexion()) {
             con.setAutoCommit(false);
             try {

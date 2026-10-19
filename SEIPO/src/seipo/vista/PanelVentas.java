@@ -35,7 +35,7 @@ public class PanelVentas extends JPanel {
     private final JTable tabla = UI.tabla(modelo);
     private final List<ProductoVenta> items = new ArrayList<>();
     private final List<Integer> cantidades = new ArrayList<>();
-    private final JLabel lblSub = new JLabel(), lblDesc = new JLabel(), lblIgv = new JLabel(), lblTotal = new JLabel();
+    private final JLabel lblSub = new JLabel(), lblDesc = new JLabel(), lblIgv = new JLabel(), lblRedondeo = new JLabel(), lblTotal = new JLabel();
     private final JLabel lblArticulos = UI.ayuda(" ");
     private double descuentoPct = 0;
 
@@ -174,12 +174,12 @@ public class PanelVentas extends JPanel {
         totales.setBackground(UI.SUPERFICIE);
         totales.setBorder(new CompoundBorder(new LineBorder(UI.BORDE, 1, true), new EmptyBorder(12, 16, 12, 16)));
         totales.setAlignmentX(LEFT_ALIGNMENT);
-        totales.setMaximumSize(new Dimension(Integer.MAX_VALUE, 240));
+        totales.setMaximumSize(new Dimension(Integer.MAX_VALUE, 260));
         GridBagConstraints g = new GridBagConstraints();
         g.fill = GridBagConstraints.HORIZONTAL;
         g.insets = new Insets(2, 0, 2, 0);
-        String[] conceptos = {"Subtotal", "Descuento", "IGV 18%"};
-        JLabel[] montos = {lblSub, lblDesc, lblIgv};
+        String[] conceptos = {"Subtotal", "Descuento", "IGV 18%", "Redondeo"};
+        JLabel[] montos = {lblSub, lblDesc, lblIgv, lblRedondeo};
         for (int i = 0; i < conceptos.length; i++) {
             g.gridy = i;
             g.gridx = 0; g.weightx = 1;
@@ -203,12 +203,12 @@ public class PanelVentas extends JPanel {
             montos[i].setHorizontalAlignment(SwingConstants.RIGHT);
             totales.add(montos[i], g);
         }
-        g.gridy = 3; g.gridx = 0; g.gridwidth = 2;
+        g.gridy = 4; g.gridx = 0; g.gridwidth = 2;
         JSeparator sep = new JSeparator();
         sep.setForeground(UI.BORDE);
         g.insets = new Insets(8, 0, 6, 0);
         totales.add(sep, g);
-        g.gridy = 4; g.gridwidth = 1; g.insets = new Insets(0, 0, 0, 0);
+        g.gridy = 5; g.gridwidth = 1; g.insets = new Insets(0, 0, 0, 0);
         JLabel t = new JLabel("TOTAL");
         t.setFont(UI.fuente(Font.BOLD, 16));
         totales.add(t, g);
@@ -217,8 +217,6 @@ public class PanelVentas extends JPanel {
         lblTotal.setForeground(UI.ACENTO);
         lblTotal.setHorizontalAlignment(SwingConstants.RIGHT);
         totales.add(lblTotal, g);
-        g.gridy = 5; g.gridx = 0; g.gridwidth = 2; g.insets = new Insets(4, 0, 0, 0);
-        totales.add(lblArticulos, g);
         return totales;
     }
 
@@ -230,7 +228,12 @@ public class PanelVentas extends JPanel {
         JLabel cobrarCon = new JLabel("COBRAR CON");
         cobrarCon.setFont(UI.fuente(Font.BOLD, 11));
         cobrarCon.setForeground(UI.TEXTO_SECUNDARIO);
-        pago.add(cobrarCon, BorderLayout.NORTH);
+        // Junto al título va el conteo de productos y unidades de la venta
+        JPanel titulo = new JPanel(new BorderLayout());
+        titulo.setOpaque(false);
+        titulo.add(cobrarCon, BorderLayout.WEST);
+        titulo.add(lblArticulos, BorderLayout.EAST);
+        pago.add(titulo, BorderLayout.NORTH);
         JPanel fila = new JPanel(new GridLayout(1, 0, 8, 0));
         fila.setOpaque(false);
         String[] teclas = {"F9", "F10", "F11"};
@@ -663,7 +666,9 @@ public class PanelVentas extends JPanel {
         double total = Datos.totalVenta(sub, desc);
         lblSub.setText(Datos.soles(sub));
         lblDesc.setText((descuentoPct > 0 ? "− " : "") + Datos.soles(desc) + (descuentoPct > 0 ? "  (" + PORCENTAJE.format(descuentoPct) + "%)" : ""));
-        lblIgv.setText(Datos.soles(total - (sub - desc)));
+        lblIgv.setText(Datos.soles(Datos.igvVenta(sub, desc)));
+        double redondeo = Datos.redondeoVenta(sub, desc);
+        lblRedondeo.setText((redondeo < 0 ? "− " : "") + Datos.soles(-redondeo));
         lblTotal.setText(Datos.soles(total));
         int unidades = cantidades.stream().mapToInt(Integer::intValue).sum();
         lblArticulos.setText(items.isEmpty() ? "Sin productos" : items.size() + " producto(s) · " + unidades + " unidad(es)");
@@ -718,7 +723,7 @@ public class PanelVentas extends JPanel {
             Double r = leerMonto(txtRecibido.getText());
             if (r == null) {
                 lblVuelto.setForeground(UI.TEXTO_SECUNDARIO);
-                lblVuelto.setText("Ingrese el monto recibido");
+                lblVuelto.setText("Ingrese el monto recibido (sin monedas de 1 ni 5 céntimos)");
             } else if (r < total) {
                 lblVuelto.setForeground(UI.PELIGRO);
                 lblVuelto.setText("Faltan " + Datos.soles(total - r));

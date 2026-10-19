@@ -49,8 +49,27 @@ public class Datos {
         return Math.round(v * 100) / 100.0;
     }
 
-    /** Total de una venta: (subtotal - descuento) más IGV, redondeado. PanelVentas y ControladorVentas lo usan. */
+    /** IGV de una venta: 18 % de (subtotal - descuento), en céntimos. */
+    public static double igvVenta(double subtotal, double descuento) {
+        return redondear((subtotal - descuento) * IGV);
+    }
+
+    /**
+     * Total a cobrar: (subtotal - descuento) más IGV, redondeado hacia abajo a 10 céntimos, porque no circulan
+     * monedas de 1 ni de 5 céntimos (el redondeo favorece al cliente). PanelVentas y ControladorVentas lo usan.
+     */
     public static double totalVenta(double subtotal, double descuento) {
-        return redondear((subtotal - descuento) * (1 + IGV));
+        double exacto = redondear(subtotal - descuento + igvVenta(subtotal, descuento));
+        return Math.floor(exacto * 10 + 1e-6) / 10;
+    }
+
+    /** Lo que se rebajó al redondear el total: 0 o un monto negativo de hasta 9 céntimos. */
+    public static double redondeoVenta(double subtotal, double descuento) {
+        return redondear(totalVenta(subtotal, descuento) - (subtotal - descuento) - igvVenta(subtotal, descuento));
+    }
+
+    /** Indica si un monto en efectivo se puede pagar con monedas de 10 céntimos en adelante. */
+    public static boolean esMontoEnMonedas(double v) {
+        return Math.abs(v * 10 - Math.round(v * 10)) < 1e-6;
     }
 }
