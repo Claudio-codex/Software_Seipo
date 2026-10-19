@@ -1,0 +1,9 @@
+# Configuración local de la base de datos (copiar de config.ejemplo.properties)
+config.properties
+
+# Respaldos generados por respaldo.bat (contienen datos y contraseñas)
+respaldos/
+
+# Instaladores
+*.msi
+*.exe

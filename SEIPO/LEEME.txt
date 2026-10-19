@@ -1,7 +1,13 @@
-SEIPO - Java Swing (NetBeans)
-Usuario: admin   Contraseña: 1234
+SEIPO - Sistema de venta e inventario (Java Swing)
+Usuario: admin   Contraseña: 123
+Clase principal: seipo.vista.Login
 
-Abrir: NetBeans > File > Open Project > carpeta SEIPO > F6 (Run).
-Si NetBeans no lo reconoce: File > New Project > Java with Ant > Java Application (nombre SEIPO,
-desmarcar "Create Main Class"), y copie la carpeta src/seipo dentro del nuevo proyecto.
-Clase principal: seipo.Login
+Base de datos: MariaDB 12.3 (o XAMPP). Los datos de conexión van en config.properties,
+en la raíz del repositorio: copie config.ejemplo.properties como config.properties
+(usuario seipo, clave Seipo2026). Si no existe, el programa lo crea con los valores de XAMPP.
+
+Abrir: IntelliJ IDEA > abrir la carpeta raíz del repositorio.
+       NetBeans > File > Open Project > carpeta SEIPO > F6 (Run).
+
+Respaldos: respaldo.bat en la raíz del repositorio.
+Instalación completa, creación del usuario seipo e importación de datos: ver README.md.

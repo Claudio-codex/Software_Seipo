@@ -1,23 +1,112 @@
 package seipo.modelo;
 
+import java.io.IOException;
+import java.io.Reader;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Properties;
 
 public class ConexionBD {
-    private static final String URL_SERVIDOR = "jdbc:mysql://localhost:3306/?useSSL=false&serverTimezone=America/Lima";
-    private static final String URL_DB = "jdbc:mysql://localhost:3306/seipo_db?useSSL=false&serverTimezone=America/Lima";
+    private static final String PARAMETROS_URL = "?useSSL=false&serverTimezone=America/Lima";
 
-    private static final String USER = "root";
-    private static final String PASSWORD = "";
+    /** Contenido de config.properties cuando no existe: los valores de un XAMPP recién instalado. */
+    private static final String CONFIG_POR_DEFECTO =
+            "# Conexión de SEIPO con la base de datos (MariaDB o MySQL).\n" +
+            "# Copia config.ejemplo.properties para usar el usuario 'seipo'.\n" +
+            "db.host=localhost\n" +
+            "db.puerto=3306\n" +
+            "db.base=seipo_db\n" +
+            "db.usuario=root\n" +
+            "db.clave=\n" +
+            "\n" +
+            "# Ruta de mariadb-dump.exe o mysqldump.exe para respaldo.bat (opcional; solo la usa el respaldo).\n" +
+            "#respaldo.dump=C:\\Program Files\\MariaDB 12.3\\bin\\mariadb-dump.exe\n";
+
+    private static Path archivoConfig;
+    private static String urlServidor;
+    private static String urlBase;
+    private static String base;
+    private static String usuario;
+    private static String clave;
 
     /** Se pone en true cuando el esquema ya se creó o actualizó en esta ejecución del programa. */
     private static volatile boolean esquemaListo;
 
     public static Connection obtenerConexion() throws SQLException {
+        cargarConfiguracion();
         if (!esquemaListo) inicializarBaseDatos();
-        return DriverManager.getConnection(URL_DB, USER, PASSWORD);
+        return DriverManager.getConnection(urlBase, usuario, clave);
+    }
+
+    /**
+     * Lee config.properties del directorio de trabajo (o de la ruta -Dseipo.config) una sola vez por ejecución.
+     * Si el archivo no existe lo crea con los valores por defecto.
+     */
+    private static synchronized void cargarConfiguracion() throws SQLException {
+        if (urlBase != null) return;
+        String ruta = System.getProperty("seipo.config");
+        Path archivo = Paths.get(ruta != null ? ruta : "config.properties").toAbsolutePath();
+        Properties config = new Properties();
+        try {
+            if (Files.exists(archivo)) {
+                try (Reader lector = Files.newBufferedReader(archivo, StandardCharsets.UTF_8)) {
+                    config.load(lector);
+                }
+            } else {
+                Files.write(archivo, CONFIG_POR_DEFECTO.getBytes(StandardCharsets.UTF_8));
+                System.out.println("Se creó " + archivo + " con los valores por defecto.");
+            }
+        } catch (IOException e) {
+            System.err.println("Aviso: no se pudo leer ni crear " + archivo + "; se usan los valores por defecto. " + e.getMessage());
+        }
+        String host = config.getProperty("db.host", "localhost").trim();
+        String puerto = config.getProperty("db.puerto", "3306").trim();
+        String nombreBase = config.getProperty("db.base", "seipo_db").trim();
+        if (!nombreBase.matches("[A-Za-z0-9_]+")) {
+            throw new SQLException("El nombre de la base en " + archivo + " solo puede tener letras, números y guiones bajos: " + nombreBase);
+        }
+        archivoConfig = archivo;
+        base = nombreBase;
+        usuario = config.getProperty("db.usuario", "root").trim();
+        clave = config.getProperty("db.clave", "");
+        urlServidor = "jdbc:mysql://" + host + ":" + puerto + "/" + PARAMETROS_URL;
+        urlBase = "jdbc:mysql://" + host + ":" + puerto + "/" + base + PARAMETROS_URL;
+    }
+
+    /** Traduce un error de conexión a un mensaje que dice qué revisar. */
+    public static String mensajeError(SQLException e) {
+        String archivo = archivoConfig != null ? archivoConfig.toString() : "config.properties";
+        String estado = e.getSQLState() != null ? e.getSQLState() : "";
+        if (estado.startsWith("08")) {
+            return "No se pudo conectar con el servidor de base de datos.\n\n" +
+                    "Revise que:\n" +
+                    "• El servicio de MariaDB esté iniciado (Servicios de Windows, o MySQL en el panel de XAMPP).\n" +
+                    "• El host y el puerto (db.host, db.puerto) sean correctos.\n\n" +
+                    "Configuración: " + archivo;
+        }
+        if (e.getMessage() != null && e.getMessage().contains("authentication plugin")) {
+            // Por ejemplo, root en MariaDB para Windows entra con la autenticación de Windows (auth_gssapi_client)
+            return "El usuario " + usuario + " usa un método de autenticación que el programa no admite.\n\n" +
+                    "Use un usuario con contraseña (por ejemplo 'seipo') en db.usuario y db.clave de:\n" + archivo;
+        }
+        switch (e.getErrorCode()) {
+            case 1045: // ER_ACCESS_DENIED_ERROR
+                return "El servidor rechazó el usuario o la contraseña.\n\n" +
+                        "Revise db.usuario y db.clave en:\n" + archivo;
+            case 1044: // ER_DBACCESS_DENIED_ERROR
+            case 1049: // ER_BAD_DB_ERROR
+                return "El usuario no tiene acceso a la base " + base + " o la base no existe.\n\n" +
+                        "Revise que el usuario tenga permisos sobre la base (GRANT ALL ON " + base + ".*)\n" +
+                        "y el valor de db.base en:\n" + archivo;
+            default:
+                return "Error de conexión con la base de datos:\n" + e.getMessage() + "\n\nConfiguración: " + archivo;
+        }
     }
 
     /**
@@ -32,8 +121,8 @@ public class ConexionBD {
             System.err.println("Error: No se encontró el driver JDBC de MySQL.");
         }
         String[] sqls = {
-                "CREATE DATABASE IF NOT EXISTS seipo_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;",
-                "USE seipo_db;",
+                "CREATE DATABASE IF NOT EXISTS `" + base + "` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;",
+                "USE `" + base + "`;",
 
                 "CREATE TABLE IF NOT EXISTS usuarios (" +
                         "    id INT AUTO_INCREMENT PRIMARY KEY," +
@@ -251,7 +340,7 @@ public class ConexionBD {
                         ");"
         };
 
-        try (Connection conn = DriverManager.getConnection(URL_SERVIDOR, USER, PASSWORD);
+        try (Connection conn = DriverManager.getConnection(urlServidor, usuario, clave);
              Statement stmt = conn.createStatement()) {
 
             for (String sql : sqls) {
@@ -354,8 +443,7 @@ public class ConexionBD {
                 System.out.println("¡Base de datos y tablas creadas/verificadas con éxito! Conexión lista.");
             }
         } catch (SQLException e) {
-            System.err.println("¡Falló la conexión! Revisa que MySQL esté encendido.");
-            e.printStackTrace();
+            System.err.println("¡Falló la conexión!\n" + ConexionBD.mensajeError(e));
         }
     }
 }

@@ -1,2 +1,5 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+
+# Los scripts de Windows necesitan fin de línea CRLF
+*.bat text eol=crlf

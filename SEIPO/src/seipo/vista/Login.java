@@ -1,6 +1,7 @@
 package seipo.vista;
 
 import seipo.controlador.ControladorLogin;
+import seipo.modelo.ConexionBD;
 import java.awt.*;
 import java.sql.SQLException;
 import java.util.Locale;
@@ -116,7 +117,7 @@ public class Login extends JFrame {
                             "Error", JOptionPane.ERROR_MESSAGE);
             }
         } catch (SQLException ex) {
-            JOptionPane.showMessageDialog(this, "Error de conexión con la base de datos:\n" + ex.getMessage(),
+            JOptionPane.showMessageDialog(this, ConexionBD.mensajeError(ex),
                     "Error de Conexión", JOptionPane.ERROR_MESSAGE);
         }
     }
