@@ -92,7 +92,7 @@ public class PanelProductos extends JPanel {
                 return;
             }
 
-            double precio = Double.parseDouble(pr.getText().trim());
+            double precio = numero(pr);
 
             controlador.registrarProducto(codigo, nombre, categoria, precio,
                     Integer.parseInt(min.getText().trim()), maximo(max));
@@ -133,7 +133,7 @@ public class PanelProductos extends JPanel {
                 return;
             }
             controlador.actualizarProducto(sel.codigo, nombre, cat.getText().trim(),
-                    Double.parseDouble(pr.getText().trim()), Integer.parseInt(min.getText().trim()), maximo(max));
+                    numero(pr), Integer.parseInt(min.getText().trim()), maximo(max));
             refrescar();
         } catch (SQLException ex) {
             JOptionPane.showMessageDialog(this, "No se pudo actualizar el producto:\n" + ex.getMessage(),
@@ -141,6 +141,11 @@ public class PanelProductos extends JPanel {
         } catch (NumberFormatException ex) {
             JOptionPane.showMessageDialog(this, "Datos inválidos. Revise que el precio y el stock mínimo y máximo sean numéricos.");
         }
+    }
+
+    /** Precio escrito con punto o con coma decimal. */
+    private static double numero(JTextField campo) {
+        return Double.parseDouble(campo.getText().trim().replace(',', '.'));
     }
 
     private static Integer maximo(JTextField campo) {

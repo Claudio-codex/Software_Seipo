@@ -22,13 +22,13 @@ public class ControladorCaja {
         /** Solo para turnos cerrados: lo que debía haber en caja y lo que se contó. */
         public Double esperado, contado;
 
-        public double totalVendido() { return efectivo + tarjeta + yapePlin; }
+        public double totalVendido() { return Datos.redondear(efectivo + tarjeta + yapePlin); }
 
         /** Efectivo que debe haber en caja ahora: el inicial más las ventas en efectivo. */
-        public double efectivoEnCaja() { return montoInicial + efectivo; }
+        public double efectivoEnCaja() { return Datos.redondear(montoInicial + efectivo); }
 
         /** Sobrante (positivo) o faltante (negativo) del cierre; null si el turno sigue abierto. */
-        public Double diferencia() { return contado == null || esperado == null ? null : contado - esperado; }
+        public Double diferencia() { return contado == null || esperado == null ? null : Datos.redondear(contado - esperado); }
     }
 
     private static final String SELECT_TURNO =
@@ -116,7 +116,7 @@ public class ControladorCaja {
                 try (PreparedStatement pst = con.prepareStatement("UPDATE turnos SET estado = 'CERRADO', cerrado_en = ?, " +
                         "efectivo_esperado = ?, efectivo_contado = ?, observacion = ? WHERE id = ?")) {
                     pst.setTimestamp(1, Timestamp.valueOf(LocalDateTime.now()));
-                    pst.setDouble(2, inicial + efectivo);
+                    pst.setDouble(2, Datos.redondear(inicial + efectivo));
                     pst.setDouble(3, contado);
                     pst.setString(4, observacion == null || observacion.isEmpty() ? null : observacion);
                     pst.setInt(5, turnoId);

@@ -1,12 +1,12 @@
 package seipo.modelo;
 
-import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.time.format.ResolverStyle;
 
 public class Datos {
     public static final DateTimeFormatter FECHA = DateTimeFormatter.ofPattern("dd/MM/yy");
-    /** Formato para ingresar y mostrar fechas de vencimiento. */
-    public static final DateTimeFormatter FECHA_COMPLETA = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+    /** Formato para ingresar y mostrar fechas de vencimiento. Estricto: rechaza fechas que no existen, como 31/02. */
+    public static final DateTimeFormatter FECHA_COMPLETA = DateTimeFormatter.ofPattern("dd/MM/uuuu").withResolverStyle(ResolverStyle.STRICT);
     /** Stock mínimo que se propone al registrar un producto (cada producto tiene el suyo). */
     public static final int STOCK_MINIMO_DEFECTO = 10;
     /** Cada cuántos minutos se revisan las alertas de stock con la aplicación abierta. */

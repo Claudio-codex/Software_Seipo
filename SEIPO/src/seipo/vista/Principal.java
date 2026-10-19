@@ -31,7 +31,7 @@ public class Principal extends JFrame {
     }
 
     private static final DateTimeFormatter FECHA_CABECERA =
-            DateTimeFormatter.ofPattern("EEEE d 'de' MMMM 'de' yyyy", new Locale("es", "PE"));
+            DateTimeFormatter.ofPattern("EEEE d 'de' MMMM 'de' yyyy", Locale.forLanguageTag("es-PE"));
 
     private final CardLayout cards = new CardLayout();
     private final JPanel centro = new JPanel(cards);

@@ -53,6 +53,8 @@ public class PanelVentas extends JPanel {
     private final JPopupMenu popupSugerencias = new JPopupMenu();
     private final JList<ProductoVenta> listaSugerencias = new JList<>();
     private final DefaultListModel<ProductoVenta> modeloSugerencias = new DefaultListModel<>();
+    // Espera a que se deje de escribir (o de escanear) para consultar las sugerencias una sola vez
+    private final Timer esperaSugerencias = new Timer(150, e -> filtrarSugerencias());
     private final ControladorVentas controlador = new ControladorVentas();
     private final ControladorCaja caja = new ControladorCaja();
     private final ControladorClientes clientes = new ControladorClientes();
@@ -257,6 +259,7 @@ public class PanelVentas extends JPanel {
     private void configurarSugerencias() {
         listaSugerencias.setModel(modeloSugerencias);
         listaSugerencias.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        esperaSugerencias.setRepeats(false);
         listaSugerencias.setCellRenderer((list, value, index, isSelected, cellHasFocus) -> {
             JPanel fila = new JPanel(new BorderLayout(16, 0));
             fila.setBorder(new EmptyBorder(6, 10, 6, 12));
@@ -276,9 +279,9 @@ public class PanelVentas extends JPanel {
         popupSugerencias.setFocusable(false);
 
         txtBuscar.getDocument().addDocumentListener(new DocumentListener() {
-            @Override public void insertUpdate(DocumentEvent e) { filtrarSugerencias(); }
-            @Override public void removeUpdate(DocumentEvent e) { filtrarSugerencias(); }
-            @Override public void changedUpdate(DocumentEvent e) { filtrarSugerencias(); }
+            @Override public void insertUpdate(DocumentEvent e) { esperaSugerencias.restart(); }
+            @Override public void removeUpdate(DocumentEvent e) { esperaSugerencias.restart(); }
+            @Override public void changedUpdate(DocumentEvent e) { esperaSugerencias.restart(); }
         });
 
         listaSugerencias.addMouseListener(new MouseAdapter() {
@@ -289,6 +292,11 @@ public class PanelVentas extends JPanel {
 
         txtBuscar.addKeyListener(new KeyAdapter() {
             @Override public void keyPressed(KeyEvent e) {
+                // Si quedó una búsqueda pendiente, se hace ya para decidir con las sugerencias del texto completo
+                if (esperaSugerencias.isRunning() && (e.getKeyCode() == KeyEvent.VK_ENTER || e.getKeyCode() == KeyEvent.VK_DOWN)) {
+                    esperaSugerencias.stop();
+                    filtrarSugerencias();
+                }
                 if (e.getKeyCode() == KeyEvent.VK_DOWN && popupSugerencias.isVisible()) {
                     listaSugerencias.requestFocus();
                     listaSugerencias.setSelectedIndex(0);

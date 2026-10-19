@@ -12,19 +12,25 @@ public class ConexionBD {
     private static final String USER = "root";
     private static final String PASSWORD = "";
 
+    /** Se pone en true cuando el esquema ya se creó o actualizó en esta ejecución del programa. */
+    private static volatile boolean esquemaListo;
+
     public static Connection obtenerConexion() throws SQLException {
+        if (!esquemaListo) inicializarBaseDatos();
+        return DriverManager.getConnection(URL_DB, USER, PASSWORD);
+    }
+
+    /**
+     * Crea la base, las tablas y las columnas e índices que falten. Corre una sola vez por ejecución;
+     * si MySQL no responde, se vuelve a intentar en la siguiente conexión.
+     */
+    private static synchronized void inicializarBaseDatos() {
+        if (esquemaListo) return;
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
         } catch (ClassNotFoundException e) {
             System.err.println("Error: No se encontró el driver JDBC de MySQL.");
         }
-
-        inicializarBaseDatos();
-
-        return DriverManager.getConnection(URL_DB, USER, PASSWORD);
-    }
-
-    private static void inicializarBaseDatos() {
         String[] sqls = {
                 "CREATE DATABASE IF NOT EXISTS seipo_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;",
                 "USE seipo_db;",
@@ -259,6 +265,8 @@ public class ConexionBD {
                     "('empresa_direccion', 'Jr. Lima 000, Tarma, Junín'), ('pasarela_activa', '1'), " +
                     "('pasarela_proveedor', 'Pasarela de prueba'), ('pasarela_comercio', 'COM-000123'), " +
                     "('pasarela_clave', 'sk_test_seipo_4f9a2c7e')");
+            crearIndices(stmt);
+            esquemaListo = true;
         } catch (SQLException e) {
             System.err.println("Aviso/Error al autoinicializar la BD: " + e.getMessage());
         }
@@ -310,6 +318,22 @@ public class ConexionBD {
         agregarColumna(stmt, "ALTER TABLE ventas ADD COLUMN motivo_anulacion VARCHAR(255)");
         agregarColumna(stmt, "ALTER TABLE detalle_ventas ADD COLUMN producto_id INT");
         agregarColumna(stmt, "ALTER TABLE detalle_ventas ADD COLUMN precio_unitario DECIMAL(10, 2)");
+    }
+
+    /** Índices para las consultas frecuentes sobre ventas: turnos de caja, compras por cliente y reportes por fecha. */
+    private static void crearIndices(Statement stmt) throws SQLException {
+        agregarIndice(stmt, "CREATE INDEX idx_ventas_turno ON ventas (turno_id, estado)");
+        agregarIndice(stmt, "CREATE INDEX idx_ventas_cliente ON ventas (cliente_id, estado)");
+        agregarIndice(stmt, "CREATE INDEX idx_ventas_fecha ON ventas (fecha, estado)");
+    }
+
+    /** Ejecuta un CREATE INDEX; no hace nada si el índice ya existía. */
+    private static void agregarIndice(Statement stmt, String sql) throws SQLException {
+        try {
+            stmt.execute(sql);
+        } catch (SQLException e) {
+            if (e.getErrorCode() != 1061) throw e; // ER_DUP_KEYNAME
+        }
     }
 
     /** Ejecuta un ALTER TABLE ... ADD COLUMN; devuelve false si la columna ya existía. */

@@ -38,7 +38,7 @@ public class ControladorProductos {
         List<ProductoVO> lista = new ArrayList<>();
         String sql = "SELECT p.codigo, p.nombre, p.categoria, p.precio, p.stock, p.stock_minimo, p.stock_maximo, " +
                 "(SELECT MIN(l.fecha_vencimiento) FROM lotes l WHERE l.producto_id = p.id AND l.cantidad > 0) AS vence " +
-                "FROM productos p WHERE p.codigo LIKE ? OR p.nombre LIKE ? OR p.categoria LIKE ?";
+                "FROM productos p WHERE p.codigo LIKE ? OR p.nombre LIKE ? OR p.categoria LIKE ? ORDER BY p.codigo";
 
         try (Connection con = ConexionBD.obtenerConexion();
              PreparedStatement pst = con.prepareStatement(sql)) {
@@ -70,7 +70,7 @@ public class ControladorProductos {
     /** Registra el producto en el catálogo con stock 0; el stock entra por la recepción de mercadería. */
     public void registrarProducto(String codigo, String nombre, String categoria, double precio,
                                   int stockMinimo, Integer stockMaximo) throws SQLException {
-        validarLimites(stockMinimo, stockMaximo);
+        validar(precio, stockMinimo, stockMaximo);
         String sqlCheck = "SELECT COUNT(*) FROM productos WHERE codigo = ?";
         String sqlInsert = "INSERT INTO productos (codigo, nombre, categoria, precio, stock, stock_minimo, stock_maximo) " +
                 "VALUES (?, ?, ?, ?, 0, ?, ?)";
@@ -102,7 +102,7 @@ public class ControladorProductos {
     public void actualizarProducto(String codigo, String nombre, String categoria, double precio,
                                    int stockMinimo, Integer stockMaximo) throws SQLException {
         if (!Sesion.esAdministrador()) throw new SQLException("Solo un administrador puede modificar productos.");
-        validarLimites(stockMinimo, stockMaximo);
+        validar(precio, stockMinimo, stockMaximo);
         String sql = "UPDATE productos SET nombre = ?, categoria = ?, precio = ?, stock_minimo = ?, stock_maximo = ? WHERE codigo = ?";
         try (Connection con = ConexionBD.obtenerConexion();
              PreparedStatement pst = con.prepareStatement(sql)) {
@@ -117,7 +117,8 @@ public class ControladorProductos {
         }
     }
 
-    private static void validarLimites(int stockMinimo, Integer stockMaximo) throws SQLException {
+    private static void validar(double precio, int stockMinimo, Integer stockMaximo) throws SQLException {
+        if (precio <= 0) throw new SQLException("El precio debe ser mayor que 0.");
         if (stockMinimo < 0) throw new SQLException("El stock mínimo no puede ser negativo.");
         if (stockMaximo != null && stockMaximo <= stockMinimo) {
             throw new SQLException("El stock máximo debe ser mayor que el mínimo.");

@@ -128,7 +128,7 @@ public class ControladorComprobantes {
     public static String enLetras(double monto) {
         long soles = (long) Math.floor(monto + 1e-6);
         int centimos = (int) Math.round((monto - soles) * 100);
-        return ("son: " + letras(soles) + " con " + String.format("%02d", centimos) + "/100 soles").toUpperCase(new Locale("es", "PE"));
+        return ("son: " + letras(soles) + " con " + String.format("%02d", centimos) + "/100 soles").toUpperCase(Locale.forLanguageTag("es-PE"));
     }
 
     private static String letras(long n) {

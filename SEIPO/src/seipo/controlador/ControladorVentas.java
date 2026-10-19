@@ -102,6 +102,8 @@ public class ControladorVentas {
      */
     public int cobrarVenta(List<ProductoVenta> items, List<Integer> cantidades, double descuentoPct, String forma,
                            Integer clienteId, Double montoRecibido, String tokenPago) throws SQLException {
+        if (items.isEmpty() || items.size() != cantidades.size()) throw new SQLException("La venta no tiene productos.");
+        for (int c : cantidades) if (c <= 0) throw new SQLException("Las cantidades deben ser mayores que 0.");
         double sub = 0;
         for (int i = 0; i < items.size(); i++) {
             sub += items.get(i).precio * cantidades.get(i);

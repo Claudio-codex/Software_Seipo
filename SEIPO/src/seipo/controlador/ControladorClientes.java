@@ -61,6 +61,9 @@ public class ControladorClientes {
     }
 
     public void registrarCliente(String nombre, String doc, String telefono, String correo) throws SQLException {
+        if (nombre == null || nombre.trim().isEmpty()) throw new SQLException("El nombre del cliente es obligatorio.");
+        // El tipo de comprobante depende del documento: DNI (8 dígitos) boleta, RUC (11 dígitos) factura
+        if (doc == null || !doc.matches("\\d{8}|\\d{11}")) throw new SQLException("El documento debe ser un DNI de 8 dígitos o un RUC de 11.");
         String sqlInsert = "INSERT INTO clientes (nombre, documento, telefono, correo) VALUES (?, ?, ?, ?)";
         try (Connection con = ConexionBD.obtenerConexion();
              PreparedStatement pst = con.prepareStatement(sqlInsert)) {

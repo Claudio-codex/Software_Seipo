@@ -13,13 +13,13 @@ public class ControladorLogin {
 
     /** Valida las credenciales y, si son correctas y el usuario está activo, inicia la sesión. */
     public Resultado iniciarSesion(String usuario, String password) throws SQLException {
-        String sql = "SELECT id, usuario, nombre, rol, activo FROM usuarios WHERE usuario = ? AND password = ?";
+        String sql = "SELECT id, usuario, nombre, rol, activo, password FROM usuarios WHERE usuario = ?";
         try (Connection con = ConexionBD.obtenerConexion();
              PreparedStatement pst = con.prepareStatement(sql)) {
             pst.setString(1, usuario);
-            pst.setString(2, password);
             try (ResultSet rs = pst.executeQuery()) {
-                if (!rs.next()) return Resultado.INCORRECTO;
+                // La contraseña se compara en Java: la intercalación de MySQL no distingue mayúsculas de minúsculas
+                if (!rs.next() || !password.equals(rs.getString("password"))) return Resultado.INCORRECTO;
                 if (!rs.getBoolean("activo")) return Resultado.DESACTIVADO;
                 Sesion.iniciar(rs.getInt("id"), rs.getString("usuario"), rs.getString("nombre"), rs.getString("rol"));
                 return Resultado.CORRECTO;
