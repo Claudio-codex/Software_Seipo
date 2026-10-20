@@ -296,29 +296,10 @@ public class ConexionBD {
                         "    FOREIGN KEY (producto_id) REFERENCES productos(id)" +
                         ");",
 
-                // Parámetros que configura el administrador: datos del negocio para el comprobante y la pasarela de pago
+                // Parámetros que configura el administrador: datos del negocio para el comprobante
                 "CREATE TABLE IF NOT EXISTS configuracion (" +
                         "    clave VARCHAR(50) PRIMARY KEY," +
                         "    valor VARCHAR(255) NOT NULL DEFAULT ''" +
-                        ");",
-
-                // Cobros digitales enviados a la pasarela. Del celular del cliente solo se guardan los últimos 3 dígitos
-                "CREATE TABLE IF NOT EXISTS transacciones_pago (" +
-                        "    id INT AUTO_INCREMENT PRIMARY KEY," +
-                        "    token VARCHAR(40) NOT NULL UNIQUE," +
-                        "    venta_id INT," +
-                        "    forma_pago VARCHAR(50) NOT NULL," +
-                        "    monto DECIMAL(10, 2) NOT NULL," +
-                        "    estado VARCHAR(20) NOT NULL DEFAULT 'PENDIENTE'," +
-                        "    medio VARCHAR(60)," +
-                        "    codigo_autorizacion VARCHAR(12)," +
-                        "    mensaje VARCHAR(150)," +
-                        "    usuario_id INT NOT NULL," +
-                        "    creado_en DATETIME NOT NULL," +
-                        "    respondido_en DATETIME," +
-                        "    FOREIGN KEY (venta_id) REFERENCES ventas(id)," +
-                        "    FOREIGN KEY (usuario_id) REFERENCES usuarios(id)," +
-                        "    INDEX idx_transacciones_fecha (creado_en)" +
                         ");",
 
                 // Boleta o factura de cada venta; guarda los datos del emisor tal como estaban al emitirla
@@ -351,9 +332,8 @@ public class ConexionBD {
             actualizarVentas(stmt);
             stmt.execute("INSERT IGNORE INTO configuracion (clave, valor) VALUES " +
                     "('empresa_nombre', 'Bazar Seipo'), ('empresa_ruc', '20999999991'), " +
-                    "('empresa_direccion', 'Jr. Lima 000, Tarma, Junín'), ('pasarela_activa', '1'), " +
-                    "('pasarela_proveedor', 'Pasarela de prueba'), ('pasarela_comercio', 'COM-000123'), " +
-                    "('pasarela_clave', 'sk_test_seipo_4f9a2c7e')");
+                    "('empresa_direccion', 'Jr. Lima 000, Tarma, Junín')");
+            quitarPasarela(stmt);
             crearIndices(stmt);
             esquemaListo = true;
         } catch (SQLException e) {
@@ -407,6 +387,15 @@ public class ConexionBD {
         agregarColumna(stmt, "ALTER TABLE ventas ADD COLUMN motivo_anulacion VARCHAR(255)");
         agregarColumna(stmt, "ALTER TABLE detalle_ventas ADD COLUMN producto_id INT");
         agregarColumna(stmt, "ALTER TABLE detalle_ventas ADD COLUMN precio_unitario DECIMAL(10, 2)");
+    }
+
+    /**
+     * Borra lo que dejó la pasarela de pago simulada de versiones anteriores: el sistema solo registra la forma de pago
+     * (ventas.forma_pago), no procesa el cobro.
+     */
+    private static void quitarPasarela(Statement stmt) throws SQLException {
+        stmt.execute("DROP TABLE IF EXISTS transacciones_pago");
+        stmt.execute("DELETE FROM configuracion WHERE clave LIKE 'pasarela\\_%'");
     }
 
     /** Índices para las consultas frecuentes sobre ventas: turnos de caja, compras por cliente y reportes por fecha. */

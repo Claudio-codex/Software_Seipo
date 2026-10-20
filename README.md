@@ -45,7 +45,7 @@ GRANT ALL PRIVILEGES ON seipo_db.* TO 'seipo'@'localhost';
 * Ejecuta la clase **`seipo.vista.Login`** y entra con `admin` / `123`.
 
 6. Usuarios y roles
-* **Administrador:** accede a todas las secciones y además autoriza mermas, aprueba órdenes de compra y gestiona Reportes, Pagos y Usuarios.
+* **Administrador:** accede a todas las secciones y además autoriza mermas, aprueba órdenes de compra y gestiona Reportes, Negocio y Usuarios.
 * **Personal de tienda:** accede a Ventas, Caja, Clientes, Productos, Inventario, Mermas y Compras.
 * En **Mermas**, el botón **Exportar** genera el reporte de mermas de un período (por fecha de solicitud) en PDF o Excel: resumen, desglose por causal y detalle con quién solicitó y quién autorizó. El valor perdido cuenta solo las mermas aprobadas. El PDF termina con las líneas de firma "Elaborado por" y "Autorizado por".
 * Las cuentas del personal se crean desde el módulo **Usuarios** (entrando como `admin`), donde también se edita el rol, se activa/desactiva y se restablece la contraseña.
@@ -58,17 +58,15 @@ GRANT ALL PRIVILEGES ON seipo_db.* TO 'seipo'@'localhost';
 * El total se **redondea hacia abajo a 10 céntimos** (no se usan monedas de 1 ni de 5 céntimos) y la rebaja aparece como "Redondeo". Los montos en efectivo (recibido, inicial y contado) tampoco aceptan céntimos sueltos.
 * Formas de pago: **Efectivo** y **Yape o Plin**. El cobro con tarjeta se retiró del sistema por ahora.
 * Atajos: `F2` buscar producto, `F4` cliente, `F6` descuento, `F9` efectivo, `F11` Yape o Plin.
-* Solo el **administrador** puede **anular** una venta (desde Caja), y solo mientras el turno siga abierto; el stock vuelve a los mismos lotes. Si se pagó con Yape o Plin, el cobro queda reembolsado.
+* Solo el **administrador** puede **anular** una venta (desde Caja), y solo mientras el turno siga abierto; el stock vuelve a los mismos lotes. Si se pagó con Yape o Plin, el cajero devuelve el dinero desde el celular del negocio.
 
-8. Pagos digitales y comprobantes
-* Los cobros con **Yape o Plin** pasan por una **pasarela de pago simulada**: se envía la solicitud de cobro, la pasarela genera un **token de pago** y responde si autoriza el cobro (con su código de autorización) o lo rechaza (por ejemplo, por un código de aprobación incorrecto). Recién con el cobro aprobado se registra la venta. No se conecta a ningún servicio real ni se hacen cargos.
-* Datos de prueba: cualquier celular de 9 dígitos que empiece con 9 y cualquier código de aprobación de 6 dígitos se aprueba, salvo `000000`.
-* Del celular del cliente solo se guardan los últimos 3 dígitos.
+8. Formas de pago y comprobantes
+* El sistema **solo registra la forma de pago** de cada venta; no procesa cobros. Con **Yape o Plin**, el cliente paga desde su celular y el cajero, después de ver el pago en el celular del negocio, confirma la venta. Esas ventas no entran al efectivo de caja.
 * Cada venta emite su **comprobante digital**: **boleta** (B001) si el cliente tiene DNI o es "Clientes varios", y **factura** (F001) si tiene RUC. Se puede ver, imprimir o guardar en PDF al cobrar y después desde Caja. Incluye un código de verificación. Es un documento de prueba: no se envía a SUNAT.
-* En la sección **Pagos** (solo administrador) se revisan todas las transacciones (aprobadas, rechazadas, revertidas y reembolsadas) y se configuran la pasarela y los datos del negocio que salen en el comprobante. La clave secreta de la pasarela se guarda sin cifrar, igual que las contraseñas.
+* En la sección **Negocio** (solo administrador) se cambian los datos del negocio que salen en el comprobante (nombre, RUC y dirección).
 
 9. Datos de ejemplo
-El archivo `SEIPO/bd/seipo_db.sql` es una copia de la base de datos con datos de demostración de un bazar (útiles escolares, limpieza, ferretería, cocina, accesorios, juguetes, perfumería y relojería): 55 productos, unas 7 800 ventas desde enero de 2025 con sus temporadas (campaña escolar, Día de la Madre, Navidad), más de 1 200 turnos de caja con su cuadre, sus comprobantes y los cobros de la pasarela, lotes vencidos y por vencer, mermas, proveedores, órdenes de compra y usuarios. Sirve para ver el sistema funcionando sin cargar datos a mano.
+El archivo `SEIPO/bd/seipo_db.sql` es una copia de la base de datos con datos de demostración de un bazar (útiles escolares, limpieza, ferretería, cocina, accesorios, juguetes, perfumería y relojería): 55 productos, unas 7 800 ventas desde enero de 2025 con sus temporadas (campaña escolar, Día de la Madre, Navidad), más de 1 200 turnos de caja con su cuadre, sus comprobantes, lotes vencidos y por vencer, mermas, proveedores, órdenes de compra y usuarios. Sirve para ver el sistema funcionando sin cargar datos a mano.
 
 > ⚠️ Al importarlo se **reemplaza por completo** la base `seipo_db` que tengas en tu computadora.
 

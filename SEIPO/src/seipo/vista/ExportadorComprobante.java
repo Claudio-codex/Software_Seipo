@@ -86,11 +86,6 @@ public class ExportadorComprobante {
                 par(pago, "Recibido", Datos.soles(v.recibido));
                 par(pago, "Vuelto", Datos.soles(v.vuelto()));
             }
-            if (c.pago != null) {
-                par(pago, "Medio", c.pago.medio);
-                par(pago, "Autorización", c.pago.codigoAutorizacion);
-                par(pago, "Token de pago", c.pago.token);
-            }
             bloque(doc, pago);
 
             if (v.anulada()) {

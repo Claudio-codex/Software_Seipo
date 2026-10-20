@@ -99,10 +99,9 @@ public class ControladorVentas {
      *
      * @param clienteId     cliente registrado, o null para "Clientes varios"
      * @param montoRecibido efectivo que entregó el cliente (solo en pagos en efectivo), o null
-     * @param tokenPago     token del cobro aprobado por la pasarela (Yape o Plin), o null en efectivo
      */
     public int cobrarVenta(List<ProductoVenta> items, List<Integer> cantidades, double descuentoPct, String forma,
-                           Integer clienteId, Double montoRecibido, String tokenPago) throws SQLException {
+                           Integer clienteId, Double montoRecibido) throws SQLException {
         if (items.isEmpty() || items.size() != cantidades.size()) throw new SQLException("La venta no tiene productos.");
         for (int c : cantidades) if (c <= 0) throw new SQLException("Las cantidades deben ser mayores que 0.");
         if (!Arrays.asList(Datos.FORMAS_PAGO).contains(forma)) throw new SQLException("Forma de pago no válida: " + forma + ".");
@@ -149,12 +148,6 @@ public class ControladorVentas {
                     }
                 }
 
-                // El cobro digital debe estar aprobado por la pasarela, por el mismo monto y sin otra venta asociada
-                Integer transaccionId = null;
-                if (!Datos.EFECTIVO.equals(forma)) {
-                    transaccionId = validarCobroDigital(con, tokenPago, forma, totalVenta);
-                }
-
                 int ventaId = -1;
                 try (PreparedStatement pstVenta = con.prepareStatement(sqlVenta, Statement.RETURN_GENERATED_KEYS)) {
                     pstVenta.setDate(1, java.sql.Date.valueOf(LocalDate.now()));
@@ -171,14 +164,6 @@ public class ControladorVentas {
                         if (rsKeys.next()) ventaId = rsKeys.getInt(1);
                     }
                 }
-                if (transaccionId != null) {
-                    try (PreparedStatement pst = con.prepareStatement("UPDATE transacciones_pago SET venta_id = ? WHERE id = ?")) {
-                        pst.setInt(1, ventaId);
-                        pst.setInt(2, transaccionId);
-                        pst.executeUpdate();
-                    }
-                }
-
                 try (PreparedStatement pstDetalle = con.prepareStatement(sqlDetalle);
                      PreparedStatement pstLotes = con.prepareStatement(sqlLotes);
                      PreparedStatement pstUpdLote = con.prepareStatement(sqlUpdateLote);
@@ -280,27 +265,6 @@ public class ControladorVentas {
     public static String mensajeTopeDescuento() {
         return "El personal puede aplicar como máximo " + (int) Datos.DESCUENTO_MAX_PERSONAL
                 + " % de descuento manual. Para un descuento mayor, pida al administrador que lo aplique.";
-    }
-
-    /** Comprueba el cobro digital dentro de la transacción de la venta y devuelve el id de la transacción de pago. */
-    private static int validarCobroDigital(Connection con, String token, String forma, double total) throws SQLException {
-        if (token == null) throw new SQLException("Falta la autorización de la pasarela de pago para cobrar con " + forma + ".");
-        try (PreparedStatement pst = con.prepareStatement("SELECT id, estado, forma_pago, monto, venta_id, usuario_id " +
-                "FROM transacciones_pago WHERE token = ? FOR UPDATE")) {
-            pst.setString(1, token);
-            try (ResultSet rs = pst.executeQuery()) {
-                if (!rs.next()) throw new SQLException("El token de pago no existe.");
-                if (!ControladorPasarela.APROBADA.equals(rs.getString("estado"))) {
-                    throw new SQLException("El cobro no está aprobado por la pasarela (" + rs.getString("estado") + ").");
-                }
-                if (rs.getObject("venta_id") != null) throw new SQLException("Ese cobro ya pertenece a otra venta.");
-                if (rs.getInt("usuario_id") != Sesion.getId() || !forma.equals(rs.getString("forma_pago"))
-                        || Math.abs(rs.getDouble("monto") - total) > 0.001) {
-                    throw new SQLException("El cobro aprobado no coincide con la venta (monto o forma de pago).");
-                }
-                return rs.getInt("id");
-            }
-        }
     }
 
     /** Una venta con su desglose, o null si no existe. */
@@ -459,12 +423,6 @@ public class ControladorVentas {
                     pst.setTimestamp(2, Timestamp.valueOf(LocalDateTime.now()));
                     pst.setString(3, motivo);
                     pst.setInt(4, ventaId);
-                    pst.executeUpdate();
-                }
-                // Si se pagó con Yape o Plin, el cobro queda reembolsado
-                try (PreparedStatement pst = con.prepareStatement("UPDATE transacciones_pago SET estado = 'REEMBOLSADA', " +
-                        "mensaje = 'Reembolsado por anulación de la venta' WHERE venta_id = ? AND estado = 'APROBADA'")) {
-                    pst.setInt(1, ventaId);
                     pst.executeUpdate();
                 }
                 con.commit();

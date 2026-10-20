@@ -2,7 +2,7 @@
 
 **Sistema de venta e inventario**
 
-Versión 1.1 · 19 de octubre de 2026
+Versión 1.2 · 19 de octubre de 2026
 
 Autores: Claudio Puente y Francesco Camarena Damián
 
@@ -30,7 +30,7 @@ Curso: Procesos de Software · Tarma, 2026
   - [4.11 Alertas de reposición y órdenes de compra](#411-alertas-de-reposición-y-órdenes-de-compra)
   - [4.12 Consultar los reportes](#412-consultar-los-reportes)
   - [4.13 Exportar a PDF y a Excel](#413-exportar-a-pdf-y-a-excel)
-  - [4.14 Configurar los pagos y revisar las transacciones](#414-configurar-los-pagos-y-revisar-las-transacciones)
+  - [4.14 Configurar los datos del negocio](#414-configurar-los-datos-del-negocio)
   - [4.15 Respaldar la base de datos](#415-respaldar-la-base-de-datos)
 - [5. Reglas del negocio que debe conocer](#5-reglas-del-negocio-que-debe-conocer)
 - [6. Mensajes de error frecuentes](#6-mensajes-de-error-frecuentes)
@@ -42,7 +42,7 @@ Curso: Procesos de Software · Tarma, 2026
 
 SEIPO es el sistema de venta e inventario de la tienda. Cubre la venta en caja con turnos y cuadre de efectivo, el cobro en efectivo o con Yape o Plin, la boleta o factura de cada venta, el inventario por lotes en orden FEFO (lo que vence primero, sale primero), las mermas, las compras y los reportes del negocio.
 
-Este manual está dirigido al **administrador**. El administrador hace todo lo que hace el personal de tienda y, además, autoriza mermas y órdenes de compra, anula ventas, gestiona los productos, las cuentas de usuario, los pagos digitales y los reportes, y respalda la base de datos. Las tareas que comparte con el personal se explican aquí de forma resumida; el detalle para la caja está en el Manual del Personal de Tienda.
+Este manual está dirigido al **administrador**. El administrador hace todo lo que hace el personal de tienda y, además, autoriza mermas y órdenes de compra, anula ventas, gestiona los productos, las cuentas de usuario, los datos del negocio y los reportes, y respalda la base de datos. Las tareas que comparte con el personal se explican aquí de forma resumida; el detalle para la caja está en el Manual del Personal de Tienda.
 
 ## 2. Requisitos y cómo ingresar
 
@@ -68,7 +68,7 @@ Este manual está dirigido al **administrador**. El administrador hace todo lo q
 
 ## 3. La pantalla principal y el menú
 
-- **Menú lateral:** **OPERACIÓN** (Ventas, Caja, Clientes), **INVENTARIO** (Productos, Inventario, Mermas, Compras) y **GESTIÓN** (Reportes, Pagos, Usuarios). El grupo GESTIÓN solo lo ve el administrador. En **Compras** aparece el número de productos por reponer; se actualiza al cambiar de sección y cada 5 minutos.
+- **Menú lateral:** **OPERACIÓN** (Ventas, Caja, Clientes), **INVENTARIO** (Productos, Inventario, Mermas, Compras) y **GESTIÓN** (Reportes, Negocio, Usuarios). El grupo GESTIÓN solo lo ve el administrador. En **Compras** aparece el número de productos por reponer; se actualiza al cambiar de sección y cada 5 minutos.
 - **Cabecera:** el nombre y la descripción de la sección, y la fecha de hoy.
 - **Tarjeta de usuario:** su nombre, el rol **Administrador** y el botón **Cerrar sesión**.
 
@@ -82,7 +82,7 @@ Este manual está dirigido al **administrador**. El administrador hace todo lo q
 | Mermas | **Aprobar** o **rechazar** mermas y exportar su reporte. |
 | Compras | **Aprobar** o **rechazar** órdenes de compra y editar proveedores. |
 | Reportes | Indicadores de ventas e inventario, gráficos y exportación. |
-| Pagos | Cobros de la pasarela de pago, su configuración y los datos del comprobante. |
+| Negocio | Datos del negocio que aparecen en la boleta y la factura. |
 | Usuarios | Cuentas de acceso y roles del personal. |
 
 > **Nota:** las ventanas de confirmación tienen los botones **Aceptar**, **Cancelar**, **Sí** y **No**; al guardar archivos, el botón es **Guardar**.
@@ -119,13 +119,13 @@ Este manual está dirigido al **administrador**. El administrador hace todo lo q
 **Objetivo:** registrar el pago. **Cuándo se usa:** al cerrar cada venta.
 
 1. **Efectivo** (`F9`): escriba el **Monto recibido** (o use **Exacto**, **S/ 20**…), verifique el **Vuelto** y pulse **Cobrar**.
-2. **Yape o Plin** (`F11`): marque **Yape** o **Plin**, escriba el **Celular del cliente** y el **Código de aprobación** de 6 dígitos, y pulse **Enviar cobro**.
+2. **Yape o Plin** (`F11`): cuando vea en el celular del negocio que llegó el pago por el total, pulse **Yape o Plin** y responda **Sí** a "¿El cliente ya pagó S/ … con Yape o Plin?".
 
-[CAPTURA 4.3.1: Ventana "Cobro con Yape o Plin" — cobro aprobado con su código de autorización]
+[CAPTURA 4.3.1: Confirmación "Cobro con Yape o Plin" — pregunta si el cliente ya pagó el total]
 
 **Resultado esperado:** aparece el comprobante con "Venta N° … registrada".
 
-> **Advertencia:** si el cobro sale "Rechazada: …", corrija los datos y pulse **Reintentar**, o cobre con otro medio. Si el botón **Yape o Plin** está apagado, active los cobros en **Pagos** (punto 4.14).
+> **Advertencia:** el sistema solo registra la forma de pago; no cobra ni verifica el pago con Yape o Plin. Confirme siempre el pago en el celular del negocio antes de responder **Sí**.
 
 ### 4.4 Emitir la boleta o la factura
 
@@ -137,7 +137,7 @@ Este manual está dirigido al **administrador**. El administrador hace todo lo q
 
 **Resultado esperado:** comprobante con número correlativo, total en letras y código de verificación.
 
-> **Nota:** los datos del negocio que salen en el comprobante (nombre, RUC y dirección) se cambian en **Pagos** → **Configuración**. Los comprobantes son de prueba y no se envían a SUNAT.
+> **Nota:** los datos del negocio que salen en el comprobante (nombre, RUC y dirección) se cambian en **Negocio** (punto 4.14). Los comprobantes son de prueba y no se envían a SUNAT.
 
 ### 4.5 Cerrar un turno y cuadrar la caja
 
@@ -161,7 +161,7 @@ Este manual está dirigido al **administrador**. El administrador hace todo lo q
 
 [CAPTURA 4.6.1: Caja — ventana "Anular venta" con el motivo de la anulación]
 
-**Resultado esperado:** la venta queda **Anulada** (fila gris), el stock vuelve a los mismos lotes, el monto sale del cuadre del turno y, si se pagó con Yape o Plin, el cobro queda **reembolsado**. Su comprobante muestra **ANULADO**.
+**Resultado esperado:** la venta queda **Anulada** (fila gris), el stock vuelve a los mismos lotes, y el monto sale del cuadre del turno. Su comprobante muestra **ANULADO**. Si se pagó con Yape o Plin, el sistema no devuelve el dinero: devuélvalo al cliente desde el celular del negocio.
 
 > **Advertencia:** si el turno ya se cerró, el sistema responde "Solo se pueden anular ventas de un turno abierto: el cuadre de este turno ya se cerró.". La anulación no se puede deshacer.
 
@@ -262,19 +262,19 @@ Este manual está dirigido al **administrador**. El administrador hace todo lo q
 
 > **Advertencia:** si sale "No se pudo exportar el reporte (¿está abierto en otro programa?)", cierre el archivo en Excel o en el lector de PDF y vuelva a exportar.
 
-### 4.14 Configurar los pagos y revisar las transacciones
+### 4.14 Configurar los datos del negocio
 
-**Objetivo:** controlar los cobros con Yape o Plin y los datos del comprobante. **Cuándo se usa:** al instalar el sistema, si cambian los datos del negocio, o para revisar un cobro.
+**Objetivo:** mantener los datos que aparecen como emisor en la boleta y la factura. **Cuándo se usa:** al instalar el sistema o si cambian los datos del negocio.
 
-1. **Pagos** → **Transacciones**: elija el **Período** y revise **Cobros aprobados**, **Monto aprobado**, **Rechazados** y **Tasa de aprobación**. Haga doble clic en una transacción con venta para ver su comprobante.
-2. **Pagos** → **Configuración**: en **Datos del negocio**, escriba **Nombre o razón social**, **RUC** y **Dirección**. En **Pasarela de pago**, marque **Aceptar cobros con Yape o Plin** y complete **Proveedor**, **Código de comercio** y **Clave secreta**.
-3. Pulse **Probar conexión** y luego **Guardar cambios**.
+1. Entre a **Negocio**.
+2. En **Datos del negocio**, escriba **Nombre o razón social**, **RUC** y **Dirección**.
+3. Pulse **Guardar cambios**.
 
-[CAPTURA 4.14.1: Pagos, pestaña Configuración — datos del negocio y de la pasarela de pago]
+[CAPTURA 4.14.1: Negocio — datos del negocio para el comprobante]
 
-**Resultado esperado:** "Configuración guardada. Los comprobantes nuevos usan estos datos; los ya emitidos no cambian." En la tabla, rojo es un cobro rechazado y ámbar uno revertido o reembolsado.
+**Resultado esperado:** "Datos guardados. Los comprobantes nuevos usan estos datos; los ya emitidos no cambian."
 
-> **Advertencia:** si desmarca **Aceptar cobros con Yape o Plin**, el botón de cobro digital se apaga en Ventas. La clave secreta se guarda sin cifrar. El RUC del negocio debe tener 11 dígitos.
+> **Advertencia:** el RUC del negocio debe tener 11 dígitos, y el nombre y la dirección son obligatorios.
 
 ### 4.15 Respaldar la base de datos
 
@@ -303,11 +303,11 @@ Este manual está dirigido al **administrador**. El administrador hace todo lo q
 | Descuento manual | El personal puede aplicar como máximo 10 % con **Descuento (F6)**; el administrador no tiene tope. El VIP del cliente siempre se respeta. |
 | IGV y redondeo | IGV 18 % sobre (subtotal − descuento). El total se redondea hacia abajo a 10 céntimos, a favor del cliente. |
 | Comprobante | RUC: factura F001. DNI o sin cliente: boleta B001. Numeración correlativa por serie. |
-| Cobro digital | La venta con Yape o Plin solo se registra si la pasarela aprobó el mismo monto. Del celular se guardan los 3 últimos dígitos. |
-| Anulación | Solo el administrador, y solo con el turno abierto. El stock vuelve a los mismos lotes y el cobro digital se reembolsa. |
+| Yape o Plin | El sistema solo registra la forma de pago; el cajero confirma el pago en el celular del negocio. No entra al efectivo de caja. |
+| Anulación | Solo el administrador, y solo con el turno abierto. El stock vuelve a los mismos lotes. El pago con Yape o Plin se devuelve desde el celular del negocio. |
 | Alertas | Agotado: 0 disponibles. Stock bajo: disponible menor o igual al mínimo. Sobrestock: disponible mayor que el máximo. |
 | Órdenes de compra | Pendiente → Aprobada (solo el administrador) → Recibida, o Rechazada. |
-| Roles | El personal no ve Reportes, Pagos ni Usuarios, y el sistema también le rechaza esas operaciones. |
+| Roles | El personal no ve Reportes, Negocio ni Usuarios, y el sistema también le rechaza esas operaciones. |
 
 ## 6. Mensajes de error frecuentes
 
@@ -325,7 +325,7 @@ Este manual está dirigido al **administrador**. El administrador hace todo lo q
 | El lote ya está vencido. No se puede recibir. | No ingrese ese lote; coordine la devolución con el proveedor. |
 | Seleccione una o más mermas pendientes. | Marque filas en estado Pendiente antes de aprobar o rechazar. |
 | No hay productos por reponer en la selección (o ya están en pedido). | Esos productos ya tienen una orden pendiente o aprobada. |
-| La clave secreta no es válida: la de prueba empieza con sk_test_. | Escriba la clave que entregó el proveedor de la pasarela. |
+| El RUC del negocio debe tener 11 dígitos. | Corrija el RUC en **Negocio**. |
 | No se pudo exportar el reporte (¿está abierto en otro programa?) | Cierre el archivo abierto y vuelva a exportar. |
 
 ## 7. Preguntas frecuentes
@@ -342,9 +342,9 @@ Este manual está dirigido al **administrador**. El administrador hace todo lo q
 
 **¿Cada cuánto debo respaldar?** Al menos una vez al día; lo más seguro es programarlo con el Programador de tareas.
 
-**¿Dónde cambio el nombre y el RUC que salen en la boleta?** En **Pagos** → **Configuración** → **Datos del negocio**.
+**¿Dónde cambio el nombre y el RUC que salen en la boleta?** En **Negocio** → **Datos del negocio**.
 
-**¿Los cobros con Yape o Plin son reales?** No. La pasarela es una simulación en modo prueba y no hace cargos.
+**¿El sistema cobra los pagos con Yape o Plin?** No. El cliente paga desde su celular y el cajero lo confirma en el celular del negocio; el sistema solo registra la forma de pago.
 
 ## Lista de capturas pendientes
 
@@ -357,7 +357,7 @@ Total: **16 capturas**. Tome cada una con datos de demostración y reemplace el 
 | 2.1.2 | Ventana "Alertas" | Resumen de pendientes al ingresar como administrador | 2.1 Iniciar sesión |
 | 3.1 | Pantalla principal del administrador | Menú con los grupos OPERACIÓN, INVENTARIO y GESTIÓN | 3. La pantalla principal y el menú |
 | 4.2.1 | Ventas | Carrito con cliente VIP y el desglose con Descuento, IGV 18%, Redondeo y TOTAL | 4.2 Registrar una venta y aplicar el descuento VIP |
-| 4.3.1 | Ventana "Cobro con Yape o Plin" | Cobro aprobado con su código de autorización | 4.3 Cobrar en efectivo, con Yape o con Plin |
+| 4.3.1 | Confirmación "Cobro con Yape o Plin" | Pregunta si el cliente ya pagó el total | 4.3 Cobrar en efectivo, con Yape o con Plin |
 | 4.5.1 | Caja, pestaña Historial de turnos | Turnos con faltante (rojo), sobrante (ámbar) y abierto (celeste) | 4.5 Cerrar un turno y cuadrar la caja |
 | 4.6.1 | Caja | Ventana "Anular venta" con el motivo de la anulación | 4.6 Anular una venta |
 | 4.7.1 | Usuarios | Ventana "Registrar Nuevo Usuario" con el rol elegido | 4.7 Gestionar usuarios y roles |
@@ -367,6 +367,6 @@ Total: **16 capturas**. Tome cada una con datos de demostración y reemplace el 
 | 4.11.1 | Compras, pestaña Órdenes de compra | Orden pendiente seleccionada con los botones Aprobar y Rechazar | 4.11 Alertas de reposición y órdenes de compra |
 | 4.12.1 | Reportes | Indicadores comparados con el período anterior y el gráfico de ventas del período | 4.12 Consultar los reportes |
 | 4.13.1 | Mermas | Menú Exportar con las opciones Exportar PDF y Exportar Excel | 4.13 Exportar a PDF y a Excel |
-| 4.14.1 | Pagos, pestaña Configuración | Datos del negocio y de la pasarela de pago | 4.14 Configurar los pagos y revisar las transacciones |
+| 4.14.1 | Negocio | Datos del negocio para el comprobante | 4.14 Configurar los datos del negocio |
 | 4.15.1 | Ventana de respaldo.bat | Mensaje "Respaldo guardado en" y "Presione una tecla para continuar" | 4.15 Respaldar la base de datos |
 <!-- CAPTURAS:fin -->

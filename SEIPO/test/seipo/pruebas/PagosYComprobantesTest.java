@@ -6,8 +6,6 @@ import seipo.controlador.ControladorCaja;
 import seipo.controlador.ControladorClientes;
 import seipo.controlador.ControladorComprobantes;
 import seipo.controlador.ControladorComprobantes.ComprobanteVO;
-import seipo.controlador.ControladorPasarela;
-import seipo.controlador.ControladorPasarela.TransaccionVO;
 import seipo.controlador.ControladorVentas;
 import seipo.modelo.Datos;
 
@@ -17,56 +15,48 @@ import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-/** Procesos 15 (cobro vía pasarela), comprobante y anulación. */
+/** Proceso 15 (forma de pago), comprobante y anulación. */
 class PagosYComprobantesTest extends PruebaBase {
 
-    private final ControladorPasarela pasarela = new ControladorPasarela();
-
     /**
-     * El documento (Alcance de esta versión) indica que el cobro con tarjeta se retiró y que el cobro digital es
-     * Yape o Plin por la pasarela simulada. Por eso la tarjeta 4111 1111 1111 1111 debe rechazarse como forma de pago,
-     * y la autorización aprobada/rechazada se prueba con los datos de prueba de la billetera.
+     * El documento (Alcance de esta versión) indica que el cobro con tarjeta se retiró y que las formas de pago son
+     * Efectivo y Yape o Plin. El sistema solo registra la forma de pago: no procesa el cobro digital (no hay pasarela).
+     * Por eso la tarjeta 4111 1111 1111 1111 y cualquier otra forma de pago deben rechazarse, y Yape o Plin se registra
+     * sin pedir efectivo recibido.
      */
     @Test
-    @DisplayName("CP-09 Pago digital: la tarjeta (retirada) se rechaza; Yape aprobado genera token y autorización; Yape rechazado no confirma la venta")
-    void cp09_pagoDigital() throws SQLException {
+    @DisplayName("CP-09 Forma de pago: la tarjeta (retirada) y otras formas se rechazan; Yape o Plin se registra como forma de pago y suma en el turno")
+    void cp09_formaDePago() throws SQLException {
         iniciarSesion("Personal1", "890");
-        new ControladorCaja().abrirTurno(100.00);
+        ControladorCaja caja = new ControladorCaja();
+        caja.abrirTurno(100.00);
         int producto = crearProducto("CP09", "10.00", 2, null);
         recibirLote(producto, "CP09-L1", LocalDate.now().plusMonths(6), 10);
         double total = totalEsperado(new BigDecimal("10.00"), BigDecimal.ZERO).doubleValue();
         String antes = huellaVentas();
 
-        // Tarjeta de prueba 4111 1111 1111 1111: forma de pago retirada del sistema
-        assertThrows(SQLException.class, () -> pasarela.solicitarCobro("Tarjeta", total), "la pasarela no debe aceptar tarjeta");
-        assertThrows(SQLException.class, () -> vender(producto, 1, 0, "Tarjeta", null, null, "4111111111111111"),
-                "la venta no debe aceptar tarjeta");
-        assertEquals(antes, huellaVentas(), "el intento con tarjeta no deja registros");
+        // Clases inválidas: tarjeta de prueba 4111 1111 1111 1111 (forma de pago retirada) y una forma inexistente
+        assertThrows(SQLException.class, () -> vender(producto, 1, 0, "Tarjeta", null, null), "la venta no debe aceptar tarjeta");
+        assertThrows(SQLException.class, () -> vender(producto, 1, 0, "Transferencia", null, null),
+                "la venta no debe aceptar formas de pago fuera de Efectivo y Yape o Plin");
+        String despuesInvalidas = huellaVentas();
 
-        // Clase válida: celular de 9 dígitos que empieza con 9 y código de 6 dígitos
-        TransaccionVO solicitud = pasarela.solicitarCobro(Datos.YAPE_PLIN, total);
-        assertEquals(ControladorPasarela.PENDIENTE, solicitud.estado);
-        TransaccionVO aprobada = pasarela.autorizarBilletera(solicitud.token, ControladorPasarela.YAPE, "987654321", "123456");
-        int ventaId = vender(producto, 1, 0, Datos.YAPE_PLIN, null, null, aprobada.token);
-        TransaccionVO deVenta = pasarela.transaccionDeVenta(ventaId);
-
-        // Clase inválida: código de aprobación 000000 (rechazo de la pasarela de prueba)
-        TransaccionVO solicitud2 = pasarela.solicitarCobro(Datos.YAPE_PLIN, total);
-        TransaccionVO rechazada = pasarela.autorizarBilletera(solicitud2.token, ControladorPasarela.YAPE, "987654321", "000000");
-        String antesRechazo = huellaVentas();
-        assertThrows(SQLException.class, () -> vender(producto, 1, 0, Datos.YAPE_PLIN, null, null, rechazada.token),
-                "un cobro rechazado no confirma la venta");
+        // Clase válida: Yape o Plin, sin efectivo recibido
+        int ventaId = vender(producto, 1, 0, Datos.YAPE_PLIN, null, null);
+        ControladorVentas.VentaVO venta = new ControladorVentas().obtenerVenta(ventaId);
+        ComprobanteVO comprobante = new ControladorComprobantes().obtener(ventaId);
+        ControladorCaja.TurnoVO turno = caja.turnoAbierto();
 
         assertAll(
-                () -> assertTrue(solicitud.token != null && solicitud.token.startsWith("tok_"), "se genera token de pago"),
-                () -> assertEquals(ControladorPasarela.APROBADA, aprobada.estado),
-                () -> assertTrue(aprobada.codigoAutorizacion != null && aprobada.codigoAutorizacion.matches("\\d{6}"), "código de autorización"),
-                () -> assertNotNull(deVenta, "el cobro queda vinculado a la venta"),
-                () -> assertEquals(aprobada.token, deVenta.token),
-                () -> assertTrue(deVenta.medio.endsWith("321") && !deVenta.medio.contains("987654"), "solo se guardan los 3 últimos dígitos"),
-                () -> assertEquals(ControladorPasarela.RECHAZADA, rechazada.estado),
-                () -> assertNotNull(rechazada.mensaje, "el rechazo indica el motivo"),
-                () -> assertEquals(antesRechazo, huellaVentas(), "el rechazo no deja venta registrada"));
+                () -> assertEquals(antes, despuesInvalidas, "los intentos con formas de pago no válidas no dejan registros"),
+                () -> assertEquals(Datos.YAPE_PLIN, venta.formaPago, "la venta guarda la forma de pago"),
+                () -> assertNull(venta.recibido, "Yape o Plin no registra efectivo recibido"),
+                () -> assertEquals(total, venta.total, 0.001),
+                () -> assertNotNull(comprobante, "la venta con Yape o Plin emite comprobante"),
+                () -> assertEquals(total, turno.yapePlin, 0.001, "el turno suma la venta en Yape o Plin"),
+                () -> assertEquals(100.00, turno.efectivoEnCaja(), 0.001, "Yape o Plin no cambia el efectivo en caja"),
+                () -> assertEquals(0, entero("SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = DATABASE() "
+                        + "AND table_name = 'transacciones_pago'"), "no queda tabla de pasarela de pago"));
     }
 
     @Test
@@ -85,9 +75,9 @@ class PagosYComprobantesTest extends PruebaBase {
         long ultimaB = entero("SELECT COALESCE(MAX(numero), 0) FROM comprobantes WHERE serie = 'B001'");
 
         ControladorComprobantes comprobantes = new ControladorComprobantes();
-        ComprobanteVO factura = comprobantes.obtener(vender(producto, 1, 0, Datos.EFECTIVO, conRuc, 20.0, null));
-        ComprobanteVO boletaDni = comprobantes.obtener(vender(producto, 1, 0, Datos.EFECTIVO, conDni, 20.0, null));
-        ComprobanteVO boletaVarios = comprobantes.obtener(vender(producto, 1, 0, Datos.EFECTIVO, null, 20.0, null));
+        ComprobanteVO factura = comprobantes.obtener(vender(producto, 1, 0, Datos.EFECTIVO, conRuc, 20.0));
+        ComprobanteVO boletaDni = comprobantes.obtener(vender(producto, 1, 0, Datos.EFECTIVO, conDni, 20.0));
+        ComprobanteVO boletaVarios = comprobantes.obtener(vender(producto, 1, 0, Datos.EFECTIVO, null, 20.0));
 
         assertAll(
                 () -> assertEquals(ControladorComprobantes.FACTURA, factura.tipo),
@@ -103,25 +93,23 @@ class PagosYComprobantesTest extends PruebaBase {
     }
 
     @Test
-    @DisplayName("CP-11 Anulación: el stock vuelve a los mismos lotes, la venta queda anulada y el cobro digital queda reembolsado")
+    @DisplayName("CP-11 Anulación: el stock vuelve a los mismos lotes, la venta queda anulada y sale del cuadre del turno")
     void cp11_anulacion() throws SQLException {
         iniciarSesion("admin", "123");
         new ControladorCaja().abrirTurno(100.00);
         int producto = crearProducto("CP11", "10.00", 2, null);
         recibirLote(producto, "CP11-PRONTO", LocalDate.now().plusDays(15), 3);
         recibirLote(producto, "CP11-TARDE", LocalDate.now().plusDays(90), 10);
-        double total = totalEsperado(new BigDecimal("50.00"), BigDecimal.ZERO).doubleValue();
 
         // Venta en efectivo de 5 unidades: toma 3 del primer lote y 2 del segundo
-        int ventaEfectivo = vender(producto, 5, 0, Datos.EFECTIVO, null, 100.0, null);
+        int ventaEfectivo = vender(producto, 5, 0, Datos.EFECTIVO, null, 100.0);
         // Venta digital (Yape o Plin; la tarjeta se retiró de esta versión) de 5 unidades del segundo lote
-        TransaccionVO t = pasarela.autorizarBilletera(pasarela.solicitarCobro(Datos.YAPE_PLIN, total).token,
-                ControladorPasarela.PLIN, "912345678", "654321");
-        int ventaDigital = vender(producto, 5, 0, Datos.YAPE_PLIN, null, null, t.token);
+        int ventaDigital = vender(producto, 5, 0, Datos.YAPE_PLIN, null, null);
         assertEquals(0, cantidadLote("CP11-PRONTO"));
         assertEquals(3, cantidadLote("CP11-TARDE"));
 
         ControladorVentas ventas = new ControladorVentas();
+        ControladorCaja caja = new ControladorCaja();
         ventas.anularVenta(ventaEfectivo, "Prueba CP-11 efectivo");
         ventas.anularVenta(ventaDigital, "Prueba CP-11 digital");
 
@@ -131,8 +119,8 @@ class PagosYComprobantesTest extends PruebaBase {
                 () -> assertEquals(13, stockProducto(producto), "stock del producto restaurado"),
                 () -> assertEquals(ControladorVentas.ANULADA, ventas.obtenerVenta(ventaEfectivo).estado),
                 () -> assertEquals(ControladorVentas.ANULADA, ventas.obtenerVenta(ventaDigital).estado),
-                () -> assertEquals(ControladorPasarela.REEMBOLSADA, pasarela.transaccionDeVenta(ventaDigital).estado,
-                        "el cobro digital queda reembolsado"),
+                () -> assertEquals(0, caja.turnoAbierto().totalVendido(), 0.001, "las ventas anuladas salen del total del turno"),
+                () -> assertEquals(0, caja.turnoAbierto().yapePlin, 0.001, "la venta con Yape o Plin anulada sale del cuadre"),
                 () -> assertEquals(3, entero("SELECT COUNT(*) FROM movimientos WHERE producto_nombre = ? AND tipo = 'Anulación'",
                         "Producto de prueba CP11"), "un movimiento de anulación por cada lote devuelto (2 + 1)"));
     }

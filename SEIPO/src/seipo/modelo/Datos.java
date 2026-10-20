@@ -17,7 +17,7 @@ public class Datos {
     /** Descuento manual máximo (%) que puede aplicar el personal; el administrador no tiene tope y el VIP no cuenta. */
     public static final double DESCUENTO_MAX_PERSONAL = 10;
     public static final String EFECTIVO = "Efectivo";
-    /** Billeteras digitales: el único cobro que pasa por la pasarela de pago. */
+    /** Billeteras digitales: solo se registra la forma de pago; el cajero confirma el pago en el celular del negocio. */
     public static final String YAPE_PLIN = "Yape o Plin";
     public static final String[] FORMAS_PAGO = {EFECTIVO, YAPE_PLIN};
     /** Fecha y hora para el historial de ventas y turnos. */

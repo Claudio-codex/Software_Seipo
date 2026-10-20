@@ -7,7 +7,7 @@ Detalle completo en [`Informe_Pruebas.md`](Informe_Pruebas.md) y [`Defectos.md`]
 ## Diapositiva 1 — Objetivo
 - Verificar que SEIPO cumple las reglas de negocio de su documentación
 - 15 casos de prueba automatizados con JUnit 5
-- Cubren acceso, caja, ventas, FEFO, pagos, comprobantes, mermas, compras y reportes
+- Cubren acceso, caja, ventas, FEFO, forma de pago, comprobantes, mermas, compras y reportes
 - Esperado = lo que dice el documento; si el código difiere, es un defecto
 - Resultado final: 15 de 15 casos aprobados (100 %)
 
@@ -15,7 +15,7 @@ Detalle completo en [`Informe_Pruebas.md`](Informe_Pruebas.md) y [`Defectos.md`]
 
 ## Diapositiva 2 — Estrategia y técnicas
 - Prueba de **caja negra**: entradas y salidas observables, sin mirar la implementación
-- **Partición en clases de equivalencia**: válidas e inválidas (credenciales, turno, pago, documento, rol)
+- **Partición en clases de equivalencia**: válidas e inválidas (credenciales, turno, forma de pago, documento, rol)
 - **Valores límite**: stock exacto y stock + 1, umbral VIP, faltante y sobrante de caja, stock mínimo
 - Cada prueba crea sus propios datos y deja la base como la encontró
 - Verificación directa en la base: ventas, lotes, stock, comprobantes y movimientos
@@ -41,9 +41,9 @@ Detalle completo en [`Informe_Pruebas.md`](Informe_Pruebas.md) y [`Defectos.md`]
 ---
 
 ## Diapositiva 5 — Casos de prueba (2/2)
-- **CP-09 Pago digital:** tarjeta retirada rechazada; Yape aprobado con token; código 000000 rechazado → Pasó
+- **CP-09 Forma de pago:** tarjeta y otras formas rechazadas; Yape o Plin solo se registra y suma en el turno → Pasó
 - **CP-10 Comprobante:** RUC → factura F001; DNI o sin documento → boleta B001; correlativo +1 → Pasó
-- **CP-11 Anulación:** stock a los mismos lotes, venta anulada y cobro reembolsado → Pasó
+- **CP-11 Anulación:** stock a los mismos lotes, venta anulada y fuera del cuadre del turno → Pasó
 - **CP-12 Mermas** (pendiente, aprobada o rechazada) y **CP-13 Alertas y orden de compra** → Pasó
 - **CP-14 Cierre de caja** (−S/ 1.80 y +S/ 0.50 exactos) y **CP-15 Reporte PDF y Excel = base de datos** → Pasó
 
@@ -53,14 +53,15 @@ Detalle completo en [`Informe_Pruebas.md`](Informe_Pruebas.md) y [`Defectos.md`]
 - **Corrida 1:** 13/15 (86,7 %); fallan CP-02 y CP-06
 - **Corrida 2:** 14/15 (93,3 %); se corrige DEF-01 y pasa CP-02
 - **Corrida 3:** 15/15 (100 %); se aclara el requerimiento VIP y pasa CP-06
-- **Corrida 4:** **15/15 (100 %)**; regresión tras corregir OBS-02 a OBS-05, sin fallas
-- Cada corrida dura unos 15 s; las cuatro salidas están en `docs/pruebas/evidencias/`
+- **Corrida 4:** 15/15 (100 %); regresión tras corregir OBS-02 a OBS-05, sin fallas
+- **Corrida 5:** **15/15 (100 %)**; regresión tras quitar la pasarela de pago simulada (CAM-01)
+- Cada corrida dura unos 15 s; las cinco salidas están en `docs/pruebas/evidencias/`
 
 ---
 
 ## Diapositiva 7 — Defectos y observaciones
 - **DEF-01 (alta):** el rol solo se controlaba en el menú; el personal podía crear un administrador
-- Corrección: validación de rol en 5 métodos de Usuarios, Reportes y Pagos (10 líneas en 3 controladores)
+- Corrección: validación de rol en 5 métodos de Usuarios, Reportes y Pagos (10 líneas en 3 controladores; Pagos se quitó en la corrida 5)
 - **OBS-01 (media):** "10 % desde la tercera compra" era ambiguo
 - Resolución: se aclaró como "10 % después de 3 compras (a partir de la 4.ª)", sin cambiar el código
 - Ambos cerrados y verificados en las corridas 2 y 3
@@ -88,14 +89,14 @@ Detalle completo en [`Informe_Pruebas.md`](Informe_Pruebas.md) y [`Defectos.md`]
 ## Diapositiva 10 — Adaptaciones respecto al diseño original
 - El documento retiró la tarjeta como forma de pago en esta versión
 - **CP-09:** la tarjeta 4111 1111 1111 1111 se prueba como pago que debe rechazarse
-- **CP-09:** el rechazo se prueba con el código 000000 de la pasarela (no existe la tarjeta 0002)
 - **CP-11:** la venta "con tarjeta" se reemplazó por una venta con Plin
-- Los casos siguen cubriendo autorización, rechazo y reembolso
+- **CAM-01 (corrida 5):** el equipo quitó la pasarela simulada; el sistema solo registra la forma de pago
+- CP-02, CP-09 y CP-11 se ajustaron: la sección Pagos pasó a ser Negocio y ya no hay token ni reembolso
 
 ---
 
 ## Diapositiva 11 — Conclusiones
-- Los procesos centrales cumplen el documento: 15/15 casos aprobados en las corridas 3 y 4
+- Los procesos centrales cumplen el documento: 15/15 casos aprobados en las corridas 3, 4 y 5
 - Todas las operaciones rechazadas se revierten sin dejar registros parciales
 - Las pruebas encontraron un defecto de seguridad real, que ya está corregido
 - También aclararon un requerimiento ambiguo y, con los manuales, cuatro observaciones menores

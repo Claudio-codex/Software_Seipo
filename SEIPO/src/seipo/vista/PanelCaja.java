@@ -416,7 +416,7 @@ public class PanelCaja extends JPanel {
             }
             String motivo = JOptionPane.showInputDialog(this, "Anular la venta N° " + v.id + " por " + Datos.soles(v.total)
                     + ".\nEl stock vuelve a sus lotes y el monto sale del cuadre del turno."
-                    + (Datos.EFECTIVO.equals(v.formaPago) ? "" : "\nEl cobro con " + v.formaPago + " queda reembolsado en la pasarela.")
+                    + (Datos.EFECTIVO.equals(v.formaPago) ? "" : "\nEl sistema no devuelve el pago con " + v.formaPago + ": devuélvalo al cliente desde el celular del negocio.")
                     + "\n\nMotivo de la anulación:",
                     "Anular venta", JOptionPane.WARNING_MESSAGE);
             if (motivo == null) return;

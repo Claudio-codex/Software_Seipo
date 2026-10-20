@@ -212,9 +212,9 @@ public abstract class PruebaBase {
 
     /** Cobra una venta de un solo producto. */
     static int vender(int productoId, int cantidad, double descuentoPct, String forma, Integer clienteId,
-                      Double recibido, String token) throws SQLException {
+                      Double recibido) throws SQLException {
         return new ControladorVentas().cobrarVenta(Collections.singletonList(producto(productoId)),
-                Collections.singletonList(cantidad), descuentoPct, forma, clienteId, recibido, token);
+                Collections.singletonList(cantidad), descuentoPct, forma, clienteId, recibido);
     }
 
     /** Total esperado según el documento: (subtotal - descuento) + IGV 18 % en céntimos, redondeado hacia abajo a 10 céntimos. */

@@ -45,7 +45,7 @@ public class Principal extends JFrame {
     // Solo se crean para el administrador
     private PanelReportes reportes;
     private PanelUsuarios usuarios;
-    private PanelPagos pagos;
+    private PanelNegocio negocio;
 
     private final Map<String, Seccion> secciones = new LinkedHashMap<>();
     private final Map<String, ItemMenu> items = new LinkedHashMap<>();
@@ -70,9 +70,9 @@ public class Principal extends JFrame {
         if (Sesion.esAdministrador()) {
             reportes = new PanelReportes();
             usuarios = new PanelUsuarios();
-            pagos = new PanelPagos();
+            negocio = new PanelNegocio();
             secciones.put("Reportes", new Seccion("GESTIÓN", "Indicadores de ventas e inventario, gráficos y exportación.", reportes));
-            secciones.put("Pagos", new Seccion("GESTIÓN", "Cobros de la pasarela de pago, su configuración y los datos del comprobante.", pagos));
+            secciones.put("Negocio", new Seccion("GESTIÓN", "Datos del negocio que aparecen en la boleta y la factura.", negocio));
             secciones.put("Usuarios", new Seccion("GESTIÓN", "Cuentas de acceso y roles del personal.", usuarios));
         }
         for (Map.Entry<String, Seccion> s : secciones.entrySet()) centro.add(s.getValue().panel, s.getKey());
@@ -237,7 +237,7 @@ public class Principal extends JFrame {
             case "Clientes": clientes.refrescar(); break;
             case "Reportes": reportes.refrescar(); break;
             case "Usuarios": usuarios.refrescar(); break;
-            case "Pagos": pagos.refrescar(); break;
+            case "Negocio": negocio.refrescar(); break;
             default: break;
         }
         cards.show(centro, nombre);

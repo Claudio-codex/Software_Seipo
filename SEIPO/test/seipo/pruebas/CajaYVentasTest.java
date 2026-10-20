@@ -49,7 +49,7 @@ class CajaYVentasTest extends PruebaBase {
         String antes = huellaVentas();
 
         SQLException e = assertThrows(SQLException.class,
-                () -> vender(producto, 1, 0, Datos.EFECTIVO, null, 20.0, null));
+                () -> vender(producto, 1, 0, Datos.EFECTIVO, null, 20.0));
         assertTrue(e.getMessage().toLowerCase().contains("turno"), "el mensaje debe indicar que falta el turno: " + e.getMessage());
         assertEquals(antes, huellaVentas(), "no debe quedar ninguna venta, detalle, comprobante, movimiento ni cambio de stock");
         assertEquals(5, stockProducto(producto));
@@ -64,7 +64,7 @@ class CajaYVentasTest extends PruebaBase {
         int producto = crearProducto("CP05", "12.35", 2, null);
         recibirLote(producto, "CP05-L1", LocalDate.now().plusMonths(6), 10);
 
-        int ventaId = vender(producto, 1, 0, Datos.EFECTIVO, null, 20.00, null);
+        int ventaId = vender(producto, 1, 0, Datos.EFECTIVO, null, 20.00);
         VentaVO v = new ControladorVentas().obtenerVenta(ventaId);
 
         BigDecimal total = totalEsperado(new BigDecimal("12.35"), BigDecimal.ZERO);
@@ -98,8 +98,8 @@ class CajaYVentasTest extends PruebaBase {
         ClienteVO a = new ControladorClientes().buscarClientes("70000006").get(0);
         ClienteVO b = new ControladorClientes().buscarClientes("70000016").get(0);
 
-        int ventaA = vender(producto, 1, a.porcentajeVIP, Datos.EFECTIVO, clienteA, 200.0, null);
-        int ventaB = vender(producto, 1, b.porcentajeVIP, Datos.EFECTIVO, clienteB, 200.0, null);
+        int ventaA = vender(producto, 1, a.porcentajeVIP, Datos.EFECTIVO, clienteA, 200.0);
+        int ventaB = vender(producto, 1, b.porcentajeVIP, Datos.EFECTIVO, clienteB, 200.0);
         VentaVO va = new ControladorVentas().obtenerVenta(ventaA);
         VentaVO vb = new ControladorVentas().obtenerVenta(ventaB);
 
@@ -120,7 +120,7 @@ class CajaYVentasTest extends PruebaBase {
         recibirLote(producto, "CP07-TARDE", LocalDate.now().plusDays(120), 10);
         recibirLote(producto, "CP07-PRONTO", LocalDate.now().plusDays(20), 10);
 
-        int ventaId = vender(producto, 3, 0, Datos.EFECTIVO, null, 50.0, null);
+        int ventaId = vender(producto, 3, 0, Datos.EFECTIVO, null, 50.0);
 
         assertAll(
                 () -> assertEquals(7, cantidadLote("CP07-PRONTO"), "sale del lote que vence primero"),
@@ -141,12 +141,12 @@ class CajaYVentasTest extends PruebaBase {
         String antes = huellaVentas();
 
         // Valor límite superior inválido: stock + 1 = 5 (la venta alcanza a tomar 4 antes de fallar)
-        assertThrows(SQLException.class, () -> vender(producto, 5, 0, Datos.EFECTIVO, null, 50.0, null));
+        assertThrows(SQLException.class, () -> vender(producto, 5, 0, Datos.EFECTIVO, null, 50.0));
         assertEquals(antes, huellaVentas(), "el rechazo no debe dejar venta, detalle, lotes ni comprobante a medias (rollback)");
         assertEquals(4, stockProducto(producto));
 
         // Valor límite válido: exactamente el stock disponible
-        int ventaId = vender(producto, 4, 0, Datos.EFECTIVO, null, 50.0, null);
+        int ventaId = vender(producto, 4, 0, Datos.EFECTIVO, null, 50.0);
         assertTrue(ventaId > 0);
         assertEquals(0, stockProducto(producto));
         assertEquals(0, cantidadLote("CP08-L1") + cantidadLote("CP08-L2"));
@@ -162,18 +162,18 @@ class CajaYVentasTest extends PruebaBase {
         // Turno 1: esperado = 100.00 + 11.80 = 111.80; se cuentan 110.00 -> faltante de 1.80
         caja.abrirTurno(100.00);
         int turno1 = caja.turnoAbierto().id;
-        vender(producto, 1, 0, Datos.EFECTIVO, null, 20.0, null);
+        vender(producto, 1, 0, Datos.EFECTIVO, null, 20.0);
         caja.cerrarTurno(turno1, 110.00, "Prueba de faltante");
 
         // Turno 2: esperado = 50.00 + 11.80 = 61.80; se cuentan 62.30 -> sobrante de 0.50
         caja.abrirTurno(50.00);
         int turno2 = caja.turnoAbierto().id;
-        vender(producto, 1, 0, Datos.EFECTIVO, null, 20.0, null);
+        vender(producto, 1, 0, Datos.EFECTIVO, null, 20.0);
         caja.cerrarTurno(turno2, 62.30, "Prueba de sobrante");
 
         TurnoVO t1 = turno(turno1), t2 = turno(turno2);
         String antes = huellaVentas();
-        assertThrows(SQLException.class, () -> vender(producto, 1, 0, Datos.EFECTIVO, null, 20.0, null),
+        assertThrows(SQLException.class, () -> vender(producto, 1, 0, Datos.EFECTIVO, null, 20.0),
                 "con el turno cerrado no se admiten ventas");
 
         assertAll(

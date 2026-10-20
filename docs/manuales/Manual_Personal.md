@@ -2,7 +2,7 @@
 
 **Sistema de venta e inventario**
 
-Versión 1.1 · 19 de octubre de 2026
+Versión 1.2 · 19 de octubre de 2026
 
 Autores: Claudio Puente y Francesco Camarena Damián
 
@@ -37,7 +37,7 @@ Curso: Procesos de Software · Tarma, 2026
 
 SEIPO es el sistema de venta e inventario de la tienda. Con él se atiende al cliente en caja (ventas, cobro en efectivo o con Yape o Plin, boleta o factura), se controla el efectivo de cada turno y se lleva el inventario por lotes, para que primero se venda lo que vence antes.
 
-Este manual está dirigido al **personal de tienda**: las personas que venden, cobran, reciben mercadería y registran productos dañados o vencidos. Explica, paso a paso, solo las tareas que su cuenta tiene permitidas. Las tareas del administrador (anular ventas, aprobar mermas y órdenes de compra, reportes, pagos y usuarios) están en el Manual del Administrador.
+Este manual está dirigido al **personal de tienda**: las personas que venden, cobran, reciben mercadería y registran productos dañados o vencidos. Explica, paso a paso, solo las tareas que su cuenta tiene permitidas. Las tareas del administrador (anular ventas, aprobar mermas y órdenes de compra, reportes, datos del negocio y usuarios) están en el Manual del Administrador.
 
 ## 2. Requisitos y cómo ingresar
 
@@ -82,7 +82,7 @@ La pantalla principal tiene tres partes:
 | Mermas | Bajas por productos vencidos o dañados y su autorización. |
 | Compras | Alertas de stock, órdenes de compra y proveedores. |
 
-> **Nota:** el personal de tienda no ve las secciones Reportes, Pagos ni Usuarios; son exclusivas del administrador. Las ventanas de confirmación tienen los botones **Aceptar**, **Cancelar**, **Sí** y **No**.
+> **Nota:** el personal de tienda no ve las secciones Reportes, Negocio ni Usuarios; son exclusivas del administrador. Las ventanas de confirmación tienen los botones **Aceptar**, **Cancelar**, **Sí** y **No**.
 
 ## 4. Procedimientos paso a paso
 
@@ -155,19 +155,18 @@ La pantalla principal tiene tres partes:
 
 ### 4.5 Cobrar con Yape o con Plin
 
-**Objetivo:** cobrar con billetera digital a través de la pasarela de pago. **Cuándo se usa:** cuando el cliente paga con Yape o con Plin.
+**Objetivo:** registrar una venta que el cliente paga con billetera digital. **Cuándo se usa:** cuando el cliente paga con Yape o con Plin.
 
-1. Pulse **Yape o Plin** (`F11`). Se abre **Cobro con Yape o Plin**.
-2. En **Billetera**, marque **Yape** o **Plin**.
-3. Escriba el **Celular del cliente** (9 dígitos, empieza con 9).
-4. Escriba el **Código de aprobación** de 6 dígitos que el cliente ve en su aplicación.
-5. Pulse **Enviar cobro** y espere la respuesta de la pasarela.
+1. Muestre al cliente el **TOTAL** y pídale que pague con Yape o Plin al número del negocio.
+2. Revise en el celular del negocio que llegó el pago por el monto exacto.
+3. Pulse **Yape o Plin** (`F11`). Aparece la pregunta "¿El cliente ya pagó S/ … con Yape o Plin?".
+4. Pulse **Sí**.
 
-[CAPTURA 4.5.1: Ventana "Cobro con Yape o Plin" — billetera, celular y código, con el cobro aprobado]
+[CAPTURA 4.5.1: Confirmación "Cobro con Yape o Plin" — pregunta si el cliente ya pagó el total]
 
-**Resultado esperado:** se ve "Aprobada · código de autorización …", la ventana se cierra sola y aparece el comprobante con el medio, la autorización y el token de pago.
+**Resultado esperado:** aparece el comprobante con "Venta N° … registrada" y la forma de pago **Yape o Plin**, y el carrito queda vacío.
 
-> **Advertencia:** si sale "Rechazada: …", corrija los datos y pulse **Reintentar**, pida otro medio de pago o pulse **Cancelar**. Si el botón está apagado, el cobro digital está desactivado; avise al administrador. Por ahora la pasarela está en **modo prueba**: no se hacen cargos reales.
+> **Advertencia:** el sistema solo registra que la venta se pagó con Yape o Plin; no cobra ni verifica el pago. Pulse **Sí** solo después de ver el pago en el celular del negocio. Si el pago no llegó, pulse **No** y cobre con otro medio.
 
 ### 4.6 Emitir la boleta o la factura
 
@@ -258,7 +257,7 @@ La pantalla principal tiene tres partes:
 | Redondeo | El total se redondea hacia abajo a 10 céntimos, porque no circulan monedas de 1 ni 5 céntimos. El redondeo favorece al cliente. |
 | Montos en efectivo | Efectivo recibido, inicial y contado: sin céntimos sueltos de 1 o 5. |
 | Comprobante | Cliente con RUC: factura F001. DNI o sin cliente: boleta B001. Numeración correlativa. |
-| Cobro digital | La venta con Yape o Plin solo se registra si la pasarela aprobó el cobro. Del celular solo se guardan los 3 últimos dígitos. |
+| Yape o Plin | El sistema solo registra la forma de pago. El cajero confirma el pago en el celular del negocio antes de registrar la venta. No entra al efectivo de caja. |
 | Anulaciones | Solo el administrador anula ventas, y solo mientras el turno siga abierto. |
 
 ## 6. Mensajes de error frecuentes
@@ -272,8 +271,6 @@ La pantalla principal tiene tres partes:
 | Producto no encontrado. | Revise el código o búsquelo por nombre. Si no existe, avise al administrador. |
 | Stock insuficiente para … quedan N unidad(es) disponibles. | Venda como máximo esa cantidad. |
 | Ingrese un monto inicial válido, sin monedas de 1 ni 5 céntimos (por ejemplo 100 o 85.50). | Corrija el monto. |
-| El celular debe tener 9 dígitos y empezar con 9. | Corrija el celular del cliente. |
-| Rechazada: Código de aprobación incorrecto o vencido | Pida al cliente un código nuevo y pulse **Reintentar**, o cobre con otro medio. |
 | Describa en la observación qué le ocurrió al producto. | Complete la observación de la merma. |
 | Hay una diferencia de caja: explique el motivo en la observación. | Escriba el motivo del faltante o sobrante y pulse **Aceptar**. |
 | Nombre obligatorio y DNI (8 dígitos) o RUC (11 dígitos). | Corrija los datos del cliente. |
@@ -293,7 +290,7 @@ La pantalla principal tiene tres partes:
 
 **¿Cuándo baja el stock por una merma?** Cuando el administrador la aprueba. Si la rechaza, las unidades vuelven a estar disponibles.
 
-**¿El cobro con Yape o Plin cobra dinero real?** No. Por ahora la pasarela está en modo prueba y no hace cargos reales.
+**¿El sistema cobra el pago con Yape o Plin?** No. El cliente paga desde su celular y usted lo confirma en el celular del negocio; el sistema solo registra que la venta se pagó con Yape o Plin.
 
 ## Lista de capturas pendientes
 
@@ -308,7 +305,7 @@ Total: **12 capturas**. Tome cada una con datos de demostración y reemplace el 
 | 4.2.1 | Ventas | Carrito con dos productos y el resumen Subtotal, Descuento, IGV 18%, Redondeo y TOTAL | 4.2 Registrar una venta |
 | 4.3.1 | Ventana "Cliente de la venta" | Lista de clientes con sus compras y nivel VIP | 4.3 Elegir al cliente y aplicar el descuento VIP |
 | 4.4.1 | Ventana "Cobro en efectivo" | Monto recibido y vuelto calculado | 4.4 Cobrar en efectivo y dar el vuelto |
-| 4.5.1 | Ventana "Cobro con Yape o Plin" | Billetera, celular y código, con el cobro aprobado | 4.5 Cobrar con Yape o con Plin |
+| 4.5.1 | Confirmación "Cobro con Yape o Plin" | Pregunta si el cliente ya pagó el total | 4.5 Cobrar con Yape o con Plin |
 | 4.6.1 | Comprobante | Factura electrónica F001 con los botones Imprimir, Guardar PDF y Cerrar | 4.6 Emitir la boleta o la factura |
 | 4.7.1 | Ventana "Registrar merma" | Lote, cantidad, causal y observación | 4.7 Registrar una merma |
 | 4.8.1 | Compras, pestaña Alertas de stock | Productos agotados y con stock bajo con su cantidad sugerida | 4.8 Consultar el stock y las alertas |

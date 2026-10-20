@@ -25,7 +25,7 @@ import static org.junit.jupiter.api.Assumptions.assumeFalse;
 /** Proceso: acceso al sistema y restricción por rol. */
 class AccesoYRolesTest extends PruebaBase {
 
-    private static final List<String> SOLO_ADMINISTRADOR = Arrays.asList("Reportes", "Pagos", "Usuarios");
+    private static final List<String> SOLO_ADMINISTRADOR = Arrays.asList("Reportes", "Negocio", "Usuarios");
 
     @Test
     @DisplayName("CP-01 Acceso al sistema: credencial válida entra como administrador; clave errada y usuario inexistente se rechazan igual")
@@ -51,7 +51,7 @@ class AccesoYRolesTest extends PruebaBase {
     }
 
     @Test
-    @DisplayName("CP-02 Restricción por rol: el personal no accede a Reportes, Pagos ni Usuarios; el administrador accede a todo")
+    @DisplayName("CP-02 Restricción por rol: el personal no accede a Reportes, Negocio ni Usuarios; el administrador accede a todo")
     void cp02_restriccionPorRol() throws Exception {
         assumeFalse(GraphicsEnvironment.isHeadless(), "Se necesita entorno gráfico para construir la ventana principal");
 
@@ -77,7 +77,7 @@ class AccesoYRolesTest extends PruebaBase {
                 () -> assertTrue(modulosPersonal.containsAll(Arrays.asList("Ventas", "Caja", "Clientes", "Productos", "Inventario", "Mermas", "Compras")),
                         "el personal debe ver sus módulos de operación e inventario: " + modulosPersonal),
                 () -> assertTrue(SOLO_ADMINISTRADOR.stream().noneMatch(modulosPersonal::contains),
-                        "el personal no debe ver Reportes, Pagos ni Usuarios: " + modulosPersonal),
+                        "el personal no debe ver Reportes, Negocio ni Usuarios: " + modulosPersonal),
                 () -> assertTrue(modulosAdmin.containsAll(modulosPersonal) && modulosAdmin.containsAll(SOLO_ADMINISTRADOR),
                         "el administrador debe ver todos los módulos: " + modulosAdmin),
                 () -> assertNotNull(rechazoFinal, "el personal no debe poder crear cuentas de usuario (módulo Usuarios)"),

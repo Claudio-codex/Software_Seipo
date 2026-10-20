@@ -1,18 +1,19 @@
 package seipo.controlador;
 
-import seipo.controlador.ControladorPasarela.ConfiguracionVO;
-import seipo.controlador.ControladorPasarela.TransaccionVO;
 import seipo.controlador.ControladorVentas.DetalleVO;
 import seipo.controlador.ControladorVentas.VentaVO;
 import seipo.modelo.ConexionBD;
+import seipo.modelo.Sesion;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 /**
  * Comprobante digital de cada venta: boleta para consumidores (DNI o sin documento) y factura para clientes con RUC.
@@ -30,13 +31,57 @@ public class ControladorComprobantes {
         public LocalDateTime emitido;
         public VentaVO venta;
         public List<DetalleVO> detalle;
-        /** Cobro con Yape o Plin; null si se pagó en efectivo. */
-        public TransaccionVO pago;
 
         public String numeroCompleto() { return serie + "-" + String.format("%08d", numero); }
 
         public String titulo() { return FACTURA.equals(tipo) ? "FACTURA ELECTRÓNICA" : "BOLETA DE VENTA ELECTRÓNICA"; }
     }
+
+    /** Datos del negocio que aparecen como emisor en cada comprobante. */
+    public static class EmisorVO {
+        public String nombre, ruc, direccion;
+    }
+
+    // ---------- Datos del negocio ----------
+
+    public EmisorVO leerEmisor() throws SQLException {
+        try (Connection con = ConexionBD.obtenerConexion()) {
+            return leerEmisor(con);
+        }
+    }
+
+    static EmisorVO leerEmisor(Connection con) throws SQLException {
+        Map<String, String> v = new HashMap<>();
+        try (Statement st = con.createStatement(); ResultSet rs = st.executeQuery("SELECT clave, valor FROM configuracion")) {
+            while (rs.next()) v.put(rs.getString(1), rs.getString(2));
+        }
+        EmisorVO e = new EmisorVO();
+        e.nombre = v.getOrDefault("empresa_nombre", "");
+        e.ruc = v.getOrDefault("empresa_ruc", "");
+        e.direccion = v.getOrDefault("empresa_direccion", "");
+        return e;
+    }
+
+    public void guardarEmisor(EmisorVO e) throws SQLException {
+        if (!Sesion.esAdministrador()) throw new SQLException("Solo el administrador puede cambiar los datos del negocio.");
+        if (e.nombre.isEmpty() || e.direccion.isEmpty()) {
+            throw new SQLException("Ingrese el nombre y la dirección del negocio: aparecen en el comprobante.");
+        }
+        if (!e.ruc.matches("\\d{11}")) throw new SQLException("El RUC del negocio debe tener 11 dígitos.");
+        String[][] valores = {{"empresa_nombre", e.nombre}, {"empresa_ruc", e.ruc}, {"empresa_direccion", e.direccion}};
+        try (Connection con = ConexionBD.obtenerConexion();
+             PreparedStatement pst = con.prepareStatement(
+                     "INSERT INTO configuracion (clave, valor) VALUES (?, ?) ON DUPLICATE KEY UPDATE valor = VALUES(valor)")) {
+            for (String[] fila : valores) {
+                pst.setString(1, fila[0]);
+                pst.setString(2, fila[1]);
+                pst.addBatch();
+            }
+            pst.executeBatch();
+        }
+    }
+
+    // ---------- Comprobantes ----------
 
     /** Factura si el cliente tiene RUC (11 dígitos); boleta en los demás casos. */
     public static String tipoPara(String documento) {
@@ -68,7 +113,7 @@ public class ControladorComprobantes {
                 numero = rs.getInt(1);
             }
         }
-        ConfiguracionVO emisor = ControladorPasarela.leerConfiguracion(con);
+        EmisorVO emisor = leerEmisor(con);
         LocalDateTime emitido = LocalDateTime.now().withNano(0);
         try (PreparedStatement pst = con.prepareStatement("INSERT INTO comprobantes (venta_id, tipo, serie, numero, emitido_en, " +
                 "emisor_ruc, emisor_nombre, emisor_direccion, cliente_documento, cliente_nombre, codigo_verificacion) " +
@@ -78,12 +123,12 @@ public class ControladorComprobantes {
             pst.setString(3, serie);
             pst.setInt(4, numero);
             pst.setTimestamp(5, Timestamp.valueOf(emitido));
-            pst.setString(6, emisor.empresaRuc);
-            pst.setString(7, emisor.empresaNombre);
-            pst.setString(8, emisor.empresaDireccion);
+            pst.setString(6, emisor.ruc);
+            pst.setString(7, emisor.nombre);
+            pst.setString(8, emisor.direccion);
             pst.setString(9, documento);
             pst.setString(10, nombre);
-            pst.setString(11, codigoVerificacion(emisor.empresaRuc, serie, numero, total, emitido));
+            pst.setString(11, codigoVerificacion(emisor.ruc, serie, numero, total, emitido));
             pst.executeUpdate();
         }
         return serie + "-" + String.format("%08d", numero);
@@ -112,7 +157,6 @@ public class ControladorComprobantes {
         ControladorVentas ventas = new ControladorVentas();
         c.venta = ventas.obtenerVenta(ventaId);
         c.detalle = ventas.detalleVenta(ventaId);
-        c.pago = new ControladorPasarela().transaccionDeVenta(ventaId);
         return c;
     }
 

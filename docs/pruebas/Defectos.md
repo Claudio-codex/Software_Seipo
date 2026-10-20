@@ -10,6 +10,7 @@ Registro de los hallazgos de las pruebas de caja negra (CP-01 a CP-15). Las evid
 | OBS-03 | — | Baja | Corregido y verificado | Revisión del código para los manuales | Corrida 4 |
 | OBS-04 | — | Baja | Corregido y verificado | Revisión del código para los manuales | Corrida 4 |
 | OBS-05 | — | Baja | Corregido y verificado | Revisión del código para los manuales | Corrida 4 |
+| CAM-01 | CP-02, CP-09, CP-11 | — (cambio de alcance) | Aplicado y verificado | Decisión del equipo | Corrida 5 |
 
 Las observaciones OBS-02 a OBS-05 no las detectó ninguno de los 15 casos automatizados. Se encontraron al leer el código de las pantallas para escribir los manuales de usuario, después de la corrida 3. Se corrigieron antes de la corrida 4. La corrida 4 confirmó que los 15 casos siguen aprobando (15/15), y cada corrección se verificó aparte como se indica en cada observación.
 
@@ -42,7 +43,7 @@ Las observaciones OBS-02 a OBS-05 no las detectó ninguno de los 15 casos automa
 | `ControladorUsuarios.actualizarUsuario` | "Solo un administrador puede modificar cuentas de usuario." |
 | `ControladorUsuarios.cambiarPassword` | "Solo un administrador puede restablecer contraseñas." |
 | `ControladorReportes.obtenerReporte` | "Solo un administrador puede consultar los reportes." |
-| `ControladorPasarela.listarTransacciones` | "Solo un administrador puede ver las transacciones de pago." |
+| `ControladorPasarela.listarTransacciones` | "Solo un administrador puede ver las transacciones de pago." (método eliminado con la pasarela en la corrida 5, CAM-01) |
 
 **Verificación**
 - **Pruebas automatizadas:** CP-02 pasa en las corridas 2 y 3.
@@ -163,6 +164,26 @@ El descuento VIP automático no cambia: si el cliente elegido tiene un VIP mayor
 - **Registro de clientes:** "¡Cliente registrado exitosamente! Aún no tiene descuento VIP: lo obtiene según sus compras completadas."
 
 **Verificación:** la aplicación compila y los 15 casos pasan en la corrida 4. Son cambios solo de texto.
+
+---
+
+## CAM-01 — Se quita la pasarela de pago simulada
+
+- **Tipo:** cambio de alcance decidido por el equipo, no es un defecto.
+- **Casos relacionados:** CP-02, CP-09 y CP-11.
+
+**Motivo.** El sistema solo registra con qué forma de pago se cobró la venta; no hace la transacción. La pasarela simulada (solicitud de cobro, token, autorización, rechazo, reversión y reembolso) no correspondía a lo que hace el negocio: el cliente paga con Yape o Plin desde su celular y el cajero lo confirma a la vista.
+
+**Cambio**
+- Se eliminaron `ControladorPasarela` y `DialogoPasarela`. `ControladorVentas.cobrarVenta` ya no recibe un token de pago y `anularVenta` ya no marca reembolsos.
+- Al cobrar con Yape o Plin, Ventas pide confirmar que el cliente ya pagó y registra la forma de pago en `ventas.forma_pago`.
+- Al anular una venta con Yape o Plin, el aviso indica que el cajero devuelve el pago desde el celular del negocio.
+- La sección **Pagos** pasó a ser **Negocio** y solo conserva los datos del emisor del comprobante (nombre, RUC y dirección), en `ControladorComprobantes.leerEmisor` y `guardarEmisor` (solo administrador).
+- `ConexionBD` borra la tabla `transacciones_pago` y las claves `pasarela_*` de `configuracion` en las bases creadas con versiones anteriores. El dump `SEIPO/bd/seipo_db.sql` ya no las incluye.
+
+**Ajuste de las pruebas.** CP-02 espera la sección Negocio en lugar de Pagos. CP-09 comprueba que se rechacen la tarjeta y cualquier forma de pago no admitida, y que Yape o Plin se registre y sume en el turno. CP-11 comprueba que la venta anulada salga del cuadre del turno en lugar del reembolso.
+
+**Verificación:** la aplicación compila y los 15 casos pasan en la corrida 5.
 
 ---
 

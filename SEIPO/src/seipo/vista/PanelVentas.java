@@ -3,7 +3,6 @@ package seipo.vista;
 import seipo.controlador.ControladorCaja;
 import seipo.controlador.ControladorClientes;
 import seipo.controlador.ControladorClientes.ClienteVO;
-import seipo.controlador.ControladorPasarela;
 import seipo.controlador.ControladorVentas;
 import seipo.modelo.Datos;
 import seipo.modelo.Datos.ProductoVenta;
@@ -59,8 +58,6 @@ public class PanelVentas extends JPanel {
     private final ControladorVentas controlador = new ControladorVentas();
     private final ControladorCaja caja = new ControladorCaja();
     private final ControladorClientes clientes = new ControladorClientes();
-    private final ControladorPasarela pasarela = new ControladorPasarela();
-    private ControladorPasarela.ConfiguracionVO configPasarela;
 
     /** @param abrirCaja muestra la sección Caja (para abrir el turno) */
     public PanelVentas(Runnable abrirCaja) {
@@ -367,12 +364,6 @@ public class PanelVentas extends JPanel {
             turno = null;
             ex.printStackTrace();
         }
-        try {
-            configPasarela = pasarela.leerConfiguracion();
-        } catch (SQLException ex) {
-            configPasarela = null;
-            ex.printStackTrace();
-        }
         if (turno != null) {
             barraTurno.setBackground(UI.FILA_VERDE);
             lblTurnoIcono.setForeground(UI.EXITO);
@@ -386,14 +377,9 @@ public class PanelVentas extends JPanel {
             lblTurno.setText("No tiene un turno de caja abierto. Puede armar la venta, pero para cobrar debe abrir su turno.");
             irCaja.setText("Abrir turno");
         }
-        // Yape o Plin pasa por la pasarela: solo se habilita si el administrador la activó
-        boolean digital = configPasarela != null && configPasarela.activa;
-        for (int i = 0; i < botonesCobro.size(); i++) {
-            JButton b = botonesCobro.get(i);
-            boolean efectivo = Datos.EFECTIVO.equals(Datos.FORMAS_PAGO[i]);
-            b.setEnabled(turno != null && (efectivo || digital));
-            b.setToolTipText(turno == null ? "Abra su turno en la sección Caja para cobrar"
-                    : efectivo || digital ? null : "El cobro digital está desactivado (se activa en Pagos)");
+        for (JButton b : botonesCobro) {
+            b.setEnabled(turno != null);
+            b.setToolTipText(turno == null ? "Abra su turno en la sección Caja para cobrar" : null);
         }
         SwingUtilities.invokeLater(txtBuscar::requestFocusInWindow);
     }
@@ -721,37 +707,22 @@ public class PanelVentas extends JPanel {
             if (recibido == null) return;
         }
 
-        // Yape o Plin: la pasarela debe aprobar el cobro antes de registrar la venta
-        String token = null;
-        if (!Datos.EFECTIVO.equals(forma)) {
-            if (configPasarela == null || !configPasarela.activa) {
-                JOptionPane.showMessageDialog(this, "El cobro con " + forma + " está desactivado. Pida al administrador que lo active en Pagos.");
-                return;
-            }
-            token = DialogoPasarela.cobrar(this, forma, total, configPasarela.proveedor);
-            if (token == null) return;
+        // Yape o Plin: el sistema solo registra la forma de pago; el cajero confirma que llegó el pago al celular del negocio
+        if (!Datos.EFECTIVO.equals(forma) && JOptionPane.showConfirmDialog(this,
+                "¿El cliente ya pagó " + Datos.soles(total) + " con " + forma + "?\nConfirme el pago en el celular del negocio antes de registrar la venta.",
+                "Cobro con " + forma, JOptionPane.YES_NO_OPTION) != JOptionPane.YES_OPTION) {
+            return;
         }
 
         try {
             int ventaId = controlador.cobrarVenta(items, cantidades, descuentoPct, forma,
-                    cliente == null ? null : cliente.id, recibido, token);
+                    cliente == null ? null : cliente.id, recibido);
             limpiarVenta();
             refrescar();
             DialogoComprobante.mostrar(this, ventaId, true);
         } catch (SQLException ex) {
-            String revertido = token == null ? "" : revertirCobro(token);
-            JOptionPane.showMessageDialog(this, "Error al registrar la venta en la base de datos:\n" + ex.getMessage() + revertido,
+            JOptionPane.showMessageDialog(this, "Error al registrar la venta en la base de datos:\n" + ex.getMessage(),
                     "Error", JOptionPane.ERROR_MESSAGE);
-        }
-    }
-
-    /** Si la venta no se pudo registrar después de aprobado el cobro, se revierte en la pasarela. */
-    private String revertirCobro(String token) {
-        try {
-            pasarela.revertir(token);
-            return "\n\nEl cobro aprobado se revirtió: no se cargó nada al cliente.";
-        } catch (SQLException ex) {
-            return "\n\nNo se pudo revertir el cobro " + token + ": " + ex.getMessage();
         }
     }
 

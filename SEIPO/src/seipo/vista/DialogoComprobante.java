@@ -166,11 +166,6 @@ class DialogoComprobante extends JDialog {
             fila(sb, "Recibido", Datos.soles(v.recibido), tenue);
             fila(sb, "Vuelto", Datos.soles(v.vuelto()), tenue);
         }
-        if (c.pago != null) {
-            fila(sb, "Medio", esc(c.pago.medio), tenue);
-            fila(sb, "Autorización", c.pago.codigoAutorizacion, tenue);
-            fila(sb, "Token de pago", c.pago.token, tenue);
-        }
         sb.append("</table>");
 
         if (v.anulada()) {
