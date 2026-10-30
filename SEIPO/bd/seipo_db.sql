@@ -38112,9 +38112,9 @@ SET @OLD_AUTOCOMMIT=@@AUTOCOMMIT, @@AUTOCOMMIT=0;
 LOCK TABLES `usuarios` WRITE;
 /*!40000 ALTER TABLE `usuarios` DISABLE KEYS */;
 INSERT INTO `usuarios` VALUES
-(1,'admin','123','2026-10-17 19:35:21','ADMINISTRADOR','Administrador',1),
-(132,'Personal1','890','2026-10-18 01:02:28','PERSONAL','Marcos Lopez',1),
-(735,'personal2','456','2024-12-20 15:00:00','PERSONAL','Rosa Huamán Ccanto',1);
+(1,'admin','pbkdf2$210000$KSLTNCcuNFvI6kfut/oWrA==$85JMVIMoz6dsjg55AD55B5FoEtaz4ZkOYBodDk2QiXo=','2026-10-17 19:35:21','ADMINISTRADOR','Administrador',1),
+(132,'Personal1','pbkdf2$210000$aFbMf8e6Hba4JGPbjWsrRg==$y/8Xp0g5iZwru+Ybgn6m+c/S1cLqe13g/JUvtNrb/oA=','2026-10-18 01:02:28','PERSONAL','Marcos Lopez',1),
+(735,'personal2','pbkdf2$210000$9A4eFH0FNLHx/r9PqC+REw==$WkAeutrPgkL+HH1QPgDZps8tapVeQNtGJLqhsmAXCA0=','2024-12-20 15:00:00','PERSONAL','Rosa Huamán Ccanto',1);
 /*!40000 ALTER TABLE `usuarios` ENABLE KEYS */;
 UNLOCK TABLES;
 COMMIT;

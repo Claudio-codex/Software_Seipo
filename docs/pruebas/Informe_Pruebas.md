@@ -1,8 +1,8 @@
 # Informe de pruebas de caja negra — SEIPO
 
-**Curso:** Procesos de Software · **Sistema:** SEIPO, sistema de venta e inventario · **Fecha de ejecución:** 19/10/2026
+**Curso:** Procesos de Software · **Sistema:** SEIPO, sistema de venta e inventario · **Fecha de ejecución:** 19/10/2026 (corridas 1 a 5) y 29/10/2026 (corridas 6 y 7)
 
-**Resultado final (corrida 5): 15 de 15 casos aprobados (100 %).** Evidencias en [`evidencias/`](evidencias/) · Defectos en [`Defectos.md`](Defectos.md) · Tabla para Excel en [`Casos_de_Prueba.csv`](Casos_de_Prueba.csv) · Diapositivas en [`Resumen_para_PPT.md`](Resumen_para_PPT.md)
+**Resultado final (corrida 7): 15 de 15 casos aprobados (100 %).** Evidencias en [`evidencias/`](evidencias/) · Defectos en [`Defectos.md`](Defectos.md) · Tabla para Excel en [`Casos_de_Prueba.csv`](Casos_de_Prueba.csv) · Diapositivas en [`Resumen_para_PPT.md`](Resumen_para_PPT.md)
 
 ## 1. Objetivo y alcance
 
@@ -10,7 +10,7 @@ Verificar con pruebas automatizadas que SEIPO cumple las reglas de negocio de `D
 
 ## 2. Estrategia de pruebas
 
-- **Tipo de prueba:** caja negra. Cada resultado esperado se fijó con la regla de negocio del documento, no con lo que hace el código. Si el código y el documento no coinciden, la diferencia se reporta como defecto. El código de producción solo se modificó para corregir DEF-01 (después de la corrida 1) y las observaciones OBS-02 a OBS-05 (antes de la corrida 4). Antes de la corrida 5 se quitó la pasarela de pago simulada por decisión del equipo (CAM-01), y CP-02, CP-09 y CP-11 se ajustaron a ese cambio.
+- **Tipo de prueba:** caja negra. Cada resultado esperado se fijó con la regla de negocio del documento, no con lo que hace el código. Si el código y el documento no coinciden, la diferencia se reporta como defecto. El código de producción solo se modificó para corregir DEF-01 (después de la corrida 1) y las observaciones OBS-02 a OBS-05 (antes de la corrida 4). Antes de la corrida 5 se quitó la pasarela de pago simulada por decisión del equipo (CAM-01), y CP-02, CP-09 y CP-11 se ajustaron a ese cambio. Antes de la corrida 6 se cifraron las contraseñas (OBS-06); ningún caso cambió.
 - **Técnicas:**
   - **Partición en clases de equivalencia (válidas e inválidas).** Credenciales correctas, clave errada y usuario inexistente; venta con y sin turno; forma de pago admitida y no admitida; cliente con RUC, con DNI y sin documento; merma aprobada y rechazada; administrador y personal.
   - **Valores límite.** Stock exacto y stock + 1 (CP-08); umbral de compras del descuento VIP y una compra por debajo (CP-06); efectivo contado por debajo y por encima del esperado (CP-14); producto en el mínimo de stock (CP-13); clave con un espacio de más (CP-01); precio elegido para que actúe el redondeo a 10 céntimos (CP-05).
@@ -29,7 +29,7 @@ Verificar con pruebas automatizadas que SEIPO cumple las reglas de negocio de `D
 | Usuarios de demostración | `admin` / `123` (administrador) y `Personal1` / `890` (personal de tienda) |
 | Cómo ejecutar | IntelliJ: configuración **Pruebas SEIPO** → ▶. Consola: `pruebas.bat` en la raíz del repositorio. Duración: unos 15 segundos |
 
-## 4. Casos de prueba (resultado final, corrida 5)
+## 4. Casos de prueba (resultado final, corrida 7)
 
 | ID | Proceso / requisito | Entrada | Resultado esperado | Resultado obtenido | Estado | Corregido en |
 |---|---|---|---|---|---|---|
@@ -62,9 +62,11 @@ Verificar con pruebas automatizadas que SEIPO cumple las reglas de negocio de `D
 | 2 | 19/10/2026 15:04 | 14/15 | 93,3 % | CP-06 | Se corrigió DEF-01: validación de rol en 5 métodos de 3 controladores. CP-02 pasa. CP-06 queda pendiente de decisión | [`Resultados_Corrida_2.txt`](evidencias/Resultados_Corrida_2.txt) |
 | 3 | 19/10/2026 15:13 | 15/15 | 100 % | — | El equipo aclaró el requerimiento VIP (OBS-01) y CP-06 se ajustó al criterio "10 % después de 3 compras". El código no cambió | [`Resultados_Corrida_3.txt`](evidencias/Resultados_Corrida_3.txt) |
 | 4 | 19/10/2026 16:17 | 15/15 | 100 % | — | Regresión tras corregir OBS-02 a OBS-05 (tope del descuento manual, diálogos en español, pausa de respaldo.bat, textos de ayuda y mensaje de registro). Los 15 casos siguen aprobando | [`Resultados_Corrida_4.txt`](evidencias/Resultados_Corrida_4.txt) |
-| 5 | 19/10/2026 23:55 | **15/15** | **100 %** | — | Regresión tras quitar la pasarela de pago simulada (CAM-01): Yape o Plin solo se registra como forma de pago. CP-02 (la sección Pagos pasó a llamarse Negocio), CP-09 y CP-11 se ajustaron al cambio | [`Resultados_Corrida_5.txt`](evidencias/Resultados_Corrida_5.txt) |
+| 5 | 19/10/2026 23:55 | 15/15 | 100 % | — | Regresión tras quitar la pasarela de pago simulada (CAM-01): Yape o Plin solo se registra como forma de pago. CP-02 (la sección Pagos pasó a llamarse Negocio), CP-09 y CP-11 se ajustaron al cambio | [`Resultados_Corrida_5.txt`](evidencias/Resultados_Corrida_5.txt) |
+| 6 | 29/10/2026 23:07 | 14/15 | 93,3 % | CP-15 (entorno) | Regresión tras cifrar las contraseñas (OBS-06). Las verificaciones de los 15 casos pasaron, pero JUnit marcó CP-15 como fallido al no poder borrar su carpeta temporal: otro proceso de Windows tenía abierto `mermas.pdf`. El sistema cierra el archivo; es un fallo del entorno y se repitió la corrida | [`Resultados_Corrida_6.txt`](evidencias/Resultados_Corrida_6.txt) |
+| 7 | 29/10/2026 23:08 | **15/15** | **100 %** | — | Repetición de la corrida 6 sin cambios en el código ni en las pruebas | [`Resultados_Corrida_7.txt`](evidencias/Resultados_Corrida_7.txt) |
 
-Cada corrida duró unos 15 segundos (14,9 s, 14,5 s, 14,5 s, 15,3 s y 15 s), incluida la recarga de `seipo_test` antes de la primera prueba y después de cada una.
+Cada corrida duró unos 15 segundos (14,9 s, 14,5 s, 14,5 s, 15,3 s, 15 s, 16,1 s y 14,3 s), incluida la recarga de `seipo_test` antes de la primera prueba y después de cada una.
 
 ## 7. Defectos y observaciones
 
@@ -79,8 +81,9 @@ El detalle completo, con pasos para reproducir y esperado contra obtenido, está
 | OBS-04 | — | `respaldo.bat` se cerraba sin mostrar el resultado. Ahora pausa al final; el Programador de tareas lo ejecuta con `/sinpausa` | Baja | Corregido y verificado (corrida 4) |
 | OBS-05 | — | Textos inexactos: a la ayuda de Usuarios le faltaban Caja y Pagos, y el mensaje de registro de clientes mencionaba una "categoría inicial" | Baja | Corregido y verificado (corrida 4) |
 | CAM-01 | CP-02, CP-09, CP-11 | Cambio de alcance, no defecto: el equipo decidió quitar la pasarela de pago simulada, porque el sistema solo registra la forma de pago. El cajero confirma el pago con Yape o Plin en el celular del negocio; la sección Pagos pasó a ser Negocio (solo los datos del comprobante) | — | Aplicado y verificado (corrida 5) |
+| OBS-06 | CP-01 | Las contraseñas se guardaban en texto plano y quedaban visibles en la base, en los respaldos y en el dump. Ahora se guardan con PBKDF2-HMAC-SHA512 y sal aleatoria; las claves antiguas se cifran solas y siguen entrando | Media | Corregido y verificado (corridas 6 y 7) |
 
-OBS-02 a OBS-05 se encontraron al revisar el código para escribir los manuales de usuario, no con los casos automatizados. Las limitaciones que se dejan como están (creación de productos y proveedores por el personal, exportación del reporte de mermas y falta de recuperación de contraseña) se describen en [`Defectos.md`](Defectos.md#limitaciones-conocidas).
+OBS-02 a OBS-05 se encontraron al revisar el código para escribir los manuales de usuario, no con los casos automatizados. OBS-06 venía de la recomendación 4 de este informe. Las limitaciones que se dejan como están (creación de productos y proveedores por el personal, exportación del reporte de mermas y falta de recuperación de contraseña) se describen en [`Defectos.md`](Defectos.md#limitaciones-conocidas).
 
 ### Verificaciones adicionales
 
@@ -100,6 +103,13 @@ OBS-02 a OBS-05 se encontraron al revisar el código para escribir los manuales 
 - La aplicación compila sin `ControladorPasarela` ni `DialogoPasarela`.
 - Al iniciar, `ConexionBD` borra la tabla `transacciones_pago` y las claves `pasarela_*` de `configuracion` en las bases creadas con versiones anteriores. El dump `SEIPO/bd/seipo_db.sql` ya no las incluye.
 
+**Corridas 6 y 7 (OBS-06)**
+- **Cifrado:** la clave correcta entra; se rechazan la clave con un espacio de más y con otras mayúsculas; dos cifrados de la misma clave son distintos (sal) y un valor mal formado se rechaza sin error. Cada verificación tarda unos 140 ms.
+- **Base de una versión anterior (contra `seipo_test`):** con `admin` y `Personal1` en texto plano, la primera conexión los cifra y no queda ninguna clave sin cifrar; ambos entran con su clave de siempre. Una clave plana restaurada a mitad de la ejecución entra una vez y queda cifrada; un intento con la clave errada no cambia nada.
+- **Usuarios:** el usuario nuevo y la clave restablecida se guardan cifrados; después de restablecerla, la clave anterior ya no entra.
+- **Instalación nueva:** con `seipo_test` borrada, `ConexionBD` la crea y el `admin` inicial queda cifrado; `admin` / `123` entra.
+- El dump `SEIPO/bd/seipo_db.sql` solo cambió en las tres claves de los usuarios de demostración, que siguen siendo `123`, `890` y `456`.
+
 ## 8. Conclusiones y recomendaciones
 
 **Conclusiones**
@@ -109,11 +119,12 @@ OBS-02 a OBS-05 se encontraron al revisar el código para escribir los manuales 
 - **Requerimiento ambiguo:** las pruebas detectaron uno (OBS-01), que se resolvió aclarando el documento sin cambiar el código.
 - **Hallazgos menores:** la revisión del código para los manuales encontró cuatro observaciones (OBS-02 a OBS-05), que se corrigieron. La corrida 4 confirmó que no rompieron nada (15/15).
 - **Cambio de alcance:** la corrida 5 confirmó que quitar la pasarela simulada (CAM-01) no afectó a los demás procesos (15/15).
+- **Contraseñas:** desde la corrida 6 se guardan cifradas (OBS-06). La corrida 7 confirmó que el acceso y los demás procesos siguen funcionando (15/15).
 
 **Recomendaciones**
 1. Mantener la validación de rol en cada controlador nuevo que gestione información administrativa.
 2. Alinear la redacción de los otros tramos del descuento VIP (5 % y 15 %) con el criterio aclarado ("después de N compras").
 3. Actualizar la sección "Diseño de la Interfaz de Usuario" del documento, que aún menciona la tarjeta como forma de pago.
-4. Guardar las contraseñas con hash; hoy están en texto plano. Esto quedó fuera del alcance de estas pruebas.
+4. ~~Guardar las contraseñas con hash~~: aplicada en la corrida 6 (OBS-06).
 5. Ejecutar `pruebas.bat` antes de cada entrega para detectar regresiones.
 6. Decidir con el equipo las limitaciones conocidas (ver `Defectos.md`) y mantener al menos dos administradores activos.

@@ -8,8 +8,12 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Properties;
 
 public class ConexionBD {
@@ -351,8 +355,32 @@ public class ConexionBD {
         }
         agregarColumna(stmt, "ALTER TABLE usuarios ADD COLUMN nombre VARCHAR(100) NOT NULL DEFAULT ''");
         agregarColumna(stmt, "ALTER TABLE usuarios ADD COLUMN activo BOOLEAN NOT NULL DEFAULT TRUE");
-        stmt.execute("INSERT IGNORE INTO usuarios (usuario, password, nombre, rol) " +
-                "VALUES ('admin', '123', 'Administrador', 'ADMINISTRADOR')");
+        try (PreparedStatement pst = stmt.getConnection().prepareStatement(
+                "INSERT IGNORE INTO usuarios (usuario, password, nombre, rol) VALUES ('admin', ?, 'Administrador', 'ADMINISTRADOR')")) {
+            pst.setString(1, Contrasenas.cifrar("123"));
+            pst.executeUpdate();
+        }
+        cifrarPasswords(stmt);
+    }
+
+    /** Cifra las contraseñas que las versiones anteriores guardaban en texto plano. */
+    private static void cifrarPasswords(Statement stmt) throws SQLException {
+        Map<Integer, String> planas = new LinkedHashMap<>();
+        try (ResultSet rs = stmt.executeQuery("SELECT id, password FROM usuarios WHERE password NOT LIKE 'pbkdf2$%'")) {
+            while (rs.next()) planas.put(rs.getInt("id"), rs.getString("password"));
+        }
+        for (Map.Entry<Integer, String> e : planas.entrySet()) {
+            cifrarPassword(stmt.getConnection(), e.getKey(), e.getValue());
+        }
+    }
+
+    /** Reemplaza la contraseña del usuario por su versión cifrada. */
+    public static void cifrarPassword(Connection con, int id, String password) throws SQLException {
+        try (PreparedStatement pst = con.prepareStatement("UPDATE usuarios SET password = ? WHERE id = ?")) {
+            pst.setString(1, Contrasenas.cifrar(password));
+            pst.setInt(2, id);
+            pst.executeUpdate();
+        }
     }
 
     /**

@@ -1,6 +1,7 @@
 package seipo.controlador;
 
 import seipo.modelo.ConexionBD;
+import seipo.modelo.Contrasenas;
 import seipo.modelo.Sesion;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -46,7 +47,7 @@ public class ControladorUsuarios {
              PreparedStatement pst = con.prepareStatement(sql)) {
             pst.setString(1, usuario);
             pst.setString(2, nombre);
-            pst.setString(3, password);
+            pst.setString(3, Contrasenas.cifrar(password));
             pst.setString(4, rol);
             pst.executeUpdate();
         }
@@ -82,7 +83,7 @@ public class ControladorUsuarios {
         String sql = "UPDATE usuarios SET password = ? WHERE id = ?";
         try (Connection con = ConexionBD.obtenerConexion();
              PreparedStatement pst = con.prepareStatement(sql)) {
-            pst.setString(1, password);
+            pst.setString(1, Contrasenas.cifrar(password));
             pst.setInt(2, id);
             pst.executeUpdate();
         }

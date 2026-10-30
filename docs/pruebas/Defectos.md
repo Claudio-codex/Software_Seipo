@@ -11,6 +11,7 @@ Registro de los hallazgos de las pruebas de caja negra (CP-01 a CP-15). Las evid
 | OBS-04 | — | Baja | Corregido y verificado | Revisión del código para los manuales | Corrida 4 |
 | OBS-05 | — | Baja | Corregido y verificado | Revisión del código para los manuales | Corrida 4 |
 | CAM-01 | CP-02, CP-09, CP-11 | — (cambio de alcance) | Aplicado y verificado | Decisión del equipo | Corrida 5 |
+| OBS-06 | CP-01 | Media | Corregido y verificado | Recomendación 4 del informe | Corridas 6 y 7 |
 
 Las observaciones OBS-02 a OBS-05 no las detectó ninguno de los 15 casos automatizados. Se encontraron al leer el código de las pantallas para escribir los manuales de usuario, después de la corrida 3. Se corrigieron antes de la corrida 4. La corrida 4 confirmó que los 15 casos siguen aprobando (15/15), y cada corrección se verificó aparte como se indica en cada observación.
 
@@ -184,6 +185,34 @@ El descuento VIP automático no cambia: si el cliente elegido tiene un VIP mayor
 **Ajuste de las pruebas.** CP-02 espera la sección Negocio en lugar de Pagos. CP-09 comprueba que se rechacen la tarjeta y cualquier forma de pago no admitida, y que Yape o Plin se registre y sume en el turno. CP-11 comprueba que la venta anulada salga del cuadre del turno en lugar del reembolso.
 
 **Verificación:** la aplicación compila y los 15 casos pasan en la corrida 5.
+
+---
+
+## OBS-06 — Contraseñas guardadas en texto plano
+
+- **Caso relacionado:** CP-01 (acceso al sistema)
+- **Severidad:** Media (cualquiera que vea la base, un respaldo o el dump lee todas las claves)
+- **Estado:** Corregido y verificado (corridas 6 y 7)
+
+**Descripción.** `usuarios.password` guardaba la clave tal como se escribía. Se leía en la tabla, en los respaldos de `respaldo.bat` y en `SEIPO/bd/seipo_db.sql`, que está en el repositorio. Quedó anotado como la recomendación 4 del informe.
+
+**Pasos para reproducir (antes de la corrección)**
+1. Ejecutar `SELECT usuario, password FROM usuarios` en `seipo_db`.
+2. Abrir `SEIPO/bd/seipo_db.sql` y buscar `INSERT INTO usuarios`.
+
+| Esperado | Obtenido |
+|---|---|
+| La clave no se puede leer en la base ni en sus copias | Se ven `admin` / `123`, `Personal1` / `890` y `personal2` / `456` |
+
+**Corrección**
+- Nueva clase `seipo.modelo.Contrasenas`: PBKDF2-HMAC-SHA512 con 210 000 iteraciones (lo que recomienda OWASP) y una sal aleatoria de 16 bytes por usuario. Se guarda como `pbkdf2$iteraciones$sal$hash`, y la comparación tarda lo mismo acierte o no. Usa solo Java, sin librerías nuevas.
+- `ControladorUsuarios` cifra la clave al crear un usuario y al restablecerla. `ControladorLogin` la verifica contra el valor cifrado.
+- `ConexionBD` crea el `admin` inicial ya cifrado y, en la primera conexión de cada ejecución, cifra las claves que estén en texto plano en bases de versiones anteriores. Si una base antigua se restaura con el programa abierto, `ControladorLogin` acepta la clave plana una vez y la cifra.
+- En `SEIPO/bd/seipo_db.sql` solo cambiaron las tres claves de demostración. Siguen siendo `123`, `890` y `456`.
+
+**Ajuste de las pruebas.** Ninguno: CP-01 ya probaba la clave correcta, la errada, el usuario inexistente y el espacio de más, y sigue pasando sin cambios.
+
+**Verificación:** la aplicación compila; la corrida 6 dio 14/15 por un fallo del entorno en CP-15 (otro proceso de Windows tenía abierto `mermas.pdf` cuando JUnit borraba la carpeta temporal; las verificaciones del caso pasaron) y la corrida 7, sin cambios, dio 15/15. La conversión de bases antiguas, el alta, el restablecimiento y la instalación nueva se verificaron aparte contra `seipo_test` (ver el [informe](Informe_Pruebas.md#verificaciones-adicionales)).
 
 ---
 

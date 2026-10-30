@@ -54,8 +54,10 @@ Detalle completo en [`Informe_Pruebas.md`](Informe_Pruebas.md) y [`Defectos.md`]
 - **Corrida 2:** 14/15 (93,3 %); se corrige DEF-01 y pasa CP-02
 - **Corrida 3:** 15/15 (100 %); se aclara el requerimiento VIP y pasa CP-06
 - **Corrida 4:** 15/15 (100 %); regresión tras corregir OBS-02 a OBS-05, sin fallas
-- **Corrida 5:** **15/15 (100 %)**; regresión tras quitar la pasarela de pago simulada (CAM-01)
-- Cada corrida dura unos 15 s; las cinco salidas están en `docs/pruebas/evidencias/`
+- **Corrida 5:** 15/15 (100 %); regresión tras quitar la pasarela de pago simulada (CAM-01)
+- **Corrida 6:** 14/15; contraseñas cifradas (OBS-06). CP-15 falló por el entorno: otro proceso de Windows tenía abierto el PDF temporal
+- **Corrida 7:** **15/15 (100 %)**; repetición de la corrida 6 sin cambios
+- Cada corrida dura unos 15 s; las siete salidas están en `docs/pruebas/evidencias/`
 
 ---
 
@@ -68,12 +70,13 @@ Detalle completo en [`Informe_Pruebas.md`](Informe_Pruebas.md) y [`Defectos.md`]
 
 ---
 
-## Diapositiva 8 — Observaciones menores (OBS-02 a OBS-05)
+## Diapositiva 8 — Observaciones menores (OBS-02 a OBS-06)
 - Se encontraron al revisar el código para escribir los manuales de usuario
 - **OBS-02 (media):** descuento manual sin tope; ahora el personal aplica como máximo 10 % (el VIP no cambia)
 - **OBS-03 (baja):** botones de los diálogos en inglés; ahora dicen Aceptar, Cancelar, Sí, No y Guardar
 - **OBS-04 y OBS-05 (bajas):** pausa al final de respaldo.bat y textos de ayuda y de registro corregidos
 - Todas corregidas y verificadas; la corrida 4 sigue en 15/15
+- **OBS-06 (media):** las contraseñas estaban en texto plano; ahora se guardan cifradas con PBKDF2 y sal (corridas 6 y 7)
 
 ---
 
@@ -96,8 +99,9 @@ Detalle completo en [`Informe_Pruebas.md`](Informe_Pruebas.md) y [`Defectos.md`]
 ---
 
 ## Diapositiva 11 — Conclusiones
-- Los procesos centrales cumplen el documento: 15/15 casos aprobados en las corridas 3, 4 y 5
+- Los procesos centrales cumplen el documento: 15/15 casos aprobados en las corridas 3, 4, 5 y 7
 - Todas las operaciones rechazadas se revierten sin dejar registros parciales
 - Las pruebas encontraron un defecto de seguridad real, que ya está corregido
 - También aclararon un requerimiento ambiguo y, con los manuales, cuatro observaciones menores
+- Las contraseñas ya no se guardan en texto plano (OBS-06)
 - Recomendación: ejecutar `pruebas.bat` antes de cada entrega

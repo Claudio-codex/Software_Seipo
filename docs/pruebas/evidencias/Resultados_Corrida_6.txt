@@ -1,0 +1,76 @@
+Resultado de la ejecución de las pruebas automatizadas de SEIPO - Corrida 6 (regresión tras cifrar las contraseñas con PBKDF2, OBS-06; el volcado guarda las claves de admin, Personal1 y personal2 cifradas). Las 15 pruebas se ejecutaron y todas sus verificaciones pasaron; CP-15 se marcó como fallida porque JUnit no pudo borrar su carpeta temporal: mermas.pdf estaba abierto por otro proceso de Windows (fallo del entorno, no del sistema). Se repitió en la corrida 7
+Comando: pruebas.bat (JUnit 5.12.2, Console Launcher)
+Base de datos: seipo_test (MariaDB 12.3.3), recargada desde SEIPO/bd/seipo_db.sql antes de la primera prueba y después de cada una
+Inicio: 2026-10-29 23:07   Fin: 2026-10-29 23:07:25   Código de salida: 1
+Java: java version "25.0.3" 2026-04-21 LTS
+
+Compilando...
+Ejecutando las pruebas contra seipo_test...
+╷
+├─ JUnit Platform Suite ✔
+├─ JUnit Jupiter ✔
+│  ├─ CajaYVentasTest ✔
+│  │  ├─ CP-04 Venta sin turno: se bloquea, no se registra nada y no se descuenta stock ✔
+│  │  ├─ CP-08 Stock insuficiente: con stock + 1 se rechaza sin registros parciales; con ... ✔
+│  │  ├─ CP-06 Descuento VIP: valor límite del umbral de 10 % (después de 3 compras, a pa... ✔
+│  │  ├─ CP-03 Apertura de turno: se abre con S/ 100.00 y se rechaza un segundo turno sin... ✔
+│  │  ├─ CP-05 Venta en efectivo: total con IGV y redondeo a 10 céntimos, vuelto correcto... ✔
+│  │  ├─ CP-07 FEFO: la venta descuenta del lote que vence primero y el otro queda intact... ✔
+│  │  └─ CP-14 Cierre de turno: faltante y sobrante por la diferencia exacta; el turno ce... ✔
+│  ├─ PagosYComprobantesTest ✔
+│  │  ├─ CP-10 Comprobante: RUC emite factura F001, DNI y consumidor final emiten boleta ... ✔
+│  │  ├─ CP-09 Forma de pago: la tarjeta (retirada) y otras formas se rechazan; Yape o Pl... ✔
+│  │  └─ CP-11 Anulación: el stock vuelve a los mismos lotes, la venta queda anulada y sa... ✔
+│  ├─ AccesoYRolesTest ✔
+│  │  ├─ CP-02 Restricción por rol: el personal no accede a Reportes, Negocio ni Usuarios... ✔
+│  │  └─ CP-01 Acceso al sistema: credencial válida entra como administrador; clave errad... ✔
+│  └─ InventarioYReportesTest ✔
+│     ├─ CP-12 Mermas: nace Pendiente sin descontar stock; al aprobar descuenta y registr... ✔
+│     ├─ CP-13 Alertas y orden de compra: el producto bajo el mínimo aparece en alertas; ... ✔
+│     └─ CP-15 Reporte de mermas: se generan PDF y Excel no vacíos y sus totales coincide... ✘ Failed to close extension context
+└─ JUnit Vintage ✔
+
+Failures (1):
+  JUnit Jupiter:InventarioYReportesTest:CP-15 Reporte de mermas: se generan PDF y Excel no vacíos y sus totales coinciden con la base de datos
+    MethodSource [className = 'seipo.pruebas.InventarioYReportesTest', methodName = 'cp15_reporteDeMermas', methodParameterTypes = 'java.nio.file.Path']
+    => org.junit.platform.commons.JUnitException: Failed to close extension context
+       java.base/java.util.ArrayList.forEach(ArrayList.java:1604)
+       java.base/java.util.ArrayList.forEach(ArrayList.java:1604)
+     Caused by: java.io.IOException: Failed to delete temp directory C:\Users\claud\AppData\Local\Temp\junit-8961472571961210551. The following paths could not be deleted (see suppressed exceptions for details): <root>, mermas.pdf
+       java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.accept(ForEachOps.java:186)
+       java.base/java.util.ArrayList.forEach(ArrayList.java:1604)
+       java.base/java.util.stream.SortedOps$RefSortingSink.end(SortedOps.java:395)
+       java.base/java.util.stream.Sink$ChainedReference.end(Sink.java:261)
+       java.base/java.util.stream.Sink$ChainedReference.end(Sink.java:261)
+       [...]
+       Suppressed: java.nio.file.DirectoryNotEmptyException: C:\Users\claud\AppData\Local\Temp\junit-8961472571961210551
+         java.base/sun.nio.fs.WindowsFileSystemProvider.implDelete(WindowsFileSystemProvider.java:266)
+         java.base/sun.nio.fs.AbstractFileSystemProvider.delete(AbstractFileSystemProvider.java:105)
+         java.base/java.nio.file.Files.delete(Files.java:1052)
+         java.base/java.nio.file.Files.walkFileTree(Files.java:2560)
+         java.base/java.nio.file.Files.walkFileTree(Files.java:2609)
+         [...]
+       Suppressed: java.nio.file.FileSystemException: C:\Users\claud\AppData\Local\Temp\junit-8961472571961210551\mermas.pdf: El proceso no tiene acceso al archivo porque está siendo utilizado por otro proceso
+         java.base/sun.nio.fs.WindowsException.translateToIOException(WindowsException.java:92)
+         java.base/sun.nio.fs.WindowsException.rethrowAsIOException(WindowsException.java:103)
+         java.base/sun.nio.fs.WindowsException.rethrowAsIOException(WindowsException.java:108)
+         java.base/sun.nio.fs.WindowsFileSystemProvider.implDelete(WindowsFileSystemProvider.java:269)
+         java.base/sun.nio.fs.AbstractFileSystemProvider.delete(AbstractFileSystemProvider.java:105)
+         [...]
+         Suppressed: java.nio.file.FileSystemException: C:\Users\claud\AppData\Local\Temp\junit-8961472571961210551\mermas.pdf: El proceso no tiene acceso al archivo porque está siendo utilizado por otro proceso
+           [...]
+
+Test run finished after 16126 ms
+[         7 containers found      ]
+[         0 containers skipped    ]
+[         7 containers started    ]
+[         0 containers aborted    ]
+[         7 containers successful ]
+[         0 containers failed     ]
+[        15 tests found           ]
+[         0 tests skipped         ]
+[        15 tests started         ]
+[         0 tests aborted         ]
+[        14 tests successful      ]
+[         1 tests failed          ]
+

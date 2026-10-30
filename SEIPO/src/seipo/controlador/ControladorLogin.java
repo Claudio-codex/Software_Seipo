@@ -1,6 +1,7 @@
 package seipo.controlador;
 
 import seipo.modelo.ConexionBD;
+import seipo.modelo.Contrasenas;
 import seipo.modelo.Sesion;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -18,8 +19,16 @@ public class ControladorLogin {
              PreparedStatement pst = con.prepareStatement(sql)) {
             pst.setString(1, usuario);
             try (ResultSet rs = pst.executeQuery()) {
-                // La contraseña se compara en Java: la intercalación de MySQL no distingue mayúsculas de minúsculas
-                if (!rs.next() || !password.equals(rs.getString("password"))) return Resultado.INCORRECTO;
+                // La contraseña se compara en Java contra el hash guardado (ver Contrasenas)
+                if (!rs.next()) return Resultado.INCORRECTO;
+                String guardado = rs.getString("password");
+                if (Contrasenas.estaCifrada(guardado)) {
+                    if (!Contrasenas.verificar(password, guardado)) return Resultado.INCORRECTO;
+                } else {
+                    // Clave en texto plano de una base anterior: si coincide, se cifra en ese momento
+                    if (!password.equals(guardado)) return Resultado.INCORRECTO;
+                    ConexionBD.cifrarPassword(con, rs.getInt("id"), password);
+                }
                 if (!rs.getBoolean("activo")) return Resultado.DESACTIVADO;
                 Sesion.iniciar(rs.getInt("id"), rs.getString("usuario"), rs.getString("nombre"), rs.getString("rol"));
                 return Resultado.CORRECTO;

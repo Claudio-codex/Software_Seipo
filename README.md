@@ -72,7 +72,7 @@ El archivo `SEIPO/bd/seipo_db.sql` es una copia de la base de datos con datos de
 
 * Se importa por consola con `mariadb.exe` (o `mysql.exe` en XAMPP), como se explica en la sección 5. No hace falta crear la base antes: el archivo la crea. HeidiSQL falla con este archivo.
 * Luego ejecuta `Login` y entra con `admin` / `123`. También hay dos cuentas de personal: `Personal1` / `890` y `personal2` / `456`.
-* Las contraseñas se guardan sin cifrar, así que quedan visibles dentro del archivo `.sql`: no uses contraseñas reales en la base de ejemplo.
+* Las contraseñas se guardan cifradas (PBKDF2 con sal), así que el archivo `.sql` no las muestra. Aun así, las de las cuentas de ejemplo están escritas arriba: no las uses para cuentas reales. Si importas una base de una versión anterior, con las contraseñas sin cifrar, el programa las cifra la primera vez que se conecta.
 * La copia es una foto del momento en que se generó; lo que cada uno registre después queda solo en su propia computadora.
 
 10. Respaldos
@@ -82,7 +82,7 @@ El archivo `SEIPO/bd/seipo_db.sql` es una copia de la base de datos con datos de
   ```
   respaldo.dump=D:\MariaDB\bin\mariadb-dump.exe
   ```
-* La carpeta `respaldos` no se sube al repositorio, porque los respaldos contienen todos los datos y contraseñas. Cópialos a otro disco o a la nube de vez en cuando.
+* La carpeta `respaldos` no se sube al repositorio, porque los respaldos contienen todos los datos del negocio y las contraseñas cifradas. Cópialos a otro disco o a la nube de vez en cuando.
 * Para restaurar un respaldo, impórtalo igual que la copia de ejemplo: `mariadb.exe -u seipo -p < respaldos\seipo_db_AAAA-MM-DD_HHMM.sql` (reemplaza la base actual).
 
 **Programarlo con el Programador de tareas de Windows**
