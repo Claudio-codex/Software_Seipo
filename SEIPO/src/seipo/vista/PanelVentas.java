@@ -68,7 +68,7 @@ public class PanelVentas extends JPanel {
         // Arriba: estado del turno y buscador de productos
         JPanel norte = new JPanel(new BorderLayout(0, 12));
         norte.setOpaque(false);
-        barraTurno.setBorder(new CompoundBorder(new LineBorder(UI.BORDE, 1, true), new EmptyBorder(4, 14, 4, 6)));
+        barraTurno.setBorder(UI.bordeTarjeta(6, 14, 6, 8));
         lblTurno.setFont(UI.fuente(Font.PLAIN, 13));
         lblTurnoIcono.setFont(UI.fuente(Font.BOLD, 14));
         irCaja.setMargin(new Insets(3, 14, 3, 14));
@@ -144,7 +144,7 @@ public class PanelVentas extends JPanel {
     private JPanel tarjetaCliente() {
         JPanel c = new JPanel(new BorderLayout(10, 0));
         c.setBackground(UI.SUPERFICIE);
-        c.setBorder(new CompoundBorder(new LineBorder(UI.BORDE, 1, true), new EmptyBorder(8, 14, 8, 10)));
+        c.setBorder(UI.bordeTarjeta(10, 16, 10, 12));
         JLabel t = UI.ayuda("CLIENTE (F4)");
         t.setFont(UI.fuente(Font.BOLD, 11));
         lblCliente.setFont(UI.fuente(Font.BOLD, 14));
@@ -175,7 +175,7 @@ public class PanelVentas extends JPanel {
     private JPanel tarjetaTotales() {
         JPanel totales = new JPanel(new GridBagLayout());
         totales.setBackground(UI.SUPERFICIE);
-        totales.setBorder(new CompoundBorder(new LineBorder(UI.BORDE, 1, true), new EmptyBorder(12, 16, 12, 16)));
+        totales.setBorder(UI.bordeTarjeta(14, 18, 14, 18));
         totales.setAlignmentX(LEFT_ALIGNMENT);
         totales.setMaximumSize(new Dimension(Integer.MAX_VALUE, 260));
         GridBagConstraints g = new GridBagConstraints();
@@ -213,11 +213,12 @@ public class PanelVentas extends JPanel {
         totales.add(sep, g);
         g.gridy = 5; g.gridwidth = 1; g.insets = new Insets(0, 0, 0, 0);
         JLabel t = new JLabel("TOTAL");
-        t.setFont(UI.fuente(Font.BOLD, 16));
+        t.setFont(UI.fuente(Font.BOLD, 18));
+        t.setForeground(UI.TEXTO);
         totales.add(t, g);
         g.gridx = 1;
-        lblTotal.setFont(UI.fuente(Font.BOLD, 28));
-        lblTotal.setForeground(UI.ACENTO);
+        lblTotal.setFont(UI.fuente(Font.BOLD, 30));
+        lblTotal.setForeground(UI.TEXTO);
         lblTotal.setHorizontalAlignment(SwingConstants.RIGHT);
         totales.add(lblTotal, g);
         return totales;
@@ -259,12 +260,12 @@ public class PanelVentas extends JPanel {
         listaSugerencias.setCellRenderer((list, value, index, isSelected, cellHasFocus) -> {
             JPanel fila = new JPanel(new BorderLayout(16, 0));
             fila.setBorder(new EmptyBorder(6, 10, 6, 12));
-            fila.setBackground(isSelected ? UI.ACENTO_OSCURO : UI.SUPERFICIE);
-            JLabel nombre = new JLabel("<html><b>" + value.nombre + "</b> &nbsp;<span style='color:#94A3B8'>"
+            fila.setBackground(isSelected ? UI.ACENTO_SUAVE : UI.SUPERFICIE);
+            JLabel nombre = new JLabel("<html><b>" + value.nombre + "</b> &nbsp;<span style='color:" + UI.hex(UI.TEXTO_SECUNDARIO) + "'>"
                     + value.codigo + " · " + (value.categoria == null ? "" : value.categoria) + "</span></html>");
             nombre.setForeground(UI.TEXTO);
             JLabel datos = new JLabel(Datos.soles(value.precio) + "   " + (value.stock > 0 ? "Stock " + value.stock : "Agotado"));
-            datos.setForeground(value.stock > 0 ? UI.TEXTO_SECUNDARIO : UI.PELIGRO);
+            datos.setForeground(value.stock > 0 ? UI.TEXTO_SECUNDARIO : UI.ACENTO_PULSADO);
             fila.add(nombre, BorderLayout.CENTER);
             fila.add(datos, BorderLayout.EAST);
             return fila;
@@ -365,15 +366,15 @@ public class PanelVentas extends JPanel {
             ex.printStackTrace();
         }
         if (turno != null) {
-            barraTurno.setBackground(UI.FILA_VERDE);
-            lblTurnoIcono.setForeground(UI.EXITO);
+            barraTurno.setBackground(UI.SUPERFICIE);
+            lblTurnoIcono.setForeground(UI.GRIS_INSIGNIA);
             lblTurno.setText("Turno abierto desde " + turno.abiertoEn.format(Datos.FECHA_HORA) + "   ·   "
                     + turno.numVentas + " venta(s) por " + Datos.soles(turno.totalVendido())
                     + "   ·   Efectivo en caja: " + Datos.soles(turno.efectivoEnCaja()));
             irCaja.setText("Ver caja");
         } else {
-            barraTurno.setBackground(UI.FILA_AMBAR);
-            lblTurnoIcono.setForeground(UI.ALERTA);
+            barraTurno.setBackground(UI.ACENTO_SUAVE);
+            lblTurnoIcono.setForeground(UI.ACENTO);
             lblTurno.setText("No tiene un turno de caja abierto. Puede armar la venta, pero para cobrar debe abrir su turno.");
             irCaja.setText("Abrir turno");
         }
@@ -546,11 +547,11 @@ public class PanelVentas extends JPanel {
         DefaultListModel<ClienteVO> encontrados = new DefaultListModel<>();
         JList<ClienteVO> lista = new JList<>(encontrados);
         lista.setCellRenderer((l, v, i, sel, foco) -> {
-            JLabel lbl = new JLabel("<html><b>" + v.nombre + "</b><br><span style='color:#94A3B8'>" + v.documento
+            JLabel lbl = new JLabel("<html><b>" + v.nombre + "</b><br><span style='color:" + UI.hex(UI.TEXTO_SECUNDARIO) + "'>" + v.documento
                     + " · " + v.numCompras + " compra(s) · " + v.descuentoVIP + "</span></html>");
             lbl.setBorder(new EmptyBorder(6, 10, 6, 10));
             lbl.setOpaque(true);
-            lbl.setBackground(sel ? UI.ACENTO_OSCURO : UI.SUPERFICIE);
+            lbl.setBackground(sel ? UI.ACENTO_SUAVE : UI.SUPERFICIE);
             lbl.setForeground(UI.TEXTO);
             return lbl;
         });
@@ -745,10 +746,10 @@ public class PanelVentas extends JPanel {
                 lblVuelto.setForeground(UI.TEXTO_SECUNDARIO);
                 lblVuelto.setText("Ingrese el monto recibido (sin monedas de 1 ni 5 céntimos)");
             } else if (r < total) {
-                lblVuelto.setForeground(UI.PELIGRO);
+                lblVuelto.setForeground(UI.ACENTO_PULSADO);
                 lblVuelto.setText("Faltan " + Datos.soles(total - r));
             } else {
-                lblVuelto.setForeground(UI.EXITO);
+                lblVuelto.setForeground(UI.TEXTO);
                 lblVuelto.setText("Vuelto: " + Datos.soles(r - total));
             }
         };

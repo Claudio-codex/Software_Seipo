@@ -48,16 +48,16 @@ class DialogoComprobante extends JDialog {
 
         if (recienEmitido) {
             JPanel aviso = new JPanel(new BorderLayout(12, 0));
-            aviso.setBackground(UI.FILA_VERDE);
-            aviso.setBorder(new CompoundBorder(new LineBorder(UI.BORDE, 1, true), new EmptyBorder(10, 14, 10, 14)));
+            aviso.setBackground(UI.SUPERFICIE);
+            aviso.setBorder(UI.bordeTarjeta(10, 14, 10, 14));
             JLabel registrada = new JLabel("<html><b>Venta N° " + c.venta.id + " registrada</b><br>"
-                    + "<span style='color:#94A3B8'>" + c.numeroCompleto() + " · " + c.venta.formaPago + "</span></html>");
+                    + "<span style='color:" + UI.hex(UI.TEXTO_SECUNDARIO) + "'>" + c.numeroCompleto() + " · " + c.venta.formaPago + "</span></html>");
             aviso.add(registrada, BorderLayout.CENTER);
             Double vuelto = c.venta.vuelto();
             if (vuelto != null) {
                 JLabel lblVuelto = new JLabel("Vuelto " + Datos.soles(vuelto));
                 lblVuelto.setFont(UI.fuente(Font.BOLD, 22));
-                lblVuelto.setForeground(UI.EXITO);
+                lblVuelto.setForeground(UI.TEXTO);
                 aviso.add(lblVuelto, BorderLayout.EAST);
             }
             p.add(aviso, BorderLayout.NORTH);
@@ -121,11 +121,12 @@ class DialogoComprobante extends JDialog {
         }
     }
 
-    /** HTML del comprobante: oscuro para la pantalla o claro para imprimir. */
-    static String html(ComprobanteVO c, boolean oscuro) {
-        String texto = oscuro ? "#E2E8F0" : "#000000", tenue = oscuro ? "#94A3B8" : "#555555", fondo = oscuro ? "#1E293B" : "#FFFFFF";
+    /** HTML del comprobante: con la paleta de la aplicación para la pantalla, o en blanco y negro para imprimir. */
+    static String html(ComprobanteVO c, boolean pantalla) {
+        String texto = pantalla ? UI.hex(UI.TEXTO) : "#000000", tenue = pantalla ? UI.hex(UI.TEXTO_SECUNDARIO) : "#555555",
+                fondo = pantalla ? UI.hex(UI.SUPERFICIE) : "#FFFFFF";
         VentaVO v = c.venta;
-        StringBuilder sb = new StringBuilder("<html><body style='font-family:SansSerif; font-size:" + (oscuro ? "12pt" : "10pt") + "; color:" + texto
+        StringBuilder sb = new StringBuilder("<html><body style='font-family:SansSerif; font-size:" + (pantalla ? "12pt" : "10pt") + "; color:" + texto
                 + "; background-color:" + fondo + "'>");
         sb.append("<div align='center'><font size='5'><b>").append(esc(c.emisorNombre)).append("</b></font><br>")
                 .append("RUC ").append(c.emisorRuc).append("<br><font color='").append(tenue).append("'>")

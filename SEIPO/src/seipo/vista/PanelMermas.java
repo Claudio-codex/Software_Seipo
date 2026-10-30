@@ -44,11 +44,11 @@ public class PanelMermas extends JPanel {
         JPanel p = UI.base();
         add(p);
 
-        JPanel tarjetas = new JPanel(new GridLayout(1, 3, 10, 0));
+        JPanel tarjetas = new JPanel(new GridLayout(1, 3, 16, 0));
         tarjetas.setOpaque(false);
-        tarjetas.add(UI.tarjeta("Pendientes de autorizar", lblPendientes));
-        tarjetas.add(UI.tarjeta("Unidades dadas de baja", lblUnidades));
-        tarjetas.add(UI.tarjeta("Valor perdido", lblValor));
+        tarjetas.add(UI.tarjeta("Pendientes de autorizar", lblPendientes, Iconos.Tipo.RELOJ, true));
+        tarjetas.add(UI.tarjeta("Unidades dadas de baja", lblUnidades, Iconos.Tipo.CUBO, false));
+        tarjetas.add(UI.tarjeta("Valor perdido", lblValor, Iconos.Tipo.MONEDA, false));
 
         JPanel barra = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
         barra.setOpaque(false);
@@ -95,11 +95,7 @@ public class PanelMermas extends JPanel {
         info.setForeground(UI.TEXTO_SECUNDARIO);
 
         tabla.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-        UI.colorearFilas(tabla, fila -> {
-            String estado = mermas.get(fila).estado;
-            return ControladorMermas.PENDIENTE.equals(estado) ? UI.FILA_AMBAR
-                    : ControladorMermas.RECHAZADA.equals(estado) ? UI.FILA_GRIS : null;
-        });
+        UI.insignias(tabla, 8);
 
         // Texto de ayuda a la izquierda y el filtro de la tabla a la derecha
         JPanel filtro = new JPanel(new FlowLayout(FlowLayout.RIGHT, 6, 0));

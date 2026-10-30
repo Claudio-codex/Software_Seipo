@@ -42,6 +42,7 @@ public class PanelUsuarios extends JPanel {
         lblInfo.setFont(UI.fuente(Font.PLAIN, 12));
         lblInfo.setForeground(UI.TEXTO_SECUNDARIO);
         centro.add(lblInfo, BorderLayout.NORTH);
+        UI.insignias(tabla, 3);
         centro.add(new JScrollPane(tabla), BorderLayout.CENTER);
         p.add(centro, BorderLayout.CENTER);
 

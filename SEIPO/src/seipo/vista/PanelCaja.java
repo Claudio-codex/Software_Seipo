@@ -66,7 +66,7 @@ public class PanelCaja extends JPanel {
         abrir.setOpaque(false);
         JPanel form = new JPanel(new GridLayout(0, 1, 0, 10));
         form.setBackground(UI.SUPERFICIE);
-        form.setBorder(new CompoundBorder(new LineBorder(UI.BORDE, 1, true), new EmptyBorder(22, 26, 22, 26)));
+        form.setBorder(UI.bordeTarjeta(22, 26, 22, 26));
         JLabel titulo = new JLabel("Abrir turno de caja");
         titulo.setFont(UI.fuente(Font.BOLD, 20));
         form.add(titulo);
@@ -78,7 +78,7 @@ public class PanelCaja extends JPanel {
         btnAbrir.addActionListener(e -> abrirTurno());
         txtMontoInicial.addActionListener(e -> abrirTurno());
         form.add(btnAbrir);
-        form.setPreferredSize(new Dimension(420, form.getPreferredSize().height));
+        form.setPreferredSize(new Dimension(460, form.getPreferredSize().height));
         abrir.add(form);
 
         // Con turno: indicadores, ventas del turno y cierre
@@ -86,12 +86,12 @@ public class PanelCaja extends JPanel {
         abierto.setOpaque(false);
         JPanel norte = new JPanel(new BorderLayout(0, 8));
         norte.setOpaque(false);
-        JPanel kpis = new JPanel(new GridLayout(1, 0, 10, 0));
+        JPanel kpis = new JPanel(new GridLayout(1, 0, 16, 0));
         kpis.setOpaque(false);
-        kpis.add(UI.tarjeta("Efectivo inicial", lblInicial));
-        kpis.add(UI.tarjeta("Ventas en efectivo", lblEfectivo));
-        kpis.add(UI.tarjeta("Yape o Plin", lblYape));
-        kpis.add(UI.tarjeta("Efectivo en caja", lblEnCaja));
+        kpis.add(UI.tarjeta("Efectivo inicial", lblInicial, Iconos.Tipo.BILLETE, false));
+        kpis.add(UI.tarjeta("Ventas en efectivo", lblEfectivo, Iconos.Tipo.CARRITO, false));
+        kpis.add(UI.tarjeta("Yape o Plin", lblYape, Iconos.Tipo.CELULAR, false));
+        kpis.add(UI.tarjeta("Efectivo en caja", lblEnCaja, Iconos.Tipo.MONEDA, true));
         norte.add(kpis, BorderLayout.CENTER);
         JPanel info = new JPanel(new BorderLayout());
         info.setOpaque(false);
@@ -143,23 +143,18 @@ public class PanelCaja extends JPanel {
         norte.add(botones, BorderLayout.EAST);
         h.add(norte, BorderLayout.NORTH);
 
-        int[] anchos = {50, 150, 80, 110, 60, 110, 90, 120, 100, 130, 80};
+        int[] anchos = {55, 150, 80, 110, 60, 110, 90, 120, 100, 160, 112};
         for (int i = 0; i < anchos.length; i++) UI.columnaAncha(tablaTurnos, i, anchos[i]);
         tablaTurnos.setToolTipText("Doble clic para ver las ventas del turno");
-        UI.colorearFilas(tablaTurnos, fila -> {
-            TurnoVO t = turnos.get(fila);
-            if (ControladorCaja.ABIERTO.equals(t.estado)) return UI.FILA_CELESTE;
-            Double dif = t.diferencia();
-            if (dif == null || Math.abs(dif) < 0.005) return null;
-            return dif < 0 ? UI.FILA_ROJA : UI.FILA_AMBAR;
-        });
+        UI.resaltar(tablaTurnos, 9, texto -> texto.startsWith("Faltante"));
+        UI.insignias(tablaTurnos, 10);
         tablaTurnos.addMouseListener(new MouseAdapter() {
             @Override public void mouseClicked(MouseEvent e) {
                 if (e.getClickCount() == 2) verVentasTurno();
             }
         });
         h.add(new JScrollPane(tablaTurnos), BorderLayout.CENTER);
-        h.add(UI.ayuda("Celeste: turno abierto · Rojo: faltante de efectivo · Ámbar: sobrante de efectivo"), BorderLayout.SOUTH);
+        h.add(UI.ayuda("Diferencia: Faltante −S/ … si falta efectivo · Sobrante +S/ … si sobra · Cuadrado si coincide"), BorderLayout.SOUTH);
         return h;
     }
 
@@ -216,7 +211,8 @@ public class PanelCaja extends JPanel {
 
     private static String textoDiferencia(double dif) {
         if (Math.abs(dif) < 0.005) return "Cuadrado";
-        return (dif > 0 ? "Sobra " : "Falta ") + Datos.soles(Math.abs(dif));
+        // Signo y palabra siempre visibles, para que no dependa del color
+        return (dif > 0 ? "Sobrante +" : "Faltante −") + Datos.soles(Math.abs(dif));
     }
 
     private TurnoVO turnoSeleccionado() {
@@ -264,7 +260,7 @@ public class PanelCaja extends JPanel {
                 return;
             }
             double dif = c - esperado;
-            lblDif.setForeground(Math.abs(dif) < 0.005 ? UI.EXITO : dif < 0 ? UI.PELIGRO : UI.ALERTA);
+            lblDif.setForeground(dif <= -0.005 ? UI.ACENTO_PULSADO : UI.TEXTO);
             lblDif.setText(textoDiferencia(dif));
         };
         txtContado.getDocument().addDocumentListener(new DocumentListener() {
@@ -352,7 +348,7 @@ public class PanelCaja extends JPanel {
             setOpaque(false);
             int[] anchos = {55, 55, 120, 190, 130, 95, 85, 85, 80, 90};
             for (int i = 0; i < anchos.length; i++) UI.columnaAncha(tabla, i, anchos[i]);
-            UI.colorearFilas(tabla, f -> lista.get(f).anulada() ? UI.FILA_GRIS : null);
+            UI.insignias(tabla, 9);
             tabla.addMouseListener(new MouseAdapter() {
                 @Override public void mouseClicked(MouseEvent e) {
                     if (e.getClickCount() == 2) verDetalle();

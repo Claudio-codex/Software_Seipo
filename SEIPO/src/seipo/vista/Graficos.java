@@ -10,19 +10,15 @@ import javax.swing.*;
 /** Gráficos dibujados con Java2D para el módulo de reportes (columnas, líneas, barras horizontales y dona). */
 public class Graficos {
 
-    /** Paleta categórica en orden fijo: se asigna por posición, nunca se repite. */
-    // Tonos luminosos para que se distingan sobre el fondo oscuro; la primera serie es el color de acento
-    public static final Color[] SERIES = {
-            new Color(0x2DD4BF), new Color(0xFB923C), new Color(0x60A5FA), new Color(0xFBBF24),
-            new Color(0xF472B6), new Color(0xA78BFA), new Color(0xA3E635), new Color(0xF87171)
-    };
-    public static final Color OTROS = new Color(0x64748B);
+    /** Paleta categórica en orden fijo: se asigna por posición, nunca se repite. La primera serie es el color de acento. */
+    public static final Color[] SERIES = UI.GRAFICOS;
+    public static final Color OTROS = UI.PULSADO_NEUTRO;
     public static final Color SUPERFICIE = UI.SUPERFICIE;
     public static final Color TEXTO = UI.TEXTO;
-    public static final Color TEXTO2 = new Color(0xCBD5E1);
+    public static final Color TEXTO2 = UI.TEXTO_ENCABEZADO;
     public static final Color TENUE = UI.TEXTO_SECUNDARIO;
-    static final Color GRILLA = new Color(0x2C3A4F);
-    static final Color EJE = new Color(0x475569);
+    static final Color GRILLA = UI.LINEA_FILA;
+    static final Color EJE = UI.BORDE_CAMPO;
     static final Font CHICA = UI.fuente(Font.PLAIN, 11);
     static final Font ETIQUETA = UI.fuente(Font.PLAIN, 12);
     static final Font ETIQUETA_NEGRITA = UI.fuente(Font.BOLD, 12);
@@ -92,9 +88,9 @@ public class Graficos {
             if (y + alto > getHeight() - 4) y = mouse.y - alto - 10;
             x = Math.max(4, x);
             y = Math.max(4, y);
-            g.setColor(new Color(0, 0, 0, 90));
+            g.setColor(UI.SOMBRA);
             g.fillRoundRect(x + 1, y + 2, ancho, alto, 8, 8);
-            g.setColor(UI.SUPERFICIE_ALTA);
+            g.setColor(UI.SUPERFICIE);
             g.fillRoundRect(x, y, ancho, alto, 8, 8);
             g.setColor(EJE);
             g.drawRoundRect(x, y, ancho, alto, 8, 8);

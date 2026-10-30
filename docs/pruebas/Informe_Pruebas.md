@@ -1,8 +1,8 @@
 # Informe de pruebas de caja negra — SEIPO
 
-**Curso:** Procesos de Software · **Sistema:** SEIPO, sistema de venta e inventario · **Fecha de ejecución:** 19/10/2026 (corridas 1 a 5) y 29/10/2026 (corridas 6 y 7)
+**Curso:** Procesos de Software · **Sistema:** SEIPO, sistema de venta e inventario · **Fecha de ejecución:** 19/10/2026 (corridas 1 a 5) y 29/10/2026 (corridas 6 a 8)
 
-**Resultado final (corrida 7): 15 de 15 casos aprobados (100 %).** Evidencias en [`evidencias/`](evidencias/) · Defectos en [`Defectos.md`](Defectos.md) · Tabla para Excel en [`Casos_de_Prueba.csv`](Casos_de_Prueba.csv) · Diapositivas en [`Resumen_para_PPT.md`](Resumen_para_PPT.md)
+**Resultado final (corrida 8): 15 de 15 casos aprobados (100 %).** Evidencias en [`evidencias/`](evidencias/) · Defectos en [`Defectos.md`](Defectos.md) · Tabla para Excel en [`Casos_de_Prueba.csv`](Casos_de_Prueba.csv) · Diapositivas en [`Resumen_para_PPT.md`](Resumen_para_PPT.md)
 
 ## 1. Objetivo y alcance
 
@@ -29,7 +29,7 @@ Verificar con pruebas automatizadas que SEIPO cumple las reglas de negocio de `D
 | Usuarios de demostración | `admin` / `123` (administrador) y `Personal1` / `890` (personal de tienda) |
 | Cómo ejecutar | IntelliJ: configuración **Pruebas SEIPO** → ▶. Consola: `pruebas.bat` en la raíz del repositorio. Duración: unos 15 segundos |
 
-## 4. Casos de prueba (resultado final, corrida 7)
+## 4. Casos de prueba (resultado final, corrida 8)
 
 | ID | Proceso / requisito | Entrada | Resultado esperado | Resultado obtenido | Estado | Corregido en |
 |---|---|---|---|---|---|---|
@@ -64,9 +64,10 @@ Verificar con pruebas automatizadas que SEIPO cumple las reglas de negocio de `D
 | 4 | 19/10/2026 16:17 | 15/15 | 100 % | — | Regresión tras corregir OBS-02 a OBS-05 (tope del descuento manual, diálogos en español, pausa de respaldo.bat, textos de ayuda y mensaje de registro). Los 15 casos siguen aprobando | [`Resultados_Corrida_4.txt`](evidencias/Resultados_Corrida_4.txt) |
 | 5 | 19/10/2026 23:55 | 15/15 | 100 % | — | Regresión tras quitar la pasarela de pago simulada (CAM-01): Yape o Plin solo se registra como forma de pago. CP-02 (la sección Pagos pasó a llamarse Negocio), CP-09 y CP-11 se ajustaron al cambio | [`Resultados_Corrida_5.txt`](evidencias/Resultados_Corrida_5.txt) |
 | 6 | 29/10/2026 23:07 | 14/15 | 93,3 % | CP-15 (entorno) | Regresión tras cifrar las contraseñas (OBS-06). Las verificaciones de los 15 casos pasaron, pero JUnit marcó CP-15 como fallido al no poder borrar su carpeta temporal: otro proceso de Windows tenía abierto `mermas.pdf`. El sistema cierra el archivo; es un fallo del entorno y se repitió la corrida | [`Resultados_Corrida_6.txt`](evidencias/Resultados_Corrida_6.txt) |
-| 7 | 29/10/2026 23:08 | **15/15** | **100 %** | — | Repetición de la corrida 6 sin cambios en el código ni en las pruebas | [`Resultados_Corrida_7.txt`](evidencias/Resultados_Corrida_7.txt) |
+| 7 | 29/10/2026 23:08 | 15/15 | 100 % | — | Repetición de la corrida 6 sin cambios en el código ni en las pruebas | [`Resultados_Corrida_7.txt`](evidencias/Resultados_Corrida_7.txt) |
+| 8 | 29/10/2026 23:40 | **15/15** | **100 %** | — | Corrida 8: regresión tras el cambio visual (tema claro con acento naranja, menú con iconos, tarjetas e insignias de estado). Solo cambió la capa de vista; ningún caso cambió | [`Resultados_Corrida_8.txt`](evidencias/Resultados_Corrida_8.txt) |
 
-Cada corrida duró unos 15 segundos (14,9 s, 14,5 s, 14,5 s, 15,3 s, 15 s, 16,1 s y 14,3 s), incluida la recarga de `seipo_test` antes de la primera prueba y después de cada una.
+Cada corrida duró unos 15 segundos (14,9 s, 14,5 s, 14,5 s, 15,3 s, 15 s, 16,1 s, 14,3 s y 16,1 s), incluida la recarga de `seipo_test` antes de la primera prueba y después de cada una.
 
 ## 7. Defectos y observaciones
 

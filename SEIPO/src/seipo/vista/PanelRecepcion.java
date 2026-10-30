@@ -46,7 +46,7 @@ public class PanelRecepcion extends JPanel {
 
         JPanel linea = new JPanel(new GridBagLayout());
         linea.setBackground(UI.SUPERFICIE);
-        linea.setBorder(new CompoundBorder(new LineBorder(UI.BORDE, 1, true), new EmptyBorder(8, 10, 8, 10)));
+        linea.setBorder(UI.bordeTarjeta(8, 10, 8, 10));
         GridBagConstraints g = new GridBagConstraints();
         g.insets = new Insets(2, 4, 2, 4);
         g.anchor = GridBagConstraints.WEST;
@@ -99,10 +99,10 @@ public class PanelRecepcion extends JPanel {
             producto = controlador.buscarPorCodigo(codigo);
             if (producto == null) {
                 lblProducto.setText("No existe un producto con código " + codigo + ". Regístrelo primero en Productos.");
-                lblProducto.setForeground(UI.PELIGRO);
+                lblProducto.setForeground(UI.ACENTO_PULSADO);
             } else {
                 lblProducto.setText(producto.nombre + " — stock actual: " + producto.stock);
-                lblProducto.setForeground(UI.AZUL);
+                lblProducto.setForeground(UI.TEXTO);
                 txtLote.requestFocus();
             }
         } catch (SQLException ex) {

@@ -90,11 +90,11 @@ public class Principal extends JFrame {
     }
 
     private JPanel menu() {
-        // Logo arriba y usuario abajo quedan fijos; si la ventana es baja, la lista de secciones se desplaza
+        // Logo arriba y "Cerrar sesión" abajo quedan fijos; si la ventana es baja, la lista de secciones se desplaza
         JPanel lateral = new JPanel(new BorderLayout(0, 8));
         lateral.setBackground(UI.MENU);
-        lateral.setBorder(new CompoundBorder(new MatteBorder(0, 0, 0, 1, UI.BORDE), new EmptyBorder(20, 12, 16, 12)));
-        lateral.setPreferredSize(new Dimension(220, 0));
+        lateral.setBorder(new CompoundBorder(new MatteBorder(0, 0, 0, 1, UI.BORDE), new EmptyBorder(20, 14, 14, 14)));
+        lateral.setPreferredSize(new Dimension(230, 0));
         JPanel arriba = new JPanel();
         arriba.setLayout(new BoxLayout(arriba, BoxLayout.Y_AXIS));
         arriba.setOpaque(false);
@@ -103,15 +103,16 @@ public class Principal extends JFrame {
         abajo.setLayout(new BoxLayout(abajo, BoxLayout.Y_AXIS));
         abajo.setOpaque(false);
 
-        JLabel logo = new JLabel("Seipo");
-        logo.setFont(UI.fuente(Font.BOLD, 28));
-        logo.setForeground(UI.ACENTO);
-        logo.setBorder(new EmptyBorder(0, 10, 0, 0));
+        JLabel logo = new JLabel("Seipo", Iconos.de(Iconos.Tipo.CARRITO, 30, UI.ACENTO), SwingConstants.LEFT);
+        logo.setFont(UI.fuente(Font.BOLD, 24));
+        logo.setForeground(UI.TEXTO);
+        logo.setIconTextGap(10);
+        logo.setBorder(new EmptyBorder(0, 6, 0, 0));
         logo.setAlignmentX(LEFT_ALIGNMENT);
         JLabel lema = new JLabel("Venta e inventario");
         lema.setFont(UI.fuente(Font.PLAIN, 12));
         lema.setForeground(UI.TEXTO_SECUNDARIO);
-        lema.setBorder(new EmptyBorder(0, 11, 0, 0));
+        lema.setBorder(new EmptyBorder(0, 46, 0, 0));
         lema.setAlignmentX(LEFT_ALIGNMENT);
         arriba.add(logo);
         arriba.add(lema);
@@ -122,17 +123,17 @@ public class Principal extends JFrame {
                 grupoActual = s.getValue().grupo;
                 JLabel g = new JLabel(grupoActual);
                 g.setFont(UI.fuente(Font.BOLD, 11));
-                g.setForeground(new Color(0x64748B));
-                g.setBorder(new EmptyBorder(menu.getComponentCount() == 0 ? 10 : 14, 12, 4, 0));
+                g.setForeground(UI.GRIS_INSIGNIA);
+                g.setBorder(new EmptyBorder(menu.getComponentCount() == 0 ? 12 : 16, 14, 6, 0));
                 g.setAlignmentX(LEFT_ALIGNMENT);
                 menu.add(g);
             }
             String nombre = s.getKey();
-            ItemMenu item = new ItemMenu(nombre);
+            ItemMenu item = new ItemMenu(nombre, iconoDe(nombre));
             item.addActionListener(e -> mostrar(nombre));
             items.put(nombre, item);
             menu.add(item);
-            menu.add(Box.createVerticalStrut(2));
+            menu.add(Box.createVerticalStrut(4));
         }
 
         menu.add(Box.createVerticalGlue());
@@ -141,23 +142,12 @@ public class Principal extends JFrame {
         desplazable.setBorder(null);
         desplazable.getViewport().setBackground(UI.MENU);
 
-        // Tarjeta del usuario con sus iniciales
-        JPanel usuario = new JPanel(new BorderLayout(10, 0));
-        usuario.setBackground(UI.SUPERFICIE);
-        usuario.setBorder(new CompoundBorder(new LineBorder(UI.BORDE, 1, true), new EmptyBorder(8, 10, 8, 10)));
-        usuario.setAlignmentX(LEFT_ALIGNMENT);
-        usuario.setMaximumSize(new Dimension(Integer.MAX_VALUE, 56));
-        usuario.add(new Avatar(iniciales(Sesion.getNombre())), BorderLayout.WEST);
-        JLabel datos = new JLabel("<html><b>" + Sesion.getNombre() + "</b><br><span style='color:#94A3B8'>"
-                + Sesion.textoRol(Sesion.getRol()) + "</span></html>");
-        datos.setFont(UI.fuente(Font.PLAIN, 12));
-        usuario.add(datos, BorderLayout.CENTER);
-        abajo.add(usuario);
-        abajo.add(Box.createVerticalStrut(8));
-
-        JButton salir = UI.botonSecundario("Cerrar sesión");
-        salir.setAlignmentX(LEFT_ALIGNMENT);
-        salir.setMaximumSize(new Dimension(Integer.MAX_VALUE, 36));
+        JSeparator linea = new JSeparator();
+        linea.setAlignmentX(LEFT_ALIGNMENT);
+        linea.setMaximumSize(new Dimension(Integer.MAX_VALUE, 1));
+        abajo.add(linea);
+        abajo.add(Box.createVerticalStrut(10));
+        ItemMenu salir = new ItemMenu("Cerrar sesión", Iconos.Tipo.SALIR);
         salir.addActionListener(e -> cerrarSesion());
         abajo.add(salir);
 
@@ -167,24 +157,60 @@ public class Principal extends JFrame {
         return lateral;
     }
 
+    private static Iconos.Tipo iconoDe(String seccion) {
+        switch (seccion) {
+            case "Ventas": return Iconos.Tipo.CARRITO;
+            case "Caja": return Iconos.Tipo.BILLETE;
+            case "Clientes": return Iconos.Tipo.PERSONAS;
+            case "Productos": return Iconos.Tipo.ETIQUETA;
+            case "Inventario": return Iconos.Tipo.CUBO;
+            case "Mermas": return Iconos.Tipo.PAPELERA;
+            case "Compras": return Iconos.Tipo.CAMION;
+            case "Reportes": return Iconos.Tipo.BARRAS;
+            case "Negocio": return Iconos.Tipo.TIENDA;
+            default: return Iconos.Tipo.USUARIO;
+        }
+    }
+
+    /** Barra superior blanca: título de la pantalla a la izquierda; fecha, usuario y rol a la derecha. */
     private JPanel cabecera() {
-        JPanel cab = new JPanel(new BorderLayout());
-        cab.setBackground(UI.FONDO);
-        cab.setBorder(new CompoundBorder(new MatteBorder(0, 0, 1, 0, UI.BORDE), new EmptyBorder(16, 22, 14, 22)));
+        JPanel cab = new JPanel(new BorderLayout(16, 0));
+        cab.setBackground(UI.SUPERFICIE);
+        cab.setBorder(new CompoundBorder(new MatteBorder(0, 0, 1, 0, UI.BORDE), new EmptyBorder(12, 24, 12, 24)));
         JPanel textos = new JPanel(new GridLayout(0, 1, 0, 2));
         textos.setOpaque(false);
-        lblTitulo.setFont(UI.fuente(Font.BOLD, 22));
+        lblTitulo.setFont(UI.fuente(Font.BOLD, 20));
         lblTitulo.setForeground(UI.TEXTO);
         lblDescripcion.setFont(UI.fuente(Font.PLAIN, 13));
         lblDescripcion.setForeground(UI.TEXTO_SECUNDARIO);
         textos.add(lblTitulo);
         textos.add(lblDescripcion);
         cab.add(textos, BorderLayout.CENTER);
+
+        Box derecha = Box.createHorizontalBox();
         String hoy = LocalDate.now().format(FECHA_CABECERA);
-        JLabel fecha = new JLabel(Character.toUpperCase(hoy.charAt(0)) + hoy.substring(1));
+        JLabel fecha = new JLabel(Character.toUpperCase(hoy.charAt(0)) + hoy.substring(1),
+                Iconos.de(Iconos.Tipo.CALENDARIO, 18, UI.TEXTO_SECUNDARIO), SwingConstants.LEFT);
+        fecha.setIconTextGap(8);
         fecha.setFont(UI.fuente(Font.PLAIN, 13));
         fecha.setForeground(UI.TEXTO_SECUNDARIO);
-        cab.add(fecha, BorderLayout.EAST);
+        JSeparator separador = new JSeparator(SwingConstants.VERTICAL);
+        separador.setPreferredSize(new Dimension(1, 32));
+        separador.setMaximumSize(new Dimension(1, 32));
+        JLabel datos = new JLabel("<html><b>" + Sesion.getNombre() + "</b><br><span style='color:" + UI.hex(UI.TEXTO_SECUNDARIO)
+                + "'>" + Sesion.textoRol(Sesion.getRol()) + "</span></html>");
+        datos.setFont(UI.fuente(Font.PLAIN, 13));
+        datos.setForeground(UI.TEXTO);
+        Avatar avatar = new Avatar(iniciales(Sesion.getNombre()));
+        avatar.setMaximumSize(avatar.getPreferredSize());
+        derecha.add(fecha);
+        derecha.add(Box.createHorizontalStrut(18));
+        derecha.add(separador);
+        derecha.add(Box.createHorizontalStrut(18));
+        derecha.add(avatar);
+        derecha.add(Box.createHorizontalStrut(10));
+        derecha.add(datos);
+        cab.add(derecha, BorderLayout.EAST);
         return cab;
     }
 
@@ -288,21 +314,26 @@ public class Principal extends JFrame {
         }
     }
 
-    /** Ítem del menú lateral: resalta la sección activa con una barra de acento y muestra un aviso numérico. */
+    /** Ítem del menú lateral: icono lineal gris; la sección activa es una píldora de acento con texto e icono blancos. */
     private static class ItemMenu extends JButton {
+        private final Icon icono, iconoActivo;
         private boolean activo, encima;
         private int aviso;
 
-        ItemMenu(String texto) {
+        ItemMenu(String texto, Iconos.Tipo tipo) {
             super(texto);
+            icono = Iconos.de(tipo, 20, UI.TEXTO_SECUNDARIO);
+            iconoActivo = Iconos.de(tipo, 20, UI.SOBRE_ACENTO);
+            setIcon(icono);
+            setIconTextGap(12);
             setFont(UI.fuente(Font.PLAIN, 14));
-            setForeground(UI.TEXTO_SECUNDARIO);
+            setForeground(UI.TEXTO);
             setHorizontalAlignment(SwingConstants.LEFT);
-            setBorder(new EmptyBorder(7, 14, 7, 14));
+            setBorder(new EmptyBorder(9, 14, 9, 14));
             setContentAreaFilled(false);
             setFocusPainted(false);
             setAlignmentX(LEFT_ALIGNMENT);
-            setMaximumSize(new Dimension(Integer.MAX_VALUE, 36));
+            setMaximumSize(new Dimension(Integer.MAX_VALUE, 42));
             setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
             addMouseListener(new MouseAdapter() {
                 @Override public void mouseEntered(MouseEvent e) { encima = true; repaint(); }
@@ -312,8 +343,9 @@ public class Principal extends JFrame {
 
         void setActivo(boolean activo) {
             this.activo = activo;
+            setIcon(activo ? iconoActivo : icono);
             setFont(UI.fuente(activo ? Font.BOLD : Font.PLAIN, 14));
-            setForeground(activo ? UI.TEXTO : UI.TEXTO_SECUNDARIO);
+            setForeground(activo ? UI.SOBRE_ACENTO : UI.TEXTO);
             repaint();
         }
 
@@ -326,12 +358,8 @@ public class Principal extends JFrame {
             Graphics2D g = (Graphics2D) g0.create();
             g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             if (activo || encima) {
-                g.setColor(activo ? UI.SUPERFICIE : new Color(0x141C2E));
-                g.fillRoundRect(0, 0, getWidth(), getHeight(), 10, 10);
-            }
-            if (activo) {
-                g.setColor(UI.ACENTO);
-                g.fillRoundRect(0, 8, 4, getHeight() - 16, 4, 4);
+                g.setColor(activo ? UI.ACENTO : UI.HOVER_NEUTRO);
+                g.fillRoundRect(0, 0, getWidth(), getHeight(), UI.ARCO, UI.ARCO);
             }
             if (aviso > 0) {
                 String n = String.valueOf(aviso);
@@ -339,9 +367,9 @@ public class Principal extends JFrame {
                 FontMetrics fm = g.getFontMetrics();
                 int w = Math.max(22, fm.stringWidth(n) + 12), h = 20;
                 int x = getWidth() - w - 10, y = (getHeight() - h) / 2;
-                g.setColor(UI.ALERTA);
+                g.setColor(activo ? UI.SOBRE_ACENTO : UI.ACENTO);
                 g.fillRoundRect(x, y, w, h, h, h);
-                g.setColor(new Color(0x422006));
+                g.setColor(activo ? UI.ACENTO_PULSADO : UI.SOBRE_ACENTO);
                 g.drawString(n, x + (w - fm.stringWidth(n)) / 2, y + (h + fm.getAscent() - fm.getDescent()) / 2);
             }
             g.dispose();
@@ -349,7 +377,7 @@ public class Principal extends JFrame {
         }
     }
 
-    /** Círculo con las iniciales del usuario. */
+    /** Círculo gris con las iniciales del usuario. */
     private static class Avatar extends JComponent {
         private final String texto;
 
@@ -362,10 +390,10 @@ public class Principal extends JFrame {
             Graphics2D g = (Graphics2D) g0.create();
             g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             int d = Math.min(getWidth(), getHeight());
-            g.setColor(UI.ACENTO_OSCURO);
+            g.setColor(UI.ICONO_FONDO);
             g.fillOval(0, (getHeight() - d) / 2, d, d);
             g.setFont(UI.fuente(Font.BOLD, 13));
-            g.setColor(new Color(0xCCFBF1));
+            g.setColor(UI.TEXTO_SECUNDARIO);
             FontMetrics fm = g.getFontMetrics();
             g.drawString(texto, (d - fm.stringWidth(texto)) / 2, (getHeight() + fm.getAscent() - fm.getDescent()) / 2);
             g.dispose();

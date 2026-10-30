@@ -30,7 +30,6 @@ public class PanelReportes extends JPanel {
     private static final String[] DIAS_SEMANA = {"Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"};
     private static final int MAX_SEGMENTOS = 6;
     private static final int TOP_PRODUCTOS = 10;
-    private static final Color SUBE = UI.EXITO, BAJA = UI.PELIGRO;
     private static final DateTimeFormatter NOMBRE_ARCHIVO = DateTimeFormatter.ofPattern("yyyy-MM-dd_HHmm");
     private static final DateTimeFormatter FECHA_LARGA = DateTimeFormatter.ofPattern("dd/MM/yyyy");
     private static final String FORMATOS = "formatos"; // propiedad de cada JTable con el formato de sus columnas
@@ -146,13 +145,14 @@ public class PanelReportes extends JPanel {
     }
 
     private JPanel filaIndicadores() {
-        JPanel fila = new JPanel(new GridLayout(1, 5, 10, 0));
+        JPanel fila = new JPanel(new GridLayout(1, 5, 16, 0));
         fila.setOpaque(false);
         String[] titulos = {"Ingresos", "Nº ventas", "Ticket promedio", "Productos vendidos", "Precio prom. por unidad"};
         JLabel[] valores = {lblIngresos, lblNVentas, lblTicket, lblUnidades, lblPrecio};
         JLabel[] deltas = {dIngresos, dNVentas, dTicket, dUnidades, dPrecio};
+        Iconos.Tipo[] iconos = {Iconos.Tipo.MONEDA, Iconos.Tipo.CARRITO, Iconos.Tipo.BILLETE, Iconos.Tipo.CUBO, Iconos.Tipo.ETIQUETA};
         for (int i = 0; i < 5; i++) {
-            tarjetas[i] = indicador(titulos[i], valores[i], deltas[i]);
+            tarjetas[i] = indicador(titulos[i], valores[i], deltas[i], iconos[i], i == 0);
             fila.add(tarjetas[i]);
         }
         tarjetas[0].setToolTipText("Total cobrado en el período (con descuentos e IGV)");
@@ -160,19 +160,10 @@ public class PanelReportes extends JPanel {
         return fila;
     }
 
-    private JPanel indicador(String titulo, JLabel valor, JLabel delta) {
-        JPanel p = new JPanel(new BorderLayout(0, 2));
-        p.setBackground(UI.SUPERFICIE);
-        p.setBorder(new CompoundBorder(new LineBorder(UI.BORDE, 1, true), new EmptyBorder(8, 12, 8, 12)));
-        JLabel t = new JLabel(titulo);
-        t.setFont(UI.fuente(Font.PLAIN, 13));
-        t.setForeground(Graficos.TEXTO2);
-        valor.setFont(UI.fuente(Font.BOLD, 22));
-        valor.setForeground(UI.AZUL);
+    private JPanel indicador(String titulo, JLabel valor, JLabel delta, Iconos.Tipo icono, boolean principal) {
         delta.setFont(UI.fuente(Font.PLAIN, 12));
-        p.add(t, BorderLayout.NORTH);
-        p.add(valor, BorderLayout.CENTER);
-        p.add(delta, BorderLayout.SOUTH);
+        JPanel p = UI.tarjeta(titulo, valor, icono, principal, delta);
+        valor.setFont(UI.fuente(Font.BOLD, 22));
         return p;
     }
 
@@ -196,13 +187,13 @@ public class PanelReportes extends JPanel {
                 seccion(titulo("Ventas por hora del día"), null, colHora)));
         tabs.addTab("Productos", fila(false, 0.42,
                 seccion(titulo("Top " + TOP_PRODUCTOS + " productos"), productosCab, barProductos),
-                seccion(titulo("Detalle por producto"), null, new JScrollPane(tProductos))));
+                seccion(titulo("Detalle por producto"), null, sinMarco(tProductos))));
         tabs.addTab("Categorías", fila(false, 0.5,
                 seccion(titulo("Ventas por categoría (importe sin IGV)"), null, donaCategorias),
-                seccion(titulo("Detalle por categoría"), null, new JScrollPane(tCategorias))));
+                seccion(titulo("Detalle por categoría"), null, sinMarco(tCategorias))));
         tabs.addTab("Formas de pago", fila(false, 0.45,
                 seccion(titulo("Total cobrado por forma de pago"), null, donaPagos),
-                seccion(titulo("Detalle por forma de pago"), null, new JScrollPane(tPagos))));
+                seccion(titulo("Detalle por forma de pago"), null, sinMarco(tPagos))));
         tabs.addTab("Tendencia", fila(false, 0.55,
                 seccion(tituloMeses, null, linMeses),
                 seccion(titulo("Ventas por día de la semana"), null, colSemana)));
@@ -212,7 +203,7 @@ public class PanelReportes extends JPanel {
                 "Rotación = unidades vendidas en el período / stock actual. Días cobertura = stock / venta diaria promedio.");
         tabs.addTab("Inventario", fila(true, 0.5,
                 seccion(titulo("Valor del inventario por categoría"), null, colInventario),
-                seccion(titulo("Inventario y rotación por categoría"), null, new JScrollPane(tInventario))));
+                seccion(titulo("Inventario y rotación por categoría"), null, sinMarco(tInventario))));
         return tabs;
     }
 
@@ -440,12 +431,14 @@ public class PanelReportes extends JPanel {
         }
         double v = (actual - anterior) / anterior * 100;
         if (Math.abs(v) < 0.05) {
-            l.setText("= 0.0% vs anterior");
+            l.setText("= Sin cambio 0.0%");
             l.setForeground(Graficos.TENUE);
             return;
         }
-        l.setText(String.format("%s %.1f%% vs anterior", v > 0 ? "▲" : "▼", Math.abs(v)));
-        l.setForeground(neutral ? Graficos.TEXTO2 : v > 0 ? SUBE : BAJA);
+        // Flecha, palabra y signo siempre visibles, para que no dependa del color
+        l.setText(String.format("%s%.1f%%", v > 0 ? "▲ Sube +" : "▼ Baja −", Math.abs(v)));
+        l.setToolTipText("Comparado con el período anterior de la misma duración");
+        l.setForeground(neutral || v > 0 ? Graficos.TEXTO2 : UI.ACENTO_PULSADO);
     }
 
     // ---------- Exportación ----------
@@ -539,10 +532,17 @@ public class PanelReportes extends JPanel {
         return l;
     }
 
+    /** Tabla desplazable sin marco propio, porque ya va dentro de la tarjeta de su sección. */
+    private static JScrollPane sinMarco(JTable t) {
+        JScrollPane s = new JScrollPane(t);
+        s.setBorder(BorderFactory.createEmptyBorder());
+        return s;
+    }
+
     private static JPanel seccion(JLabel titulo, JComponent extra, JComponent contenido) {
         JPanel p = new JPanel(new BorderLayout(0, 6));
         p.setBackground(Graficos.SUPERFICIE);
-        p.setBorder(new CompoundBorder(new LineBorder(UI.BORDE, 1, true), new EmptyBorder(10, 12, 10, 12)));
+        p.setBorder(UI.bordeTarjeta(12, 14, 12, 14));
         JPanel cab = new JPanel(new BorderLayout());
         cab.setOpaque(false);
         cab.add(titulo, BorderLayout.CENTER);
@@ -556,12 +556,12 @@ public class PanelReportes extends JPanel {
     private static JPanel fila(boolean vertical, double peso, JComponent primera, JComponent segunda) {
         JPanel p = new JPanel(new GridBagLayout());
         p.setBackground(UI.FONDO);
-        p.setBorder(new EmptyBorder(10, 0, 0, 0));
+        p.setBorder(new EmptyBorder(16, 0, 0, 0));
         GridBagConstraints c = new GridBagConstraints();
         c.fill = GridBagConstraints.BOTH;
         c.weightx = vertical ? 1 : peso;
         c.weighty = vertical ? peso : 1;
-        c.insets = vertical ? new Insets(0, 0, 5, 0) : new Insets(0, 0, 0, 5);
+        c.insets = vertical ? new Insets(0, 0, 8, 0) : new Insets(0, 0, 0, 8);
         // Tamaño preferido mínimo para que el reparto lo decidan solo los pesos
         primera.setPreferredSize(new Dimension(10, 10));
         segunda.setPreferredSize(new Dimension(10, 10));
@@ -570,7 +570,7 @@ public class PanelReportes extends JPanel {
         c.gridy = vertical ? 1 : 0;
         c.weightx = vertical ? 1 : 1 - peso;
         c.weighty = vertical ? 1 - peso : 1;
-        c.insets = vertical ? new Insets(5, 0, 0, 0) : new Insets(0, 5, 0, 0);
+        c.insets = vertical ? new Insets(8, 0, 0, 0) : new Insets(0, 8, 0, 0);
         p.add(segunda, c);
         return p;
     }

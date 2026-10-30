@@ -50,13 +50,13 @@ public class PanelInventario extends JPanel {
         JPanel p = new JPanel(new BorderLayout(10, 10));
         p.setOpaque(false);
 
-        JPanel tarjetas = new JPanel(new GridLayout(1, 5, 10, 0));
+        JPanel tarjetas = new JPanel(new GridLayout(1, 5, 16, 0));
         tarjetas.setOpaque(false);
-        tarjetas.add(UI.tarjeta("Productos totales", lblTotal));
-        tarjetas.add(UI.tarjeta("Stock bajo", lblBajo));
-        tarjetas.add(UI.tarjeta("Agotados", lblAgotados));
-        tarjetas.add(UI.tarjeta("Lotes vencidos", lblVencidos));
-        tarjetas.add(UI.tarjeta("Por vencer (" + Datos.DIAS_POR_VENCER + " días)", lblPorVencer));
+        tarjetas.add(UI.tarjeta("Productos totales", lblTotal, Iconos.Tipo.CUBO, true));
+        tarjetas.add(UI.tarjeta("Stock bajo", lblBajo, Iconos.Tipo.ALERTA, false));
+        tarjetas.add(UI.tarjeta("Agotados", lblAgotados, Iconos.Tipo.AGOTADO, false));
+        tarjetas.add(UI.tarjeta("Lotes vencidos", lblVencidos, Iconos.Tipo.CALENDARIO, false));
+        tarjetas.add(UI.tarjeta("Por vencer (" + Datos.DIAS_POR_VENCER + " días)", lblPorVencer, Iconos.Tipo.RELOJ, false));
         p.add(tarjetas, BorderLayout.NORTH);
 
         JPanel centro = new JPanel(new BorderLayout(0, 6));
@@ -99,10 +99,7 @@ public class PanelInventario extends JPanel {
         info.setFont(UI.fuente(Font.PLAIN, 12));
         info.setForeground(UI.TEXTO_SECUNDARIO);
 
-        UI.colorearFilas(tablaLotes, fila -> {
-            String estado = lotes.get(fila).estado();
-            return "Vencido".equals(estado) ? UI.FILA_ROJA : "Por vencer".equals(estado) ? UI.FILA_AMBAR : null;
-        });
+        UI.insignias(tablaLotes, 8);
 
         JPanel centro = new JPanel(new BorderLayout(0, 5));
         centro.setOpaque(false);

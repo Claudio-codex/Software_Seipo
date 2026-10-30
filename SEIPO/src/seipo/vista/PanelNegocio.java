@@ -20,7 +20,7 @@ public class PanelNegocio extends JPanel {
 
         JPanel form = new JPanel(new GridBagLayout());
         form.setBackground(UI.SUPERFICIE);
-        form.setBorder(new CompoundBorder(new LineBorder(UI.BORDE, 1, true), new EmptyBorder(18, 22, 18, 22)));
+        form.setBorder(UI.bordeTarjeta(18, 22, 18, 22));
         int y = 0;
         y = titulo(form, y, "Datos del negocio", "Aparecen en la boleta y en la factura.");
         y = campo(form, y, "Nombre o razón social", txtNombre);
@@ -52,6 +52,7 @@ public class PanelNegocio extends JPanel {
         // Con la ventana baja, el formulario se desplaza para que el botón siga al alcance
         JScrollPane desplazable = new JScrollPane(envoltura);
         desplazable.setBorder(null);
+        desplazable.getViewport().setBackground(UI.FONDO);
         desplazable.getVerticalScrollBar().setUnitIncrement(16);
         p.add(desplazable, BorderLayout.CENTER);
     }

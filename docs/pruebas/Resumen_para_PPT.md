@@ -56,8 +56,9 @@ Detalle completo en [`Informe_Pruebas.md`](Informe_Pruebas.md) y [`Defectos.md`]
 - **Corrida 4:** 15/15 (100 %); regresión tras corregir OBS-02 a OBS-05, sin fallas
 - **Corrida 5:** 15/15 (100 %); regresión tras quitar la pasarela de pago simulada (CAM-01)
 - **Corrida 6:** 14/15; contraseñas cifradas (OBS-06). CP-15 falló por el entorno: otro proceso de Windows tenía abierto el PDF temporal
-- **Corrida 7:** **15/15 (100 %)**; repetición de la corrida 6 sin cambios
-- Cada corrida dura unos 15 s; las siete salidas están en `docs/pruebas/evidencias/`
+- **Corrida 7:** 15/15 (100 %); repetición de la corrida 6 sin cambios
+- **Corrida 8:** **15/15 (100 %)**; regresión tras el cambio visual (tema claro)
+- Cada corrida dura unos 15 s; las ocho salidas están en `docs/pruebas/evidencias/`
 
 ---
 
@@ -99,7 +100,7 @@ Detalle completo en [`Informe_Pruebas.md`](Informe_Pruebas.md) y [`Defectos.md`]
 ---
 
 ## Diapositiva 11 — Conclusiones
-- Los procesos centrales cumplen el documento: 15/15 casos aprobados en las corridas 3, 4, 5 y 7
+- Los procesos centrales cumplen el documento: 15/15 casos aprobados en las corridas 3, 4, 5, 7 y 8
 - Todas las operaciones rechazadas se revierten sin dejar registros parciales
 - Las pruebas encontraron un defecto de seguridad real, que ya está corregido
 - También aclararon un requerimiento ambiguo y, con los manuales, cuatro observaciones menores

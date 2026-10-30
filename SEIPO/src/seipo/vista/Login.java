@@ -22,20 +22,16 @@ public class Login extends JFrame {
 
         JPanel raiz = new JPanel(new GridLayout(1, 2));
 
-        // Panel de marca con degradado oscuro
-        JPanel izq = new JPanel(new GridBagLayout()) {
-            @Override protected void paintComponent(Graphics g0) {
-                Graphics2D g = (Graphics2D) g0.create();
-                g.setPaint(new GradientPaint(0, 0, new Color(0x134E4A), getWidth(), getHeight(), UI.MENU));
-                g.fillRect(0, 0, getWidth(), getHeight());
-                g.dispose();
-            }
-        };
+        // Panel de marca: fondo claro liso, con el logo en el acento
+        JPanel izq = new JPanel(new GridBagLayout());
+        izq.setBackground(UI.MENU);
+        izq.setBorder(new MatteBorder(0, 0, 0, 1, UI.BORDE));
         JPanel marca = new JPanel(new GridLayout(0, 1, 0, 4));
         marca.setOpaque(false);
-        JLabel logo = new JLabel("Seipo");
-        logo.setFont(UI.fuente(Font.BOLD, 64));
-        logo.setForeground(UI.ACENTO);
+        JLabel logo = new JLabel("Seipo", Iconos.de(Iconos.Tipo.CARRITO, 56, UI.ACENTO), SwingConstants.LEFT);
+        logo.setIconTextGap(14);
+        logo.setFont(UI.fuente(Font.BOLD, 60));
+        logo.setForeground(UI.TEXTO);
         JLabel lema = new JLabel("Sistema de venta e inventario");
         lema.setFont(UI.fuente(Font.PLAIN, 16));
         lema.setForeground(UI.TEXTO);
@@ -51,7 +47,7 @@ public class Login extends JFrame {
         der.setBackground(UI.FONDO);
         JPanel form = new JPanel(new GridBagLayout());
         form.setBackground(UI.SUPERFICIE);
-        form.setBorder(new CompoundBorder(new LineBorder(UI.BORDE, 1, true), new EmptyBorder(26, 30, 28, 30)));
+        form.setBorder(UI.bordeTarjeta(26, 30, 28, 30));
         JLabel titulo = new JLabel("Iniciar sesión");
         titulo.setFont(UI.fuente(Font.BOLD, 24));
         JLabel subtitulo = UI.ayuda("Ingrese con su usuario asignado");
@@ -73,7 +69,7 @@ public class Login extends JFrame {
             else g.ipady = 0;
             form.add((Component) filas[i][0], g);
         }
-        form.setPreferredSize(new Dimension(320, form.getPreferredSize().height));
+        form.setPreferredSize(new Dimension(340, form.getPreferredSize().height));
         der.add(form);
 
         raiz.add(izq);

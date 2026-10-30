@@ -94,11 +94,7 @@ public class PanelCompras extends JPanel {
         p.add(norte, BorderLayout.NORTH);
 
         tablaAlertas.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-        UI.colorearFilas(tablaAlertas, fila -> {
-            String estado = alertas.get(fila).estado;
-            return ControladorCompras.AGOTADO.equals(estado) ? UI.FILA_ROJA
-                    : ControladorCompras.STOCK_BAJO.equals(estado) ? UI.FILA_AMBAR : UI.FILA_CELESTE;
-        });
+        UI.insignias(tablaAlertas, 6);
         p.add(new JScrollPane(tablaAlertas), BorderLayout.CENTER);
         return p;
     }
@@ -162,14 +158,7 @@ public class PanelCompras extends JPanel {
         cmbFiltro.addActionListener(e -> cargarOrdenes());
         p.add(barra, BorderLayout.NORTH);
 
-        UI.colorearFilas(tablaOrdenes, fila -> {
-            switch (ordenes.get(fila).estado) {
-                case ControladorCompras.PENDIENTE: return UI.FILA_AMBAR;
-                case ControladorCompras.APROBADA: return UI.FILA_CELESTE;
-                case ControladorCompras.RECHAZADA: return UI.FILA_GRIS;
-                default: return null;
-            }
-        });
+        UI.insignias(tablaOrdenes, 5);
         p.add(new JScrollPane(tablaOrdenes), BorderLayout.CENTER);
         return p;
     }
@@ -443,6 +432,7 @@ public class PanelCompras extends JPanel {
             barra.add(editar);
         }
         p.add(barra, BorderLayout.NORTH);
+        UI.insignias(tablaProveedores, 5);
         p.add(new JScrollPane(tablaProveedores), BorderLayout.CENTER);
         return p;
     }
