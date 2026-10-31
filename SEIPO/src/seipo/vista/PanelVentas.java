@@ -99,7 +99,7 @@ public class PanelVentas extends JPanel {
         JPanel carrito = new JPanel(new BorderLayout(0, 8));
         carrito.setOpaque(false);
         carrito.add(new JScrollPane(tabla), BorderLayout.CENTER);
-        JPanel accionesCarrito = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
+        JPanel accionesCarrito = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
         accionesCarrito.setOpaque(false);
         JButton menos = UI.botonSecundario("−"), mas = UI.botonSecundario("+");
         JButton quitar = UI.botonPeligro("Quitar ítem"), vaciar = UI.botonSecundario("Vaciar venta");
@@ -141,7 +141,7 @@ public class PanelVentas extends JPanel {
     }
 
     private JPanel tarjetaCliente() {
-        JPanel c = new JPanel(new BorderLayout(10, 0));
+        JPanel c = new JPanel(new BorderLayout(0, 8));
         c.setBackground(UI.SUPERFICIE);
         c.setBorder(UI.bordeTarjeta(10, 16, 10, 12));
         JLabel t = UI.ayuda("CLIENTE (F4)");
@@ -153,19 +153,18 @@ public class PanelVentas extends JPanel {
         textos.add(lblCliente);
         textos.add(lblClienteDetalle);
         c.add(textos, BorderLayout.CENTER);
-        JPanel botones = new JPanel(new GridLayout(0, 1, 0, 6));
+        // Botones debajo de los datos, para que el nombre del cliente use todo el ancho de la tarjeta
+        JPanel botones = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
         botones.setOpaque(false);
         JButton buscar = UI.botonSecundario("Buscar");
         buscar.setToolTipText("Buscar o registrar el cliente de la venta (F4)");
         buscar.addActionListener(e -> elegirCliente());
         for (JButton b : new JButton[]{buscar, quitarCliente}) {
             b.setMargin(new Insets(2, 12, 2, 12));
+            if (botones.getComponentCount() > 0) botones.add(Box.createHorizontalStrut(6));
             botones.add(b);
         }
-        JPanel derecha = new JPanel(new GridBagLayout());
-        derecha.setOpaque(false);
-        derecha.add(botones);
-        c.add(derecha, BorderLayout.EAST);
+        c.add(botones, BorderLayout.SOUTH);
         return c;
     }
 
@@ -641,10 +640,12 @@ public class PanelVentas extends JPanel {
         cliente = nuevo;
         if (cliente == null) {
             lblCliente.setText("Clientes varios");
+            lblCliente.setToolTipText(null);
             lblClienteDetalle.setText("Sin cliente registrado");
         } else {
             if (cliente.porcentajeVIP > descuentoPct) descuentoPct = cliente.porcentajeVIP;
             lblCliente.setText(cliente.nombre);
+            lblCliente.setToolTipText(cliente.nombre);
             lblClienteDetalle.setText(cliente.documento + "  ·  " + cliente.descuentoVIP);
         }
         quitarCliente.setEnabled(cliente != null);
