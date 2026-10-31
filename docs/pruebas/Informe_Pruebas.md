@@ -1,22 +1,22 @@
 # Informe de pruebas de caja negra — SEIPO
 
-**Curso:** Procesos de Software · **Sistema:** SEIPO, sistema de venta e inventario · **Fecha de ejecución:** 19/10/2026 (corridas 1 a 5), 29/10/2026 (corridas 6 a 8) y 30/10/2026 (corridas 9 a 11)
+**Curso:** Procesos de Software · **Sistema:** SEIPO, sistema de venta e inventario · **Fecha de ejecución:** 19/10/2026 (corridas 1 a 5), 29/10/2026 (corridas 6 a 8) y 30/10/2026 (corridas 9 a 12)
 
-**Resultado final (corrida 11): 19 de 19 casos aprobados (100 %).** Evidencias en [`evidencias/`](evidencias/) · Defectos en [`Defectos.md`](Defectos.md) · Tabla para Excel en [`Casos_de_Prueba.csv`](Casos_de_Prueba.csv) · Diapositivas en [`Resumen_para_PPT.md`](Resumen_para_PPT.md)
+**Resultado final (corrida 12): 23 de 23 casos aprobados (100 %).** Evidencias en [`evidencias/`](evidencias/) · Defectos en [`Defectos.md`](Defectos.md) · Tabla para Excel en [`Casos_de_Prueba.csv`](Casos_de_Prueba.csv) · Diapositivas en [`Resumen_para_PPT.md`](Resumen_para_PPT.md)
 
 ## 1. Objetivo y alcance
 
-Verificar con pruebas automatizadas que SEIPO cumple las reglas de negocio de `Documentacion_Proyecto_Seipo_2.docx` en sus procesos principales: acceso y roles, turno de caja, venta con IGV, descuento VIP, FEFO, forma de pago, comprobantes, anulación (por el administrador y por el personal en su propio turno, con registro del motivo), mermas, compras, cierre de caja y reportes. Se ejecutaron 19 casos sobre la lógica de negocio (controladores) y la base de datos. La interfaz gráfica solo se usó para comprobar qué módulos ve cada rol.
+Verificar con pruebas automatizadas que SEIPO cumple las reglas de negocio de `Documentacion_Proyecto_Seipo_2.docx` en sus procesos principales: acceso y roles, turno de caja, venta con IGV, descuento VIP, FEFO, forma de pago, comprobantes, anulación (por el administrador y por el personal en su propio turno, con registro del motivo), mermas, compras, cierre de caja y reportes. Se ejecutaron 23 casos sobre la lógica de negocio (controladores) y la base de datos. La interfaz gráfica solo se usó para comprobar qué módulos ve cada rol.
 
 ## 2. Estrategia de pruebas
 
-- **Tipo de prueba:** caja negra. Cada resultado esperado se fijó con la regla de negocio del documento, no con lo que hace el código. Si el código y el documento no coinciden, la diferencia se reporta como defecto. El código de producción solo se modificó para corregir DEF-01 (después de la corrida 1) y las observaciones OBS-02 a OBS-05 (antes de la corrida 4). Antes de la corrida 5 se quitó la pasarela de pago simulada por decisión del equipo (CAM-01), y CP-02, CP-09 y CP-11 se ajustaron a ese cambio. Antes de la corrida 6 se cifraron las contraseñas (OBS-06); ningún caso cambió. Antes de la corrida 9 se quitó el redondeo del total a 10 céntimos, a pedido del docente: el IGV es el 18 % de la base con 2 decimales y el total es base más IGV, para que el negocio declare exactamente el IGV cobrado. CP-05 se ajustó al nuevo resultado. Antes de la corrida 10, a pedido del docente, el personal pasó a poder anular las ventas que registró en su propio turno abierto, con un motivo de una lista y un registro de anulaciones (CAM-02, cambio de alcance). Se agregaron CP-16 a CP-19, y CP-11 usa la firma nueva de la anulación (con motivo de la lista).
+- **Tipo de prueba:** caja negra. Cada resultado esperado se fijó con la regla de negocio del documento, no con lo que hace el código. Si el código y el documento no coinciden, la diferencia se reporta como defecto. El código de producción solo se modificó para corregir DEF-01 (después de la corrida 1) y las observaciones OBS-02 a OBS-05 (antes de la corrida 4). Antes de la corrida 5 se quitó la pasarela de pago simulada por decisión del equipo (CAM-01), y CP-02, CP-09 y CP-11 se ajustaron a ese cambio. Antes de la corrida 6 se cifraron las contraseñas (OBS-06); ningún caso cambió. Antes de la corrida 9 se quitó el redondeo del total a 10 céntimos, a pedido del docente: el IGV es el 18 % de la base con 2 decimales y el total es base más IGV, para que el negocio declare exactamente el IGV cobrado. CP-05 se ajustó al nuevo resultado. Antes de la corrida 10, a pedido del docente, el personal pasó a poder anular las ventas que registró en su propio turno abierto, con un motivo de una lista y un registro de anulaciones (CAM-02, cambio de alcance). Se agregaron CP-16 a CP-19, y CP-11 usa la firma nueva de la anulación (con motivo de la lista). Antes de la corrida 12, a pedido del docente, se agregaron CP-20 a CP-23 para demostrar el orden de salida de los lotes (FEFO): desempate por orden de ingreso, lotes vencidos, productos sin vencimiento y ventas con varios lotes. El código ya cumplía esas reglas y no cambió.
 - **Técnicas:**
   - **Partición en clases de equivalencia (válidas e inválidas).** Credenciales correctas, clave errada y usuario inexistente; venta con y sin turno; forma de pago admitida y no admitida; cliente con RUC, con DNI y sin documento; merma aprobada y rechazada; administrador y personal; venta propia y de otro usuario, turno abierto y cerrado (CP-17); motivo de la lista y fuera de ella (CP-18).
-  - **Valores límite.** Stock exacto y stock + 1 (CP-08); umbral de compras del descuento VIP y una compra por debajo (CP-06); efectivo contado por debajo y por encima del esperado (CP-14); producto en el mínimo de stock (CP-13); clave con un espacio de más (CP-01); precio con céntimos sueltos para comprobar que el total no se redondea a 10 céntimos (CP-05); detalle de 4 y de 5 caracteres con el motivo "Otro" (CP-18).
+  - **Valores límite.** Stock exacto y stock + 1 (CP-08); umbral de compras del descuento VIP y una compra por debajo (CP-06); efectivo contado por debajo y por encima del esperado (CP-14); producto en el mínimo de stock (CP-13); clave con un espacio de más (CP-01); precio con céntimos sueltos para comprobar que el total no se redondea a 10 céntimos (CP-05); detalle de 4 y de 5 caracteres con el motivo "Otro" (CP-18); lote que vence hoy (se vende) y lote vencido ayer (no se vende) (CP-21).
 - **Independencia y repetibilidad:**
   - Antes de la primera prueba, la base `seipo_test` se crea desde `SEIPO/bd/seipo_db.sql`, y después de cada prueba se vuelve a cargar. Así todas empiezan con los mismos datos y la base queda como estaba.
-  - Cada prueba crea sus propios productos (códigos `CP01`…`CP19`), lotes, clientes y turnos.
+  - Cada prueba crea sus propios productos (códigos `CP01`…`CP23`), lotes, clientes y turnos.
   - La base de producción `seipo_db` y su `config.properties` nunca se usan.
 
 ## 3. Entorno y ejecución
@@ -24,12 +24,12 @@ Verificar con pruebas automatizadas que SEIPO cumple las reglas de negocio de `D
 | Elemento | Detalle |
 |---|---|
 | Base de datos | MariaDB 12.3.3 (servicio de Windows), base `seipo_test`, usuario `seipo` (necesita `GRANT ALL PRIVILEGES ON seipo_test.*`) |
-| Pruebas | JUnit 5.12.2 (Jupiter), jar en `SEIPO/lib-test/`; 19 casos en `SEIPO/test/seipo/pruebas/` |
+| Pruebas | JUnit 5.12.2 (Jupiter), jar en `SEIPO/lib-test/`; 23 casos en `SEIPO/test/seipo/pruebas/` |
 | Java | JDK 25.0.3 |
 | Usuarios de demostración | `admin` / `123` (administrador), `Personal1` / `890` y `personal2` / `456` (personal de tienda) |
 | Cómo ejecutar | IntelliJ: configuración **Pruebas SEIPO** → ▶. Consola: `pruebas.bat` en la raíz del repositorio. Duración: unos 15 segundos |
 
-## 4. Casos de prueba (resultado final, corrida 11)
+## 4. Casos de prueba (resultado final, corrida 12)
 
 | ID | Proceso / requisito | Entrada | Resultado esperado | Resultado obtenido | Estado | Corregido en |
 |---|---|---|---|---|---|---|
@@ -52,6 +52,10 @@ Verificar con pruebas automatizadas que SEIPO cumple las reglas de negocio de `D
 | CP-17 | Anulación no permitida (CAM-02) | `personal2` intenta anular una venta de `Personal1`; `Personal1` intenta anular una venta propia de su turno ya cerrado | Los dos intentos se rechazan con un mensaje claro y sin cambios | Rechazos con "Solo puede anular las ventas que usted registró en su propio turno de caja." y "Solo se pueden anular ventas de un turno abierto…". Las dos ventas siguen COMPLETADA, stock 8 y ningún registro nuevo | Pasó | Corrida 10 (CAM-02, caso nuevo) |
 | CP-18 | Motivo obligatorio (CAM-02) | Anular sin motivo, con motivo vacío, con "Porque sí" (fuera de la lista), con "Otro" sin detalle y con "Otro" y 4 caracteres; luego con "Otro" y 5 caracteres | Los cinco primeros intentos se rechazan sin cambios; con 5 caracteres se acepta (valor límite) | Cinco rechazos sin cambios. Con "abcde" la venta queda ANULADA y el registro guarda el detalle | Pasó | Corrida 10 (CAM-02, caso nuevo) |
 | CP-19 | Anulación por el administrador (CAM-02) | `Personal1` vende 2 u. con Yape o Plin (S/ 23.60) en su turno abierto; `admin` la anula con "Error en el cobro" sin detalle | La venta queda anulada y también queda registrada, con el rol de administrador | Venta ANULADA con el motivo en el comprobante, stock 10. Registro con admin, rol ADMINISTRADOR, "Error en el cobro", sin detalle y S/ 23.60; aparece en el registro del administrador | Pasó | Corrida 10 (CAM-02, caso nuevo) |
+| CP-20 | FEFO con el mismo vencimiento (proceso 08) | Dos lotes con la misma fecha de vencimiento: entra primero CP20-Z y después CP20-A (4 u. cada uno); dos ventas de 3 u. | Sale primero el lote que entró antes, sin importar su número; al agotarse, sigue con el siguiente | Primera venta: 3 u. de CP20-Z. Segunda: 1 u. de CP20-Z y 2 de CP20-A. Quedan 0 y 2; stock 2 | Pasó | Corrida 12 (caso nuevo) |
+| CP-21 | Lotes vencidos (proceso 08) | Lote vencido ayer (5 u.), lote que vence hoy (2 u.) y lote vigente (3 u.); venta de 4 u. y luego de 2 u. | El lote vencido no se vende ni se ofrece; el que vence hoy sí (valor límite); la venta que necesitaría el vencido se rechaza sin cambios | Ventas ofrece 5 u. (sin el vencido). La venta de 4 u. toma 2 del que vence hoy y 2 del vigente; la de 2 u. se rechaza ("Los lotes vencidos no se pueden vender") sin registros. El lote vencido sigue con 5 | Pasó | Corrida 12 (caso nuevo) |
+| CP-22 | Productos sin vencimiento (proceso 08) | Tres lotes sin fecha de vencimiento, recibidos en el orden CP22-SEGUNDO, CP22-PRIMERO, CP22-TERCERO (3 u. cada uno); venta de 5 u. | Los lotes salen por orden de ingreso, no por su nombre | 3 u. de CP22-SEGUNDO y 2 de CP22-PRIMERO; CP22-TERCERO queda intacto; stock 4 | Pasó | Corrida 12 (caso nuevo) |
+| CP-23 | Venta con varios lotes (proceso 08) | Cuatro lotes recibidos en desorden: C (vence en 90 días, 5 u.), A (10 días, 2 u.), sin vencimiento (4 u.) y B (40 días, 2 u.); venta de 10 u. | Recorre los lotes por vencimiento y deja al final el que no vence; registra de qué lote salió cada unidad en venta_lotes y en movimientos | venta_lotes: A 2, B 2, C 5 y sin vencimiento 1, en ese orden. Movimientos: una salida por lote con stock resultante 11, 9, 4 y 3. Stock 3, igual a la suma de los lotes | Pasó | Corrida 12 (caso nuevo) |
 
 ## 5. Adaptaciones respecto al diseño original
 
@@ -74,9 +78,10 @@ Verificar con pruebas automatizadas que SEIPO cumple las reglas de negocio de `D
 | 8 | 29/10/2026 23:40 | 15/15 | 100 % | — | Corrida 8: regresión tras el cambio visual (tema claro con acento naranja, menú con iconos, tarjetas e insignias de estado). Solo cambió la capa de vista; ningún caso cambió | [`Resultados_Corrida_8.txt`](evidencias/Resultados_Corrida_8.txt) |
 | 9 | 30/10/2026 19:39 | 15/15 | 100 % | — | Corrida 9: regresión tras quitar el redondeo del IGV. El total es base más IGV con 2 decimales, sin redondeo a 10 céntimos; el efectivo acepta céntimos y el vuelto es exacto. CP-05 se ajustó al nuevo resultado (total S/ 14.57, vuelto S/ 5.43); CP-09, CP-10, CP-11 y CP-14 siguen pasando con totales exactos | [`Resultados_Corrida_9.txt`](evidencias/Resultados_Corrida_9.txt) |
 | 10 | 30/10/2026 20:22 | 19/19 | 100 % | — | Corrida 10: el personal puede anular las ventas de su propio turno abierto, con motivo de una lista y registro de anulaciones (CAM-02). Se agregaron CP-16 a CP-19 y CP-11 usa la firma nueva; los 15 casos anteriores siguen aprobando | [`Resultados_Corrida_10.txt`](evidencias/Resultados_Corrida_10.txt) |
-| 11 | 30/10/2026 20:52 | **19/19** | **100 %** | — | Corrida 11: regresión tras corregir el texto de Caja (la descripción de la sección en la cabecera menciona las anulaciones). Solo cambió un texto de la vista; ningún caso cambió. También se corrigió la advertencia sobre las claves en el Manual del Administrador | [`Resultados_Corrida_11.txt`](evidencias/Resultados_Corrida_11.txt) |
+| 11 | 30/10/2026 20:52 | 19/19 | 100 % | — | Corrida 11: regresión tras corregir el texto de Caja (la descripción de la sección en la cabecera menciona las anulaciones). Solo cambió un texto de la vista; ningún caso cambió. También se corrigió la advertencia sobre las claves en el Manual del Administrador | [`Resultados_Corrida_11.txt`](evidencias/Resultados_Corrida_11.txt) |
+| 12 | 30/10/2026 20:59 | **23/23** | **100 %** | — | Corrida 12: se agregaron CP-20 a CP-23 para demostrar el orden de salida de los lotes (mismo vencimiento por orden de ingreso, lotes vencidos, productos sin vencimiento y venta con varios lotes). El código ya cumplía las reglas y no cambió; los 19 casos anteriores siguen aprobando | [`Resultados_Corrida_12.txt`](evidencias/Resultados_Corrida_12.txt) |
 
-Cada corrida duró unos 15 segundos (14,9 s, 14,5 s, 14,5 s, 15,3 s, 15 s, 16,1 s, 14,3 s, 16,1 s, 14,9 s, 18,8 s y 18,4 s; las corridas 10 y 11 tienen 19 casos), incluida la recarga de `seipo_test` antes de la primera prueba y después de cada una.
+Cada corrida duró unos 15 segundos (14,9 s, 14,5 s, 14,5 s, 15,3 s, 15 s, 16,1 s, 14,3 s, 16,1 s, 14,9 s, 18,8 s, 18,4 s y 22,4 s; las corridas 10 y 11 tienen 19 casos y la 12, 23), incluida la recarga de `seipo_test` antes de la primera prueba y después de cada una.
 
 ## 7. Defectos y observaciones
 
@@ -128,7 +133,7 @@ OBS-02 a OBS-05 se encontraron al revisar el código para escribir los manuales 
 ## 8. Conclusiones y recomendaciones
 
 **Conclusiones**
-- **Resultado final:** los 19 casos aprueban (100 %). Los procesos centrales funcionan según el documento: venta con IGV exacto, FEFO, rollback por stock insuficiente, bloqueo sin turno, comprobantes correlativos, anulación con devolución al mismo lote, mermas con autorización, alertas y órdenes de compra, cuadre de caja y reporte de mermas.
+- **Resultado final:** los 23 casos aprueban (100 %). Los procesos centrales funcionan según el documento: venta con IGV exacto, FEFO, rollback por stock insuficiente, bloqueo sin turno, comprobantes correlativos, anulación con devolución al mismo lote, mermas con autorización, alertas y órdenes de compra, cuadre de caja y reporte de mermas.
 - **Integridad transaccional:** en todos los rechazos probados (sin turno, stock insuficiente, forma de pago no admitida, turno cerrado y tarjeta) no quedaron registros parciales.
 - **Defecto de seguridad:** el control de acceso dependía solo de la interfaz (DEF-01). Se corrigió en el controlador y quedó cubierto por CP-02.
 - **Requerimiento ambiguo:** las pruebas detectaron uno (OBS-01), que se resolvió aclarando el documento sin cambiar el código.
@@ -137,6 +142,7 @@ OBS-02 a OBS-05 se encontraron al revisar el código para escribir los manuales 
 - **Contraseñas:** desde la corrida 6 se guardan cifradas (OBS-06). La corrida 7 confirmó que el acceso y los demás procesos siguen funcionando (15/15).
 - **IGV sin redondeo:** desde la corrida 9 el total es base más IGV con 2 decimales, sin redondeo a 10 céntimos, para que el negocio declare exactamente el IGV cobrado. La corrida 9 confirmó que los 15 casos siguen aprobando (15/15).
 - **Anulación por el personal:** desde la corrida 10 el personal anula las ventas de su propio turno abierto, con motivo obligatorio y registro de cada anulación (CAM-02). La regla se valida en el controlador; los intentos no permitidos se rechazan sin cambios (CP-17 y CP-18). La corrida 10 dio 19/19.
+- **Orden de salida de los lotes:** la corrida 12 demostró con CP-20 a CP-23 que las ventas salen por vencimiento, desempatan por orden de ingreso, no venden lotes vencidos (el que vence hoy sí), dejan al final los lotes sin vencimiento y registran cada lote usado en `venta_lotes` y en `movimientos`. El código ya lo cumplía.
 
 **Recomendaciones**
 1. Mantener la validación de rol en cada controlador nuevo que gestione información administrativa.

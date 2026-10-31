@@ -142,6 +142,15 @@ public abstract class PruebaBase {
         }
     }
 
+    /** Primera columna de todas las filas, en el orden de la consulta. */
+    static List<String> listaTextos(String sql, Object... parametros) throws SQLException {
+        List<String> lista = new ArrayList<>();
+        try (Connection con = conexion(); PreparedStatement pst = preparar(con, sql, parametros); ResultSet rs = pst.executeQuery()) {
+            while (rs.next()) lista.add(rs.getString(1));
+        }
+        return lista;
+    }
+
     static int ejecutar(String sql, Object... parametros) throws SQLException {
         try (Connection con = conexion(); PreparedStatement pst = preparar(con, sql, parametros)) {
             return pst.executeUpdate();

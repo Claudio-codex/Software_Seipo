@@ -6,10 +6,10 @@ Detalle completo en [`Informe_Pruebas.md`](Informe_Pruebas.md) y [`Defectos.md`]
 
 ## Diapositiva 1 — Objetivo
 - Verificar que SEIPO cumple las reglas de negocio de su documentación
-- 19 casos de prueba automatizados con JUnit 5
+- 23 casos de prueba automatizados con JUnit 5
 - Cubren acceso, caja, ventas, FEFO, forma de pago, comprobantes, mermas, compras y reportes
 - Esperado = lo que dice el documento; si el código difiere, es un defecto
-- Resultado final: 19 de 19 casos aprobados (100 %)
+- Resultado final: 23 de 23 casos aprobados (100 %)
 
 ---
 
@@ -58,7 +58,16 @@ Detalle completo en [`Informe_Pruebas.md`](Informe_Pruebas.md) y [`Defectos.md`]
 
 ---
 
-## Diapositiva 7 — Historial de corridas y resultados
+## Diapositiva 7 — Casos nuevos: orden de salida de los lotes (FEFO)
+- **CP-20:** mismo vencimiento → sale primero el lote que entró antes, aunque su número sea mayor → Pasó
+- **CP-21:** el lote vencido no se vende ni se ofrece; el que vence hoy sí (valor límite) → Pasó
+- **CP-22:** productos sin vencimiento → sus lotes salen por orden de ingreso → Pasó
+- **CP-23:** venta con 4 lotes → los recorre en orden y registra cada lote en venta_lotes y movimientos → Pasó
+- El código ya cumplía estas reglas: las pruebas lo dejan demostrado (CP-07 ya probaba el vencimiento más próximo)
+
+---
+
+## Diapositiva 8 — Historial de corridas y resultados
 - **Corrida 1:** 13/15 (86,7 %); fallan CP-02 y CP-06
 - **Corrida 2:** 14/15 (93,3 %); se corrige DEF-01 y pasa CP-02
 - **Corrida 3:** 15/15 (100 %); se aclara el requerimiento VIP y pasa CP-06
@@ -69,12 +78,13 @@ Detalle completo en [`Informe_Pruebas.md`](Informe_Pruebas.md) y [`Defectos.md`]
 - **Corrida 8:** 15/15 (100 %); regresión tras el cambio visual (tema claro)
 - **Corrida 9:** 15/15 (100 %); regresión tras quitar el redondeo del IGV (total = base + IGV, con 2 decimales)
 - **Corrida 10:** 19/19 (100 %); el personal anula ventas de su turno con registro del motivo (CAM-02), con CP-16 a CP-19
-- **Corrida 11:** **19/19 (100 %)**; regresión tras corregir el texto de Caja (solo cambió un texto de la vista)
-- Cada corrida dura unos 15 s; las once salidas están en `docs/pruebas/evidencias/`
+- **Corrida 11:** 19/19 (100 %); regresión tras corregir el texto de Caja (solo cambió un texto de la vista)
+- **Corrida 12:** **23/23 (100 %)**; se agregan CP-20 a CP-23 sobre el orden de salida de los lotes (sin cambios en el código)
+- Cada corrida dura unos 15 s; las doce salidas están en `docs/pruebas/evidencias/`
 
 ---
 
-## Diapositiva 8 — Defectos y observaciones
+## Diapositiva 9 — Defectos y observaciones
 - **DEF-01 (alta):** el rol solo se controlaba en el menú; el personal podía crear un administrador
 - Corrección: validación de rol en 5 métodos de Usuarios, Reportes y Pagos (10 líneas en 3 controladores; Pagos se quitó en la corrida 5)
 - **OBS-01 (media):** "10 % desde la tercera compra" era ambiguo
@@ -83,7 +93,7 @@ Detalle completo en [`Informe_Pruebas.md`](Informe_Pruebas.md) y [`Defectos.md`]
 
 ---
 
-## Diapositiva 9 — Observaciones menores (OBS-02 a OBS-06)
+## Diapositiva 10 — Observaciones menores (OBS-02 a OBS-06)
 - Se encontraron al revisar el código para escribir los manuales de usuario
 - **OBS-02 (media):** descuento manual sin tope; ahora el personal aplica como máximo 10 % (el VIP no cambia)
 - **OBS-03 (baja):** botones de los diálogos en inglés; ahora dicen Aceptar, Cancelar, Sí, No y Guardar
@@ -93,7 +103,7 @@ Detalle completo en [`Informe_Pruebas.md`](Informe_Pruebas.md) y [`Defectos.md`]
 
 ---
 
-## Diapositiva 10 — Limitaciones conocidas
+## Diapositiva 11 — Limitaciones conocidas
 - El personal puede crear productos y proveedores, aunque solo el administrador los edita
 - El personal puede exportar el reporte de mermas
 - No existe recuperación de contraseña: solo un administrador restablece claves
@@ -102,7 +112,7 @@ Detalle completo en [`Informe_Pruebas.md`](Informe_Pruebas.md) y [`Defectos.md`]
 
 ---
 
-## Diapositiva 11 — Adaptaciones respecto al diseño original
+## Diapositiva 12 — Adaptaciones respecto al diseño original
 - El documento retiró la tarjeta como forma de pago en esta versión
 - **CP-09:** la tarjeta 4111 1111 1111 1111 se prueba como pago que debe rechazarse
 - **CP-11:** la venta "con tarjeta" se reemplazó por una venta con Plin
@@ -112,8 +122,8 @@ Detalle completo en [`Informe_Pruebas.md`](Informe_Pruebas.md) y [`Defectos.md`]
 
 ---
 
-## Diapositiva 12 — Conclusiones
-- Los procesos centrales cumplen el documento: 15/15 casos aprobados en las corridas 3, 4, 5, 7, 8 y 9, y 19/19 en las corridas 10 y 11
+## Diapositiva 13 — Conclusiones
+- Los procesos centrales cumplen el documento: 15/15 casos aprobados en las corridas 3, 4, 5, 7, 8 y 9, y 19/19 en las corridas 10 y 11, y 23/23 en la corrida 12
 - Todas las operaciones rechazadas se revierten sin dejar registros parciales
 - Las pruebas encontraron un defecto de seguridad real, que ya está corregido
 - También aclararon un requerimiento ambiguo y, con los manuales, cuatro observaciones menores
