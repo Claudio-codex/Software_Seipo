@@ -55,7 +55,7 @@ GRANT ALL PRIVILEGES ON seipo_db.* TO 'seipo'@'localhost';
 * Para cobrar, cada usuario debe **abrir su turno** en la sección **Caja** indicando el efectivo inicial. Al terminar, **cierra el turno** contando el efectivo: el sistema calcula lo esperado (inicial + ventas en efectivo) y registra si sobra o falta dinero (con una observación obligatoria si hay diferencia).
 * En **Ventas** se agregan productos escaneando el código o escribiendo el nombre (`3*CODIGO` agrega 3 unidades). La cantidad se cambia en la tabla con doble clic o con las teclas `+` y `-`; `Supr` quita el ítem.
 * Se puede elegir un **cliente** registrado (o registrarlo ahí mismo): su descuento VIP se aplica solo. En efectivo se ingresa el monto recibido y se muestra el **vuelto**.
-* El total se **redondea hacia abajo a 10 céntimos** (no se usan monedas de 1 ni de 5 céntimos) y la rebaja aparece como "Redondeo". Los montos en efectivo (recibido, inicial y contado) tampoco aceptan céntimos sueltos.
+* **IGV:** El IGV es el 18 % de la base, con 2 decimales y sin redondeo a 10 céntimos; el total es base más IGV. El sistema no redondea el total porque el negocio debe declarar exactamente el IGV cobrado. El efectivo (recibido, inicial y contado) acepta céntimos y el vuelto es exacto. Las ventas registradas antes de este cambio conservan su línea "Redondeo" en el comprobante.
 * Formas de pago: **Efectivo** y **Yape o Plin**. El cobro con tarjeta se retiró del sistema por ahora.
 * Atajos: `F2` buscar producto, `F4` cliente, `F6` descuento, `F9` efectivo, `F11` Yape o Plin.
 * Solo el **administrador** puede **anular** una venta (desde Caja), y solo mientras el turno siga abierto; el stock vuelve a los mismos lotes. Si se pagó con Yape o Plin, el cajero devuelve el dinero desde el celular del negocio.
@@ -101,7 +101,7 @@ Si el programa no puede conectarse, la ventana de inicio de sesión indica qué 
 * **Método de autenticación no admitido:** en MariaDB para Windows, `root` puede entrar con la autenticación de Windows, que el programa no admite. Usa el usuario `seipo`.
 
 ## Pruebas
-**Qué se probó:** 15 casos de caja negra con JUnit 5 (CP-01 a CP-15) sobre acceso y roles, turno y cierre de caja, ventas con IGV y redondeo, descuento VIP, FEFO, stock límite, pago digital, comprobantes, anulación, mermas, compras y el reporte de mermas.
+**Qué se probó:** 15 casos de caja negra con JUnit 5 (CP-01 a CP-15) sobre acceso y roles, turno y cierre de caja, ventas con IGV, descuento VIP, FEFO, stock límite, pago digital, comprobantes, anulación, mermas, compras y el reporte de mermas.
 
 **Cómo ejecutarlas**
 * Usan su propia base, **`seipo_test`**: la crean desde `SEIPO/bd/seipo_db.sql` y la vuelven a cargar después de cada prueba. No tocan `seipo_db` ni `config.properties`. Antes de la primera ejecución, dale permisos al usuario `seipo` (como `root`):

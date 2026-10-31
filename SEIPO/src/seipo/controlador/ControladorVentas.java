@@ -36,7 +36,10 @@ public class ControladorVentas {
 
         public double igv() { return Datos.igvVenta(subtotal, descuento); }
 
-        /** Rebaja por redondear el total a 10 céntimos (0 o negativa). */
+        /**
+         * Diferencia entre el total cobrado y base + IGV. Es 0 en las ventas actuales; solo las ventas registradas
+         * cuando el total se redondeaba hacia abajo a 10 céntimos tienen un redondeo negativo.
+         */
         public double redondeo() { return Datos.redondear(total - (subtotal - descuento) - igv()); }
 
         /** Vuelto entregado; null si no se registró el efectivo recibido. */
@@ -114,9 +117,6 @@ public class ControladorVentas {
         double totalVenta = Datos.totalVenta(sub, desc);
         if (montoRecibido != null && montoRecibido < totalVenta) {
             throw new SQLException("El monto recibido es menor que el total de la venta.");
-        }
-        if (montoRecibido != null && !Datos.esMontoEnMonedas(montoRecibido)) {
-            throw new SQLException("El monto recibido no puede tener monedas de 1 ni 5 céntimos.");
         }
 
         String sqlTurno = "SELECT id FROM turnos WHERE usuario_id = ? AND estado = 'ABIERTO' FOR UPDATE";

@@ -98,7 +98,7 @@ Este manual está dirigido al **administrador**. El administrador hace todo lo q
 
 **Resultado esperado:** aparecen las tarjetas del turno (**Efectivo inicial**, **Ventas en efectivo**, **Yape o Plin**, **Efectivo en caja**).
 
-> **Advertencia:** cada usuario tiene un solo turno abierto. Los montos en efectivo no admiten céntimos sueltos de 1 o 5.
+> **Advertencia:** cada usuario tiene un solo turno abierto. Los montos en efectivo aceptan céntimos.
 
 ### 4.2 Registrar una venta y aplicar el descuento VIP
 
@@ -108,9 +108,9 @@ Este manual está dirigido al **administrador**. El administrador hace todo lo q
 2. En **CLIENTE (F4)** pulse **Buscar**, elija al cliente y pulse **Usar cliente**, o regístrelo con **+ Nuevo cliente**.
 3. El descuento VIP se aplica solo: **5 %** con 1 compra completada, **10 %** con 3 y **15 %** con 5. Con **Descuento (F6)** puede escribir otro porcentaje (0 a 100); el administrador no tiene tope.
 
-[CAPTURA 4.2.1: Ventas — carrito con cliente VIP y el desglose con Descuento, IGV 18%, Redondeo y TOTAL]
+[CAPTURA 4.2.1: Ventas — carrito con cliente VIP y el desglose con Descuento, IGV 18% y TOTAL]
 
-**Resultado esperado:** el panel derecho muestra **Subtotal**, **Descuento**, **IGV 18%**, **Redondeo** y **TOTAL**.
+**Resultado esperado:** el panel derecho muestra **Subtotal**, **Descuento**, **IGV 18%** y **TOTAL**.
 
 > **Advertencia:** el personal puede aplicar como máximo **10 %** de descuento manual; el sistema se lo impide en la pantalla y al registrar la venta. El descuento VIP del cliente siempre se respeta, aunque sea mayor (Platino, 15 %). Si corresponde un descuento manual mayor, cobre usted esa venta desde su sesión y su turno.
 
@@ -301,7 +301,7 @@ Este manual está dirigido al **administrador**. El administrador hace todo lo q
 | Mermas | Nacen pendientes y reservan sus unidades. Solo el administrador las aprueba (descuenta el stock) o las rechaza. |
 | Descuento VIP | 5 % desde 1 compra completada, 10 % desde 3 (a partir de la 4.ª compra) y 15 % desde 5. Las anuladas no cuentan. |
 | Descuento manual | El personal puede aplicar como máximo 10 % con **Descuento (F6)**; el administrador no tiene tope. El VIP del cliente siempre se respeta. |
-| IGV y redondeo | IGV 18 % sobre (subtotal − descuento). El total se redondea hacia abajo a 10 céntimos, a favor del cliente. |
+| IGV | La base es (subtotal − descuento). El IGV es el 18 % de la base, con 2 decimales y sin redondeo a 10 céntimos; el total es base más IGV. El sistema no redondea el total porque el negocio debe declarar exactamente el IGV cobrado. Las ventas registradas antes de este cambio conservan su línea **Redondeo** en el comprobante. |
 | Comprobante | RUC: factura F001. DNI o sin cliente: boleta B001. Numeración correlativa por serie. |
 | Yape o Plin | El sistema solo registra la forma de pago; el cajero confirma el pago en el celular del negocio. No entra al efectivo de caja. |
 | Anulación | Solo el administrador, y solo con el turno abierto. El stock vuelve a los mismos lotes. El pago con Yape o Plin se devuelve desde el celular del negocio. |
@@ -356,7 +356,7 @@ Total: **16 capturas**. Tome cada una con datos de demostración y reemplace el 
 | 2.1.1 | Inicio de sesión | Ventana con los campos Usuario y Contraseña | 2.1 Iniciar sesión |
 | 2.1.2 | Ventana "Alertas" | Resumen de pendientes al ingresar como administrador | 2.1 Iniciar sesión |
 | 3.1 | Pantalla principal del administrador | Menú con los grupos OPERACIÓN, INVENTARIO y GESTIÓN | 3. La pantalla principal y el menú |
-| 4.2.1 | Ventas | Carrito con cliente VIP y el desglose con Descuento, IGV 18%, Redondeo y TOTAL | 4.2 Registrar una venta y aplicar el descuento VIP |
+| 4.2.1 | Ventas | Carrito con cliente VIP y el desglose con Descuento, IGV 18% y TOTAL | 4.2 Registrar una venta y aplicar el descuento VIP |
 | 4.3.1 | Confirmación "Cobro con Yape o Plin" | Pregunta si el cliente ya pagó el total | 4.3 Cobrar en efectivo, con Yape o con Plin |
 | 4.5.1 | Caja, pestaña Historial de turnos | Turnos con faltante (rojo), sobrante (ámbar) y abierto (celeste) | 4.5 Cerrar un turno y cuadrar la caja |
 | 4.6.1 | Caja | Ventana "Anular venta" con el motivo de la anulación | 4.6 Anular una venta |

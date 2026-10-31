@@ -73,7 +73,7 @@ public class ExportadorComprobante {
             if (v.descuento > 0) importe(totales, "Descuento", "- " + Datos.soles(v.descuento), false);
             importe(totales, "Op. gravada", Datos.soles(v.subtotal - v.descuento), false);
             importe(totales, "IGV 18%", Datos.soles(v.igv()), false);
-            if (v.redondeo() < 0) importe(totales, "Redondeo", "- " + Datos.soles(-v.redondeo()), false);
+            if (v.redondeo() != 0) importe(totales, "Redondeo", (v.redondeo() < 0 ? "- " : "+ ") + Datos.soles(Math.abs(v.redondeo())), false);
             importe(totales, "TOTAL", Datos.soles(v.total), true);
             bloque(doc, totales);
             espacio(doc, 4);

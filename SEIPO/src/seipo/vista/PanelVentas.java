@@ -36,7 +36,7 @@ public class PanelVentas extends JPanel {
     private final JTable tabla = UI.tabla(modelo);
     private final List<ProductoVenta> items = new ArrayList<>();
     private final List<Integer> cantidades = new ArrayList<>();
-    private final JLabel lblSub = new JLabel(), lblDesc = new JLabel(), lblIgv = new JLabel(), lblRedondeo = new JLabel(), lblTotal = new JLabel();
+    private final JLabel lblSub = new JLabel(), lblDesc = new JLabel(), lblIgv = new JLabel(), lblTotal = new JLabel();
     private final JLabel lblArticulos = UI.ayuda(" ");
     private double descuentoPct = 0;
 
@@ -181,8 +181,8 @@ public class PanelVentas extends JPanel {
         GridBagConstraints g = new GridBagConstraints();
         g.fill = GridBagConstraints.HORIZONTAL;
         g.insets = new Insets(2, 0, 2, 0);
-        String[] conceptos = {"Subtotal", "Descuento", "IGV 18%", "Redondeo"};
-        JLabel[] montos = {lblSub, lblDesc, lblIgv, lblRedondeo};
+        String[] conceptos = {"Subtotal", "Descuento", "IGV 18%"};
+        JLabel[] montos = {lblSub, lblDesc, lblIgv};
         for (int i = 0; i < conceptos.length; i++) {
             g.gridy = i;
             g.gridx = 0; g.weightx = 1;
@@ -684,8 +684,6 @@ public class PanelVentas extends JPanel {
         lblSub.setText(Datos.soles(sub));
         lblDesc.setText((descuentoPct > 0 ? "− " : "") + Datos.soles(desc) + (descuentoPct > 0 ? "  (" + PORCENTAJE.format(descuentoPct) + "%)" : ""));
         lblIgv.setText(Datos.soles(Datos.igvVenta(sub, desc)));
-        double redondeo = Datos.redondeoVenta(sub, desc);
-        lblRedondeo.setText((redondeo < 0 ? "− " : "") + Datos.soles(Math.abs(redondeo)));
         lblTotal.setText(Datos.soles(total));
         int unidades = cantidades.stream().mapToInt(Integer::intValue).sum();
         lblArticulos.setText(items.isEmpty() ? "Sin productos" : items.size() + " producto(s) · " + unidades + " unidad(es)");
@@ -744,7 +742,7 @@ public class PanelVentas extends JPanel {
             Double r = leerMonto(txtRecibido.getText());
             if (r == null) {
                 lblVuelto.setForeground(UI.TEXTO_SECUNDARIO);
-                lblVuelto.setText("Ingrese el monto recibido (sin monedas de 1 ni 5 céntimos)");
+                lblVuelto.setText("Ingrese el monto recibido");
             } else if (r < total) {
                 lblVuelto.setForeground(UI.ACENTO_PULSADO);
                 lblVuelto.setText("Faltan " + Datos.soles(total - r));

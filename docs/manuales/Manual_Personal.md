@@ -98,7 +98,7 @@ La pantalla principal tiene tres partes:
 
 **Resultado esperado:** aparecen las tarjetas **Efectivo inicial**, **Ventas en efectivo**, **Yape o Plin** y **Efectivo en caja**, y la línea "Turno N° … abierto el …". En Ventas, la barra superior se pone verde.
 
-> **Advertencia:** cada usuario puede tener un solo turno abierto. El monto no acepta céntimos sueltos de 1 o 5 (use, por ejemplo, 100 o 85.50).
+> **Advertencia:** cada usuario puede tener un solo turno abierto. El monto acepta céntimos (por ejemplo, 100 o 85.53).
 
 ### 4.2 Registrar una venta
 
@@ -110,9 +110,9 @@ La pantalla principal tiene tres partes:
 4. Para varias unidades escriba, por ejemplo, `3*CODIGO` (agrega 3).
 5. Para corregir el carrito: seleccione la fila y use **+** y **−** (o las teclas `+` y `−`), haga doble clic en **Cant** para escribir la cantidad, o pulse **Quitar ítem** (tecla `Supr`). **Vaciar venta** borra todo el carrito.
 
-[CAPTURA 4.2.1: Ventas — carrito con dos productos y el resumen Subtotal, Descuento, IGV 18%, Redondeo y TOTAL]
+[CAPTURA 4.2.1: Ventas — carrito con dos productos y el resumen Subtotal, Descuento, IGV 18% y TOTAL]
 
-**Resultado esperado:** el panel derecho muestra **Subtotal**, **Descuento**, **IGV 18%**, **Redondeo** y el **TOTAL**, y junto a COBRAR CON se ve cuántos productos y unidades lleva la venta.
+**Resultado esperado:** el panel derecho muestra **Subtotal**, **Descuento**, **IGV 18%** y el **TOTAL**, y junto a COBRAR CON se ve cuántos productos y unidades lleva la venta.
 
 > **Advertencia:** el sistema no deja agregar más unidades de las disponibles. Muestra "Stock insuficiente para … quedan N unidad(es) disponibles." o "… está agotado.". Puede armar la venta sin turno abierto, pero no cobrarla.
 
@@ -151,7 +151,7 @@ La pantalla principal tiene tres partes:
 
 **Resultado esperado:** aparece el comprobante con "Venta N° … registrada" y el vuelto a entregar, y el carrito queda vacío.
 
-> **Advertencia:** el monto recibido no puede tener céntimos sueltos de 1 o 5. El total ya viene redondeado hacia abajo a 10 céntimos.
+> **Advertencia:** el total es exacto y puede tener céntimos sueltos (por ejemplo S/ 14.57). Entregue el vuelto exacto que muestra el sistema.
 
 ### 4.5 Cobrar con Yape o con Plin
 
@@ -253,9 +253,8 @@ La pantalla principal tiene tres partes:
 | Mermas pendientes | Las unidades de una merma pendiente quedan reservadas y no se venden hasta que el administrador decida. |
 | Descuento VIP | Se aplica solo según las compras completadas del cliente: 5 % desde 1 compra, 10 % desde 3 y 15 % desde 5 (es decir, 10 % a partir de la 4.ª compra). Las ventas anuladas no cuentan. |
 | Descuento manual | Con **Descuento (F6)** el personal puede aplicar como máximo 10 %. Un descuento mayor solo lo aplica el administrador. |
-| IGV | El IGV es el 18 % de (subtotal − descuento) y se suma al total. |
-| Redondeo | El total se redondea hacia abajo a 10 céntimos, porque no circulan monedas de 1 ni 5 céntimos. El redondeo favorece al cliente. |
-| Montos en efectivo | Efectivo recibido, inicial y contado: sin céntimos sueltos de 1 o 5. |
+| IGV | La base es (subtotal − descuento). El IGV es el 18 % de la base, con 2 decimales y sin redondeo a 10 céntimos; el total es base más IGV. El sistema no redondea el total porque el negocio debe declarar exactamente el IGV cobrado. |
+| Montos en efectivo | Efectivo recibido, inicial y contado: en soles con céntimos (2 decimales). |
 | Comprobante | Cliente con RUC: factura F001. DNI o sin cliente: boleta B001. Numeración correlativa. |
 | Yape o Plin | El sistema solo registra la forma de pago. El cajero confirma el pago en el celular del negocio antes de registrar la venta. No entra al efectivo de caja. |
 | Anulaciones | Solo el administrador anula ventas, y solo mientras el turno siga abierto. |
@@ -270,7 +269,7 @@ La pantalla principal tiene tres partes:
 | Ya tiene un turno abierto. Ciérrelo antes de abrir otro. | Siga trabajando con el turno abierto, o ciérrelo primero (punto 4.10). |
 | Producto no encontrado. | Revise el código o búsquelo por nombre. Si no existe, avise al administrador. |
 | Stock insuficiente para … quedan N unidad(es) disponibles. | Venda como máximo esa cantidad. |
-| Ingrese un monto inicial válido, sin monedas de 1 ni 5 céntimos (por ejemplo 100 o 85.50). | Corrija el monto. |
+| Ingrese un monto inicial válido (por ejemplo 100 o 85.50). | Corrija el monto. |
 | Describa en la observación qué le ocurrió al producto. | Complete la observación de la merma. |
 | Hay una diferencia de caja: explique el motivo en la observación. | Escriba el motivo del faltante o sobrante y pulse **Aceptar**. |
 | Nombre obligatorio y DNI (8 dígitos) o RUC (11 dígitos). | Corrija los datos del cliente. |
@@ -282,7 +281,7 @@ La pantalla principal tiene tres partes:
 
 **El cliente quiere factura, ¿qué hago?** Elija al cliente con su RUC (o regístrelo con **+ Nuevo cliente**) antes de cobrar. El sistema emitirá la factura F001.
 
-**¿Por qué el total es unos céntimos menor que la suma?** Por el redondeo hacia abajo a 10 céntimos. La rebaja se ve en la línea **Redondeo**.
+**¿Por qué el total tiene céntimos sueltos?** Porque es exactamente la base más el IGV, sin redondeo a 10 céntimos: el negocio debe declarar exactamente el IGV cobrado. Entregue el vuelto exacto.
 
 **Me equivoqué en una venta ya cobrada, ¿puedo anularla?** No con su cuenta. Pida al administrador que la anule mientras su turno siga abierto.
 
@@ -302,7 +301,7 @@ Total: **12 capturas**. Tome cada una con datos de demostración y reemplace el 
 | 2.1.1 | Inicio de sesión | Ventana con los campos Usuario y Contraseña y el botón Ingresar | 2.1 Iniciar sesión |
 | 3.1 | Pantalla principal | Menú lateral del personal con OPERACIÓN e INVENTARIO y la sección Ventas abierta | 3. La pantalla principal y el menú |
 | 4.1.1 | Caja, pestaña Mi turno | Formulario "Abrir turno de caja" con el efectivo inicial | 4.1 Abrir el turno de caja |
-| 4.2.1 | Ventas | Carrito con dos productos y el resumen Subtotal, Descuento, IGV 18%, Redondeo y TOTAL | 4.2 Registrar una venta |
+| 4.2.1 | Ventas | Carrito con dos productos y el resumen Subtotal, Descuento, IGV 18% y TOTAL | 4.2 Registrar una venta |
 | 4.3.1 | Ventana "Cliente de la venta" | Lista de clientes con sus compras y nivel VIP | 4.3 Elegir al cliente y aplicar el descuento VIP |
 | 4.4.1 | Ventana "Cobro en efectivo" | Monto recibido y vuelto calculado | 4.4 Cobrar en efectivo y dar el vuelto |
 | 4.5.1 | Confirmación "Cobro con Yape o Plin" | Pregunta si el cliente ya pagó el total | 4.5 Cobrar con Yape o con Plin |

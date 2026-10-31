@@ -156,7 +156,8 @@ class DialogoComprobante extends JDialog {
         if (v.descuento > 0) importe(sb, "Descuento", "− " + Datos.soles(v.descuento));
         importe(sb, "Op. gravada", Datos.soles(v.subtotal - v.descuento));
         importe(sb, "IGV 18%", Datos.soles(v.igv()));
-        if (v.redondeo() < 0) importe(sb, "Redondeo", "− " + Datos.soles(-v.redondeo()));
+        // Solo las ventas anteriores al cambio del IGV tienen redondeo; en las actuales es 0 y no se muestra
+        if (v.redondeo() != 0) importe(sb, "Redondeo", (v.redondeo() < 0 ? "− " : "+ ") + Datos.soles(Math.abs(v.redondeo())));
         sb.append("<tr><td><font size='4'><b>TOTAL</b></font></td><td align='right'><font size='4'><b>")
                 .append(Datos.soles(v.total)).append("</b></font></td></tr></table>");
         sb.append("<p><font color='").append(tenue).append("'>").append(ControladorComprobantes.enLetras(v.total)).append("</font></p>");

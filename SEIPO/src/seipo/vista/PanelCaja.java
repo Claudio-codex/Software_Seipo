@@ -227,7 +227,7 @@ public class PanelCaja extends JPanel {
     private void abrirTurno() {
         Double monto = leerMonto(txtMontoInicial.getText());
         if (monto == null) {
-            JOptionPane.showMessageDialog(this, "Ingrese un monto inicial válido, sin monedas de 1 ni 5 céntimos (por ejemplo 100 o 85.50).");
+            JOptionPane.showMessageDialog(this, "Ingrese un monto inicial válido (por ejemplo 100 o 85.50).");
             return;
         }
         try {
@@ -256,7 +256,7 @@ public class PanelCaja extends JPanel {
             Double c = leerMonto(txtContado.getText());
             if (c == null) {
                 lblDif.setForeground(UI.TEXTO_SECUNDARIO);
-                lblDif.setText("Ingrese el efectivo contado (sin monedas de 1 ni 5 céntimos)");
+                lblDif.setText("Ingrese el efectivo contado");
                 return;
             }
             double dif = c - esperado;
@@ -284,7 +284,7 @@ public class PanelCaja extends JPanel {
                     JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE) != JOptionPane.OK_OPTION) return;
             Double contado = leerMonto(txtContado.getText());
             if (contado == null) {
-                JOptionPane.showMessageDialog(this, "Ingrese el efectivo contado, sin monedas de 1 ni 5 céntimos (por ejemplo 245.30).");
+                JOptionPane.showMessageDialog(this, "Ingrese el efectivo contado (por ejemplo 245.37).");
                 continue;
             }
             String obs = txtObs.getText().trim();
@@ -324,11 +324,11 @@ public class PanelCaja extends JPanel {
         d.setVisible(true);
     }
 
-    /** Lee un monto en efectivo; null si no es válido o usa monedas de 1 o 5 céntimos. */
+    /** Lee un monto en efectivo en céntimos; null si no es un número válido o es negativo. */
     static Double leerMonto(String texto) {
         try {
             double v = Double.parseDouble(texto.trim().replace(',', '.'));
-            return v >= 0 && Datos.esMontoEnMonedas(v) ? Datos.redondear(v) : null;
+            return v >= 0 ? Datos.redondear(v) : null;
         } catch (NumberFormatException e) {
             return null;
         }

@@ -217,10 +217,10 @@ public abstract class PruebaBase {
                 Collections.singletonList(cantidad), descuentoPct, forma, clienteId, recibido);
     }
 
-    /** Total esperado según el documento: (subtotal - descuento) + IGV 18 % en céntimos, redondeado hacia abajo a 10 céntimos. */
+    /** Total esperado según el documento: (subtotal - descuento) + IGV 18 % con 2 decimales, sin redondeo a 10 céntimos. */
     static BigDecimal totalEsperado(BigDecimal subtotal, BigDecimal descuento) {
         BigDecimal base = subtotal.subtract(descuento);
         BigDecimal igv = base.multiply(new BigDecimal("0.18")).setScale(2, RoundingMode.HALF_UP);
-        return base.add(igv).setScale(1, RoundingMode.DOWN).setScale(2, RoundingMode.UNNECESSARY);
+        return base.add(igv);
     }
 }

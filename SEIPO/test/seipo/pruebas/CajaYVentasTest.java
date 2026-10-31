@@ -56,11 +56,11 @@ class CajaYVentasTest extends PruebaBase {
     }
 
     @Test
-    @DisplayName("CP-05 Venta en efectivo: total con IGV y redondeo a 10 céntimos, vuelto correcto y stock baja 1")
+    @DisplayName("CP-05 Venta en efectivo: total exacto con IGV (sin redondeo a 10 céntimos), vuelto correcto y stock baja 1")
     void cp05_ventaEnEfectivo() throws SQLException {
         iniciarSesion("Personal1", "890");
         caja.abrirTurno(100.00);
-        // Precio elegido para que el redondeo actúe: 12.35 + IGV 2.22 = 14.57 -> 14.50
+        // Precio con céntimos sueltos: 12.35 + IGV 2.22 (2.223) = 14.57, sin redondeo a 10 céntimos
         int producto = crearProducto("CP05", "12.35", 2, null);
         recibirLote(producto, "CP05-L1", LocalDate.now().plusMonths(6), 10);
 
@@ -69,11 +69,11 @@ class CajaYVentasTest extends PruebaBase {
 
         BigDecimal total = totalEsperado(new BigDecimal("12.35"), BigDecimal.ZERO);
         assertAll(
-                () -> assertEquals(new BigDecimal("14.50"), total, "cálculo de referencia del documento"),
+                () -> assertEquals(new BigDecimal("14.57"), total, "cálculo de referencia del documento"),
                 () -> assertEquals(total.doubleValue(), v.total, 0.001, "total cobrado"),
                 () -> assertEquals(2.22, v.igv(), 0.001, "IGV 18 %"),
-                () -> assertEquals(-0.07, v.redondeo(), 0.001, "redondeo hacia abajo a 10 céntimos"),
-                () -> assertEquals(20.00 - total.doubleValue(), v.vuelto(), 0.001, "vuelto = pagado - total"),
+                () -> assertEquals(0, v.redondeo(), 0.001, "sin redondeo a 10 céntimos"),
+                () -> assertEquals(5.43, v.vuelto(), 0.001, "vuelto = 20.00 - 14.57"),
                 () -> assertEquals(9, stockProducto(producto), "el stock baja 1"),
                 () -> assertEquals(9, cantidadLote("CP05-L1"), "el lote baja 1"));
     }

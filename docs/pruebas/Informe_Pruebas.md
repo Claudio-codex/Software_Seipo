@@ -1,19 +1,19 @@
 # Informe de pruebas de caja negra — SEIPO
 
-**Curso:** Procesos de Software · **Sistema:** SEIPO, sistema de venta e inventario · **Fecha de ejecución:** 19/10/2026 (corridas 1 a 5) y 29/10/2026 (corridas 6 a 8)
+**Curso:** Procesos de Software · **Sistema:** SEIPO, sistema de venta e inventario · **Fecha de ejecución:** 19/10/2026 (corridas 1 a 5), 29/10/2026 (corridas 6 a 8) y 30/10/2026 (corrida 9)
 
-**Resultado final (corrida 8): 15 de 15 casos aprobados (100 %).** Evidencias en [`evidencias/`](evidencias/) · Defectos en [`Defectos.md`](Defectos.md) · Tabla para Excel en [`Casos_de_Prueba.csv`](Casos_de_Prueba.csv) · Diapositivas en [`Resumen_para_PPT.md`](Resumen_para_PPT.md)
+**Resultado final (corrida 9): 15 de 15 casos aprobados (100 %).** Evidencias en [`evidencias/`](evidencias/) · Defectos en [`Defectos.md`](Defectos.md) · Tabla para Excel en [`Casos_de_Prueba.csv`](Casos_de_Prueba.csv) · Diapositivas en [`Resumen_para_PPT.md`](Resumen_para_PPT.md)
 
 ## 1. Objetivo y alcance
 
-Verificar con pruebas automatizadas que SEIPO cumple las reglas de negocio de `Documentacion_Proyecto_Seipo_2.docx` en sus procesos principales: acceso y roles, turno de caja, venta con IGV y redondeo, descuento VIP, FEFO, forma de pago, comprobantes, anulación, mermas, compras, cierre de caja y reportes. Se ejecutaron 15 casos sobre la lógica de negocio (controladores) y la base de datos. La interfaz gráfica solo se usó para comprobar qué módulos ve cada rol.
+Verificar con pruebas automatizadas que SEIPO cumple las reglas de negocio de `Documentacion_Proyecto_Seipo_2.docx` en sus procesos principales: acceso y roles, turno de caja, venta con IGV, descuento VIP, FEFO, forma de pago, comprobantes, anulación, mermas, compras, cierre de caja y reportes. Se ejecutaron 15 casos sobre la lógica de negocio (controladores) y la base de datos. La interfaz gráfica solo se usó para comprobar qué módulos ve cada rol.
 
 ## 2. Estrategia de pruebas
 
-- **Tipo de prueba:** caja negra. Cada resultado esperado se fijó con la regla de negocio del documento, no con lo que hace el código. Si el código y el documento no coinciden, la diferencia se reporta como defecto. El código de producción solo se modificó para corregir DEF-01 (después de la corrida 1) y las observaciones OBS-02 a OBS-05 (antes de la corrida 4). Antes de la corrida 5 se quitó la pasarela de pago simulada por decisión del equipo (CAM-01), y CP-02, CP-09 y CP-11 se ajustaron a ese cambio. Antes de la corrida 6 se cifraron las contraseñas (OBS-06); ningún caso cambió.
+- **Tipo de prueba:** caja negra. Cada resultado esperado se fijó con la regla de negocio del documento, no con lo que hace el código. Si el código y el documento no coinciden, la diferencia se reporta como defecto. El código de producción solo se modificó para corregir DEF-01 (después de la corrida 1) y las observaciones OBS-02 a OBS-05 (antes de la corrida 4). Antes de la corrida 5 se quitó la pasarela de pago simulada por decisión del equipo (CAM-01), y CP-02, CP-09 y CP-11 se ajustaron a ese cambio. Antes de la corrida 6 se cifraron las contraseñas (OBS-06); ningún caso cambió. Antes de la corrida 9 se quitó el redondeo del total a 10 céntimos, a pedido del docente: el IGV es el 18 % de la base con 2 decimales y el total es base más IGV, para que el negocio declare exactamente el IGV cobrado. CP-05 se ajustó al nuevo resultado.
 - **Técnicas:**
   - **Partición en clases de equivalencia (válidas e inválidas).** Credenciales correctas, clave errada y usuario inexistente; venta con y sin turno; forma de pago admitida y no admitida; cliente con RUC, con DNI y sin documento; merma aprobada y rechazada; administrador y personal.
-  - **Valores límite.** Stock exacto y stock + 1 (CP-08); umbral de compras del descuento VIP y una compra por debajo (CP-06); efectivo contado por debajo y por encima del esperado (CP-14); producto en el mínimo de stock (CP-13); clave con un espacio de más (CP-01); precio elegido para que actúe el redondeo a 10 céntimos (CP-05).
+  - **Valores límite.** Stock exacto y stock + 1 (CP-08); umbral de compras del descuento VIP y una compra por debajo (CP-06); efectivo contado por debajo y por encima del esperado (CP-14); producto en el mínimo de stock (CP-13); clave con un espacio de más (CP-01); precio con céntimos sueltos para comprobar que el total no se redondea a 10 céntimos (CP-05).
 - **Independencia y repetibilidad:**
   - Antes de la primera prueba, la base `seipo_test` se crea desde `SEIPO/bd/seipo_db.sql`, y después de cada prueba se vuelve a cargar. Así todas empiezan con los mismos datos y la base queda como estaba.
   - Cada prueba crea sus propios productos (códigos `CP01`…`CP15`), lotes, clientes y turnos.
@@ -29,7 +29,7 @@ Verificar con pruebas automatizadas que SEIPO cumple las reglas de negocio de `D
 | Usuarios de demostración | `admin` / `123` (administrador) y `Personal1` / `890` (personal de tienda) |
 | Cómo ejecutar | IntelliJ: configuración **Pruebas SEIPO** → ▶. Consola: `pruebas.bat` en la raíz del repositorio. Duración: unos 15 segundos |
 
-## 4. Casos de prueba (resultado final, corrida 8)
+## 4. Casos de prueba (resultado final, corrida 9)
 
 | ID | Proceso / requisito | Entrada | Resultado esperado | Resultado obtenido | Estado | Corregido en |
 |---|---|---|---|---|---|---|
@@ -37,7 +37,7 @@ Verificar con pruebas automatizadas que SEIPO cumple las reglas de negocio de `D
 | CP-02 | Restricción por rol | Sesión de `Personal1` y de `admin`: módulos del menú; `Personal1` intenta crear una cuenta en Usuarios | El personal no accede a Reportes, Negocio ni Usuarios; el administrador accede a todos | Menú del personal: 7 módulos, sin Reportes, Negocio ni Usuarios. Menú del administrador: los 10. El personal recibe "Solo un administrador puede crear cuentas de usuario." y no se crea la cuenta | Pasó | Corrida 2 (DEF-01) |
 | CP-03 | Apertura de turno (proceso 01) | Abrir turno con S/ 100.00; abrir un segundo turno sin cerrar el primero | El primero queda abierto; el segundo se rechaza | Turno ABIERTO con S/ 100.00; el segundo se rechazó y quedó un solo turno abierto | Pasó | — |
 | CP-04 | Venta sin turno | Cobrar 1 unidad sin turno abierto | La venta se bloquea, no se registra nada y no baja el stock | Rechazada con "No tiene un turno de caja abierto". Sin cambios en ventas, detalle, lotes, comprobantes, movimientos ni stock | Pasó | — |
-| CP-05 | Venta en efectivo (proceso 08) | 1 unidad a S/ 12.35, paga S/ 20.00 | Total = (12.35 + IGV 18 %) redondeado hacia abajo a 10 céntimos = S/ 14.50; vuelto S/ 5.50; stock − 1 | Total S/ 14.50 (IGV S/ 2.22, redondeo −S/ 0.07), vuelto S/ 5.50, stock de 10 a 9 | Pasó | — |
+| CP-05 | Venta en efectivo (proceso 08) | 1 unidad a S/ 12.35, paga S/ 20.00 | Total = 12.35 + IGV 18 % (2.22) = S/ 14.57, sin redondeo a 10 céntimos; vuelto S/ 5.43; stock − 1 | Total S/ 14.57 (IGV S/ 2.22, redondeo S/ 0.00), vuelto S/ 5.43, stock de 10 a 9 | Pasó | Corrida 9 (IGV sin redondeo) |
 | CP-06 | Descuento VIP | Cliente que hace su 4.ª compra (3 previas) y cliente que hace su 3.ª (2 previas), producto de S/ 100.00 | Criterio aclarado: 10 % después de 3 compras. 4.ª compra 10 % (S/ 10.00); 3.ª compra 5 % (S/ 5.00) | 4.ª compra: 10 % (S/ 10.00); 3.ª compra: 5 % (S/ 5.00) | Pasó | Corrida 3 (OBS-01, aclaración del requerimiento) |
 | CP-07 | FEFO (proceso 03) | Lote que vence en 120 días (10 u.) y lote que vence en 20 días (10 u.); vender 3 | Se descuenta del lote que vence primero; el otro queda intacto | Lote de 20 días: 10 → 7; lote de 120 días: 10 (intacto). Un solo lote usado; stock = suma de lotes (17) | Pasó | — |
 | CP-08 | Stock insuficiente (valor límite) | Stock 4 (2 lotes de 2): pedir 5 y luego 4 | Con 5 se rechaza sin registros parciales (rollback); con 4 procede | 5: rechazada, sin ningún registro. 4: registrada, stock 0 y ambos lotes en 0 | Pasó | — |
@@ -65,9 +65,10 @@ Verificar con pruebas automatizadas que SEIPO cumple las reglas de negocio de `D
 | 5 | 19/10/2026 23:55 | 15/15 | 100 % | — | Regresión tras quitar la pasarela de pago simulada (CAM-01): Yape o Plin solo se registra como forma de pago. CP-02 (la sección Pagos pasó a llamarse Negocio), CP-09 y CP-11 se ajustaron al cambio | [`Resultados_Corrida_5.txt`](evidencias/Resultados_Corrida_5.txt) |
 | 6 | 29/10/2026 23:07 | 14/15 | 93,3 % | CP-15 (entorno) | Regresión tras cifrar las contraseñas (OBS-06). Las verificaciones de los 15 casos pasaron, pero JUnit marcó CP-15 como fallido al no poder borrar su carpeta temporal: otro proceso de Windows tenía abierto `mermas.pdf`. El sistema cierra el archivo; es un fallo del entorno y se repitió la corrida | [`Resultados_Corrida_6.txt`](evidencias/Resultados_Corrida_6.txt) |
 | 7 | 29/10/2026 23:08 | 15/15 | 100 % | — | Repetición de la corrida 6 sin cambios en el código ni en las pruebas | [`Resultados_Corrida_7.txt`](evidencias/Resultados_Corrida_7.txt) |
-| 8 | 29/10/2026 23:40 | **15/15** | **100 %** | — | Corrida 8: regresión tras el cambio visual (tema claro con acento naranja, menú con iconos, tarjetas e insignias de estado). Solo cambió la capa de vista; ningún caso cambió | [`Resultados_Corrida_8.txt`](evidencias/Resultados_Corrida_8.txt) |
+| 8 | 29/10/2026 23:40 | 15/15 | 100 % | — | Corrida 8: regresión tras el cambio visual (tema claro con acento naranja, menú con iconos, tarjetas e insignias de estado). Solo cambió la capa de vista; ningún caso cambió | [`Resultados_Corrida_8.txt`](evidencias/Resultados_Corrida_8.txt) |
+| 9 | 30/10/2026 19:39 | **15/15** | **100 %** | — | Corrida 9: regresión tras quitar el redondeo del IGV. El total es base más IGV con 2 decimales, sin redondeo a 10 céntimos; el efectivo acepta céntimos y el vuelto es exacto. CP-05 se ajustó al nuevo resultado (total S/ 14.57, vuelto S/ 5.43); CP-09, CP-10, CP-11 y CP-14 siguen pasando con totales exactos | [`Resultados_Corrida_9.txt`](evidencias/Resultados_Corrida_9.txt) |
 
-Cada corrida duró unos 15 segundos (14,9 s, 14,5 s, 14,5 s, 15,3 s, 15 s, 16,1 s, 14,3 s y 16,1 s), incluida la recarga de `seipo_test` antes de la primera prueba y después de cada una.
+Cada corrida duró unos 15 segundos (14,9 s, 14,5 s, 14,5 s, 15,3 s, 15 s, 16,1 s, 14,3 s, 16,1 s y 14,9 s), incluida la recarga de `seipo_test` antes de la primera prueba y después de cada una.
 
 ## 7. Defectos y observaciones
 
@@ -114,13 +115,14 @@ OBS-02 a OBS-05 se encontraron al revisar el código para escribir los manuales 
 ## 8. Conclusiones y recomendaciones
 
 **Conclusiones**
-- **Resultado final:** los 15 casos aprueban (100 %). Los procesos centrales funcionan según el documento: venta con IGV y redondeo, FEFO, rollback por stock insuficiente, bloqueo sin turno, comprobantes correlativos, anulación con devolución al mismo lote, mermas con autorización, alertas y órdenes de compra, cuadre de caja y reporte de mermas.
+- **Resultado final:** los 15 casos aprueban (100 %). Los procesos centrales funcionan según el documento: venta con IGV exacto, FEFO, rollback por stock insuficiente, bloqueo sin turno, comprobantes correlativos, anulación con devolución al mismo lote, mermas con autorización, alertas y órdenes de compra, cuadre de caja y reporte de mermas.
 - **Integridad transaccional:** en todos los rechazos probados (sin turno, stock insuficiente, forma de pago no admitida, turno cerrado y tarjeta) no quedaron registros parciales.
 - **Defecto de seguridad:** el control de acceso dependía solo de la interfaz (DEF-01). Se corrigió en el controlador y quedó cubierto por CP-02.
 - **Requerimiento ambiguo:** las pruebas detectaron uno (OBS-01), que se resolvió aclarando el documento sin cambiar el código.
 - **Hallazgos menores:** la revisión del código para los manuales encontró cuatro observaciones (OBS-02 a OBS-05), que se corrigieron. La corrida 4 confirmó que no rompieron nada (15/15).
 - **Cambio de alcance:** la corrida 5 confirmó que quitar la pasarela simulada (CAM-01) no afectó a los demás procesos (15/15).
 - **Contraseñas:** desde la corrida 6 se guardan cifradas (OBS-06). La corrida 7 confirmó que el acceso y los demás procesos siguen funcionando (15/15).
+- **IGV sin redondeo:** desde la corrida 9 el total es base más IGV con 2 decimales, sin redondeo a 10 céntimos, para que el negocio declare exactamente el IGV cobrado. La corrida 9 confirmó que los 15 casos siguen aprobando (15/15).
 
 **Recomendaciones**
 1. Mantener la validación de rol en cada controlador nuevo que gestione información administrativa.

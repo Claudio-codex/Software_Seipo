@@ -34,7 +34,7 @@ Detalle completo en [`Informe_Pruebas.md`](Informe_Pruebas.md) y [`Defectos.md`]
 ## Diapositiva 4 — Casos de prueba (1/2)
 - **CP-01 Acceso** y **CP-02 Roles:** credenciales y menú por rol; el personal ya no crea cuentas → Pasó
 - **CP-03 Apertura de turno** y **CP-04 Venta sin turno** (bloqueada, sin registros) → Pasó
-- **CP-05 Venta en efectivo:** S/ 12.35 + IGV = S/ 14.50 con redondeo, vuelto S/ 5.50 → Pasó
+- **CP-05 Venta en efectivo:** S/ 12.35 + IGV S/ 2.22 = S/ 14.57 exacto, vuelto S/ 5.43 → Pasó
 - **CP-06 Descuento VIP:** 5 % en la 3.ª compra y 10 % desde la 4.ª (criterio aclarado) → Pasó
 - **CP-07 FEFO** (sale el lote que vence primero) y **CP-08 Stock límite** (5 rechazado, 4 aceptado) → Pasó
 
@@ -57,8 +57,9 @@ Detalle completo en [`Informe_Pruebas.md`](Informe_Pruebas.md) y [`Defectos.md`]
 - **Corrida 5:** 15/15 (100 %); regresión tras quitar la pasarela de pago simulada (CAM-01)
 - **Corrida 6:** 14/15; contraseñas cifradas (OBS-06). CP-15 falló por el entorno: otro proceso de Windows tenía abierto el PDF temporal
 - **Corrida 7:** 15/15 (100 %); repetición de la corrida 6 sin cambios
-- **Corrida 8:** **15/15 (100 %)**; regresión tras el cambio visual (tema claro)
-- Cada corrida dura unos 15 s; las ocho salidas están en `docs/pruebas/evidencias/`
+- **Corrida 8:** 15/15 (100 %); regresión tras el cambio visual (tema claro)
+- **Corrida 9:** **15/15 (100 %)**; regresión tras quitar el redondeo del IGV (total = base + IGV, con 2 decimales)
+- Cada corrida dura unos 15 s; las nueve salidas están en `docs/pruebas/evidencias/`
 
 ---
 

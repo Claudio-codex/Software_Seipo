@@ -1,5 +1,7 @@
 package seipo.modelo;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.format.DateTimeFormatter;
 import java.time.format.ResolverStyle;
 
@@ -53,27 +55,29 @@ public class Datos {
         return Math.round(v * 100) / 100.0;
     }
 
-    /** IGV de una venta: 18 % de (subtotal - descuento), en céntimos. */
-    public static double igvVenta(double subtotal, double descuento) {
-        return redondear((subtotal - descuento) * IGV);
+    /** Valor de venta (base gravada): subtotal - descuento, en céntimos. */
+    private static BigDecimal base(double subtotal, double descuento) {
+        return BigDecimal.valueOf(subtotal).subtract(BigDecimal.valueOf(descuento)).setScale(2, RoundingMode.HALF_UP);
+    }
+
+    private static BigDecimal igv(BigDecimal base) {
+        return base.multiply(BigDecimal.valueOf(IGV)).setScale(2, RoundingMode.HALF_UP);
     }
 
     /**
-     * Total a cobrar: (subtotal - descuento) más IGV, redondeado hacia abajo a 10 céntimos, porque no circulan
-     * monedas de 1 ni de 5 céntimos (el redondeo favorece al cliente). PanelVentas y ControladorVentas lo usan.
+     * IGV de una venta: 18 % de la base total (subtotal - descuento), una sola vez y no línea por línea, con 2
+     * decimales redondeados mitad hacia arriba. Se calcula con BigDecimal para que 0.495 dé 0.50 y no 0.49.
+     */
+    public static double igvVenta(double subtotal, double descuento) {
+        return igv(base(subtotal, descuento)).doubleValue();
+    }
+
+    /**
+     * Total a cobrar: base más IGV, con 2 decimales. No se redondea a 10 céntimos porque el negocio debe declarar
+     * exactamente el IGV cobrado. PanelVentas y ControladorVentas lo usan.
      */
     public static double totalVenta(double subtotal, double descuento) {
-        double exacto = redondear(subtotal - descuento + igvVenta(subtotal, descuento));
-        return Math.floor(exacto * 10 + 1e-6) / 10;
-    }
-
-    /** Lo que se rebajó al redondear el total: 0 o un monto negativo de hasta 9 céntimos. */
-    public static double redondeoVenta(double subtotal, double descuento) {
-        return redondear(totalVenta(subtotal, descuento) - (subtotal - descuento) - igvVenta(subtotal, descuento));
-    }
-
-    /** Indica si un monto en efectivo se puede pagar con monedas de 10 céntimos en adelante. */
-    public static boolean esMontoEnMonedas(double v) {
-        return Math.abs(v * 10 - Math.round(v * 10)) < 1e-6;
+        BigDecimal base = base(subtotal, descuento);
+        return base.add(igv(base)).doubleValue();
     }
 }
