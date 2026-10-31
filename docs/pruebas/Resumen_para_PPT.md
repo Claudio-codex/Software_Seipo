@@ -6,10 +6,10 @@ Detalle completo en [`Informe_Pruebas.md`](Informe_Pruebas.md) y [`Defectos.md`]
 
 ## Diapositiva 1 — Objetivo
 - Verificar que SEIPO cumple las reglas de negocio de su documentación
-- 23 casos de prueba automatizados con JUnit 5
+- 24 casos de prueba automatizados con JUnit 5
 - Cubren acceso, caja, ventas, FEFO, forma de pago, comprobantes, mermas, compras y reportes
 - Esperado = lo que dice el documento; si el código difiere, es un defecto
-- Resultado final: 23 de 23 casos aprobados (100 %)
+- Resultado final: 24 de 24 casos aprobados (100 %)
 
 ---
 
@@ -64,6 +64,7 @@ Detalle completo en [`Informe_Pruebas.md`](Informe_Pruebas.md) y [`Defectos.md`]
 - **CP-22:** productos sin vencimiento → sus lotes salen por orden de ingreso → Pasó
 - **CP-23:** venta con 4 lotes → los recorre en orden y registra cada lote en venta_lotes y movimientos → Pasó
 - El código ya cumplía estas reglas: las pruebas lo dejan demostrado (CP-07 ya probaba el vencimiento más próximo)
+- **CP-24:** una recepción con un lote vencido se rechaza en el controlador, sin registros; el que vence hoy se recibe → Pasó (OBS-07)
 
 ---
 
@@ -79,8 +80,10 @@ Detalle completo en [`Informe_Pruebas.md`](Informe_Pruebas.md) y [`Defectos.md`]
 - **Corrida 9:** 15/15 (100 %); regresión tras quitar el redondeo del IGV (total = base + IGV, con 2 decimales)
 - **Corrida 10:** 19/19 (100 %); el personal anula ventas de su turno con registro del motivo (CAM-02), con CP-16 a CP-19
 - **Corrida 11:** 19/19 (100 %); regresión tras corregir el texto de Caja (solo cambió un texto de la vista)
-- **Corrida 12:** **23/23 (100 %)**; se agregan CP-20 a CP-23 sobre el orden de salida de los lotes (sin cambios en el código)
-- Cada corrida dura unos 15 s; las doce salidas están en `docs/pruebas/evidencias/`
+- **Corrida 12:** 23/23 (100 %); se agregan CP-20 a CP-23 sobre el orden de salida de los lotes (sin cambios en el código)
+- **Corridas 13 a 15:** 23/24; el controlador rechaza lotes vencidos (OBS-07, CP-24 pasa), pero CP-15 no pudo borrar su PDF temporal
+- **Corrida 16:** **24/24 (100 %)**; la causa era la propia prueba, que mapeaba el PDF en memoria al leerlo (OBS-08, corregido)
+- Cada corrida dura unos 15 s; las dieciséis salidas están en `docs/pruebas/evidencias/`
 
 ---
 
@@ -100,6 +103,8 @@ Detalle completo en [`Informe_Pruebas.md`](Informe_Pruebas.md) y [`Defectos.md`]
 - **OBS-04 y OBS-05 (bajas):** pausa al final de respaldo.bat y textos de ayuda y de registro corregidos
 - Todas corregidas y verificadas; la corrida 4 sigue en 15/15
 - **OBS-06 (media):** las contraseñas estaban en texto plano; ahora se guardan cifradas con PBKDF2 y sal (corridas 6 y 7)
+- **OBS-07 (baja):** la recepción de lotes vencidos solo se impedía en la pantalla; ahora también en el controlador (CP-24)
+- **OBS-08 (baja):** CP-15 fallaba a veces al borrar su PDF; era la propia prueba (lectura con mapeo en memoria), no otro proceso
 
 ---
 
@@ -123,7 +128,7 @@ Detalle completo en [`Informe_Pruebas.md`](Informe_Pruebas.md) y [`Defectos.md`]
 ---
 
 ## Diapositiva 13 — Conclusiones
-- Los procesos centrales cumplen el documento: 15/15 casos aprobados en las corridas 3, 4, 5, 7, 8 y 9, y 19/19 en las corridas 10 y 11, y 23/23 en la corrida 12
+- Los procesos centrales cumplen el documento: 15/15 casos aprobados en las corridas 3, 4, 5, 7, 8 y 9, y 19/19 en las corridas 10 y 11, y 23/23 en la corrida 12, y 24/24 en la corrida 16
 - Todas las operaciones rechazadas se revierten sin dejar registros parciales
 - Las pruebas encontraron un defecto de seguridad real, que ya está corregido
 - También aclararon un requerimiento ambiguo y, con los manuales, cuatro observaciones menores

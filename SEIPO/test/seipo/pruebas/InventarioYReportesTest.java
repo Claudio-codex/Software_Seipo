@@ -195,7 +195,10 @@ class InventarioYReportesTest extends PruebaBase {
     }
 
     private static String textoPdf(File pdf) throws Exception {
-        PdfReader reader = new PdfReader(pdf.getAbsolutePath());
+        // Desde los bytes y no desde la ruta: con la ruta, OpenPDF mapea el archivo en memoria y en Windows no se puede
+        // borrar hasta que el recolector libere el mapeo, aunque se cierre el lector. Por eso JUnit a veces no podía borrar
+        // la carpeta temporal de CP-15 (corridas 6, 13, 14 y 15)
+        PdfReader reader = new PdfReader(java.nio.file.Files.readAllBytes(pdf.toPath()));
         try {
             PdfTextExtractor extractor = new PdfTextExtractor(reader);
             StringBuilder sb = new StringBuilder();

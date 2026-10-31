@@ -1,0 +1,87 @@
+Resultado de la ejecución de las pruebas automatizadas de SEIPO - Corrida 13 (ControladorInventario.registrarRecepcion rechaza lotes ya vencidos; se agrega CP-24. CP-15 pasó sus verificaciones, pero JUnit no pudo borrar su carpeta temporal porque otro proceso de Windows tenía abierto mermas.pdf: fallo del entorno)
+Comando: pruebas.bat (JUnit 5.12.2, Console Launcher)
+Base de datos: seipo_test (MariaDB 12.3.3), recargada desde SEIPO/bd/seipo_db.sql antes de la primera prueba y después de cada una
+Inicio: 2026-10-30 21:13:44   Fin: 2026-10-30 21:14:12   Código de salida: 1
+Java: java version "25.0.3" 2026-04-21 LTS
+
+Compilando...
+Ejecutando las pruebas contra seipo_test...
+╷
+├─ JUnit Platform Suite ✔
+├─ JUnit Jupiter ✔
+│  ├─ CajaYVentasTest ✔
+│  │  ├─ CP-04 Venta sin turno: se bloquea, no se registra nada y no se descuenta stock ✔
+│  │  ├─ CP-08 Stock insuficiente: con stock + 1 se rechaza sin registros parciales; con ... ✔
+│  │  ├─ CP-06 Descuento VIP: valor límite del umbral de 10 % (después de 3 compras, a pa... ✔
+│  │  ├─ CP-03 Apertura de turno: se abre con S/ 100.00 y se rechaza un segundo turno sin... ✔
+│  │  ├─ CP-05 Venta en efectivo: total exacto con IGV (sin redondeo a 10 céntimos), vuel... ✔
+│  │  ├─ CP-07 FEFO: la venta descuenta del lote que vence primero y el otro queda intact... ✔
+│  │  └─ CP-14 Cierre de turno: faltante y sobrante por la diferencia exacta; el turno ce... ✔
+│  ├─ AnulacionesTest ✔
+│  │  ├─ CP-16 Anulación por el personal: anula una venta propia de su turno abierto con ... ✔
+│  │  ├─ CP-19 Anulación por el administrador: anula una venta de un turno abierto de otr... ✔
+│  │  ├─ CP-18 Motivo obligatorio: sin motivo, con un motivo fuera de la lista o con "Otr... ✔
+│  │  └─ CP-17 Anulación no permitida: el personal no anula ventas de otro usuario ni de ... ✔
+│  ├─ PagosYComprobantesTest ✔
+│  │  ├─ CP-10 Comprobante: RUC emite factura F001, DNI y consumidor final emiten boleta ... ✔
+│  │  ├─ CP-09 Forma de pago: la tarjeta (retirada) y otras formas se rechazan; Yape o Pl... ✔
+│  │  └─ CP-11 Anulación: el stock vuelve a los mismos lotes, la venta queda anulada y sa... ✔
+│  ├─ AccesoYRolesTest ✔
+│  │  ├─ CP-02 Restricción por rol: el personal no accede a Reportes, Negocio ni Usuarios... ✔
+│  │  └─ CP-01 Acceso al sistema: credencial válida entra como administrador; clave errad... ✔
+│  ├─ FefoTest ✔
+│  │  ├─ CP-23 Venta que consume varios lotes: los recorre por vencimiento y registra de ... ✔
+│  │  ├─ CP-22 Productos sin vencimiento: sus lotes salen por orden de ingreso ✔
+│  │  ├─ CP-21 Lotes vencidos: no se venden; el que vence hoy sí (valor límite) y la vent... ✔
+│  │  ├─ CP-20 FEFO con el mismo vencimiento: sale primero el lote que entró antes, aunqu... ✔
+│  │  └─ CP-24 Recepción de un lote vencido: el controlador la rechaza con mensaje claro ... ✔
+│  └─ InventarioYReportesTest ✔
+│     ├─ CP-12 Mermas: nace Pendiente sin descontar stock; al aprobar descuenta y registr... ✔
+│     ├─ CP-13 Alertas y orden de compra: el producto bajo el mínimo aparece en alertas; ... ✔
+│     └─ CP-15 Reporte de mermas: se generan PDF y Excel no vacíos y sus totales coincide... ✘ Failed to close extension context
+└─ JUnit Vintage ✔
+
+Failures (1):
+  JUnit Jupiter:InventarioYReportesTest:CP-15 Reporte de mermas: se generan PDF y Excel no vacíos y sus totales coinciden con la base de datos
+    MethodSource [className = 'seipo.pruebas.InventarioYReportesTest', methodName = 'cp15_reporteDeMermas', methodParameterTypes = 'java.nio.file.Path']
+    => org.junit.platform.commons.JUnitException: Failed to close extension context
+       java.base/java.util.ArrayList.forEach(ArrayList.java:1604)
+       java.base/java.util.ArrayList.forEach(ArrayList.java:1604)
+     Caused by: java.io.IOException: Failed to delete temp directory C:\Users\claud\AppData\Local\Temp\junit-9051314763788096495. The following paths could not be deleted (see suppressed exceptions for details): <root>, mermas.pdf
+       java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.accept(ForEachOps.java:186)
+       java.base/java.util.ArrayList.forEach(ArrayList.java:1604)
+       java.base/java.util.stream.SortedOps$RefSortingSink.end(SortedOps.java:395)
+       java.base/java.util.stream.Sink$ChainedReference.end(Sink.java:261)
+       java.base/java.util.stream.Sink$ChainedReference.end(Sink.java:261)
+       [...]
+       Suppressed: java.nio.file.DirectoryNotEmptyException: C:\Users\claud\AppData\Local\Temp\junit-9051314763788096495
+         java.base/sun.nio.fs.WindowsFileSystemProvider.implDelete(WindowsFileSystemProvider.java:266)
+         java.base/sun.nio.fs.AbstractFileSystemProvider.delete(AbstractFileSystemProvider.java:105)
+         java.base/java.nio.file.Files.delete(Files.java:1052)
+         java.base/java.nio.file.Files.walkFileTree(Files.java:2560)
+         java.base/java.nio.file.Files.walkFileTree(Files.java:2609)
+         [...]
+       Suppressed: java.nio.file.FileSystemException: C:\Users\claud\AppData\Local\Temp\junit-9051314763788096495\mermas.pdf: El proceso no tiene acceso al archivo porque está siendo utilizado por otro proceso
+         java.base/sun.nio.fs.WindowsException.translateToIOException(WindowsException.java:92)
+         java.base/sun.nio.fs.WindowsException.rethrowAsIOException(WindowsException.java:103)
+         java.base/sun.nio.fs.WindowsException.rethrowAsIOException(WindowsException.java:108)
+         java.base/sun.nio.fs.WindowsFileSystemProvider.implDelete(WindowsFileSystemProvider.java:269)
+         java.base/sun.nio.fs.AbstractFileSystemProvider.delete(AbstractFileSystemProvider.java:105)
+         [...]
+         Suppressed: java.nio.file.FileSystemException: C:\Users\claud\AppData\Local\Temp\junit-9051314763788096495\mermas.pdf: El proceso no tiene acceso al archivo porque está siendo utilizado por otro proceso
+           [...]
+
+Test run finished after 24561 ms
+[         9 containers found      ]
+[         0 containers skipped    ]
+[         9 containers started    ]
+[         0 containers aborted    ]
+[         9 containers successful ]
+[         0 containers failed     ]
+[        24 tests found           ]
+[         0 tests skipped         ]
+[        24 tests started         ]
+[         0 tests aborted         ]
+[        23 tests successful      ]
+[         1 tests failed          ]
+

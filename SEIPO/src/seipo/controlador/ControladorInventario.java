@@ -209,6 +209,13 @@ public class ControladorInventario {
 
     /** Igual que la anterior; si se indica ordenId, en la misma transacción marca esa orden aprobada como RECIBIDA. */
     public void registrarRecepcion(String guia, String proveedor, List<LineaRecepcion> lineas, Integer ordenId) throws SQLException {
+        // Un lote vencido no se recibe; se valida aquí y no solo en la pantalla, antes de grabar nada
+        for (LineaRecepcion l : lineas) {
+            if (l.vencimiento != null && l.vencimiento.isBefore(LocalDate.now())) {
+                throw new SQLException("El lote " + l.numeroLote + " de " + l.producto.nombre + " ya está vencido (venció el "
+                        + l.vencimiento.format(Datos.FECHA_COMPLETA) + "). No se puede recibir.");
+            }
+        }
         String sqlOrden = "UPDATE ordenes_compra SET estado = 'RECIBIDA', recepcion_id = ? WHERE id = ? AND estado = 'APROBADA'";
         String sqlGuia = "SELECT COUNT(*) FROM recepciones WHERE guia_remision = ? AND proveedor = ?";
         String sqlRecepcion = "INSERT INTO recepciones (fecha, guia_remision, proveedor, usuario_id) VALUES (?, ?, ?, ?)";

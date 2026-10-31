@@ -101,7 +101,7 @@ Si el programa no puede conectarse, la ventana de inicio de sesión indica qué 
 * **Método de autenticación no admitido:** en MariaDB para Windows, `root` puede entrar con la autenticación de Windows, que el programa no admite. Usa el usuario `seipo`.
 
 ## Pruebas
-**Qué se probó:** 19 casos de caja negra con JUnit 5 (CP-01 a CP-19) sobre acceso y roles, turno y cierre de caja, ventas con IGV, descuento VIP, FEFO, stock límite, pago digital, comprobantes, anulación (por el administrador y por el personal en su propio turno, con registro del motivo), mermas, compras y el reporte de mermas.
+**Qué se probó:** 24 casos de caja negra con JUnit 5 (CP-01 a CP-24) sobre acceso y roles, turno y cierre de caja, ventas con IGV, descuento VIP, FEFO (orden de salida de los lotes, lotes vencidos y recepción de lotes vencidos), stock límite, pago digital, comprobantes, anulación (por el administrador y por el personal en su propio turno, con registro del motivo), mermas, compras y el reporte de mermas.
 
 **Cómo ejecutarlas**
 * Usan su propia base, **`seipo_test`**: la crean desde `SEIPO/bd/seipo_db.sql` y la vuelven a cargar después de cada prueba. No tocan `seipo_db` ni `config.properties`. Antes de la primera ejecución, dale permisos al usuario `seipo` (como `root`):
@@ -109,13 +109,14 @@ Si el programa no puede conectarse, la ventana de inicio de sesión indica qué 
   GRANT ALL PRIVILEGES ON seipo_test.* TO 'seipo'@'localhost';
   ```
 * **IntelliJ IDEA:** elige la configuración **Pruebas SEIPO** (arriba a la derecha) y pulsa ▶.
-* **Consola:** ejecuta `pruebas.bat` en la raíz del repositorio (unos 15 segundos). Los reportes XML quedan en `out-pruebas\reportes`.
+* **Consola:** ejecuta `pruebas.bat` en la raíz del repositorio (unos 25 segundos). Los reportes XML quedan en `out-pruebas\reportes`.
 * La prueba CP-02 abre la ventana principal sin mostrarla, así que necesita un entorno gráfico. Puede aparecer un instante el aviso de alertas del administrador, que se cierra solo.
 
-**Resultados finales:** **19 de 19 casos aprobados (100 %)** en la corrida 10, que agregó CP-16 a CP-19 (anulación por el personal y registro de anulaciones). Antes, los 15 casos aprobaron en las corridas 3, 4, 5, 7, 8 y 9.
+**Resultados finales:** **24 de 24 casos aprobados (100 %)** en la corrida 16, la última. CP-16 a CP-19 (anulación por el personal y registro de anulaciones) se agregaron en la corrida 10, CP-20 a CP-23 (orden de salida de los lotes) en la 12 y CP-24 (recepción de lotes vencidos, OBS-07) en la 13. Antes, los 15 casos iniciales aprobaron en las corridas 3, 4, 5, 7, 8 y 9.
 * La corrida 1 dio 13/15. Se corrigió el defecto DEF-01: el control de roles existía solo en la interfaz.
 * La corrida 2 dio 14/15. Se aclaró el requerimiento del descuento VIP (OBS-01) y la prueba CP-06 se ajustó a ese criterio.
 * La corrida 4 (15/15) confirmó que las correcciones menores OBS-02 a OBS-05 no rompieron nada: tope de 10 % al descuento manual del personal, diálogos en español, pausa de `respaldo.bat` y textos corregidos.
+* Las corridas 13 a 15 dieron 23/24 porque CP-15 no podía borrar su PDF temporal. La causa era la propia prueba, que leía el PDF mapeado en memoria (OBS-08); se corrigió y la corrida 16 dio 24/24.
 
 Informe completo: [docs/pruebas/Informe_Pruebas.md](docs/pruebas/Informe_Pruebas.md).
 

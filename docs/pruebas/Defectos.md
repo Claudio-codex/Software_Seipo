@@ -1,6 +1,6 @@
 # Defectos y observaciones — Pruebas de SEIPO
 
-Registro de los hallazgos de las pruebas de caja negra (CP-01 a CP-19). Las evidencias de cada corrida están en [`evidencias/`](evidencias/). Volver al [informe de pruebas](Informe_Pruebas.md).
+Registro de los hallazgos de las pruebas de caja negra (CP-01 a CP-24). Las evidencias de cada corrida están en [`evidencias/`](evidencias/). Volver al [informe de pruebas](Informe_Pruebas.md).
 
 | ID | Caso | Severidad | Estado | Corrida en que se detectó | Corrida en que se cerró |
 |---|---|---|---|---|---|
@@ -13,6 +13,8 @@ Registro de los hallazgos de las pruebas de caja negra (CP-01 a CP-19). Las evid
 | CAM-01 | CP-02, CP-09, CP-11 | — (cambio de alcance) | Aplicado y verificado | Decisión del equipo | Corrida 5 |
 | OBS-06 | CP-01 | Media | Corregido y verificado | Recomendación 4 del informe | Corridas 6 y 7 |
 | CAM-02 | CP-11, CP-16 a CP-19 | — (cambio de alcance) | Aplicado y verificado | Observación del docente | Corrida 10 |
+| OBS-07 | CP-24 | Baja | Corregido y verificado | Revisión del código (pruebas FEFO) | Corrida 16 |
+| OBS-08 | CP-15 | Baja | Corregido y verificado (defecto de la prueba) | Corridas 6, 13, 14 y 15 | Corrida 16 |
 
 Las observaciones OBS-02 a OBS-05 no las detectó ninguno de los 15 casos automatizados. Se encontraron al leer el código de las pantallas para escribir los manuales de usuario, después de la corrida 3. Se corrigieron antes de la corrida 4. La corrida 4 confirmó que los 15 casos siguen aprobando (15/15), y cada corrección se verificó aparte como se indica en cada observación.
 
@@ -213,7 +215,7 @@ El descuento VIP automático no cambia: si el cliente elegido tiene un VIP mayor
 
 **Ajuste de las pruebas.** Ninguno: CP-01 ya probaba la clave correcta, la errada, el usuario inexistente y el espacio de más, y sigue pasando sin cambios.
 
-**Verificación:** la aplicación compila; la corrida 6 dio 14/15 por un fallo del entorno en CP-15 (otro proceso de Windows tenía abierto `mermas.pdf` cuando JUnit borraba la carpeta temporal; las verificaciones del caso pasaron) y la corrida 7, sin cambios, dio 15/15. La conversión de bases antiguas, el alta, el restablecimiento y la instalación nueva se verificaron aparte contra `seipo_test` (ver el [informe](Informe_Pruebas.md#verificaciones-adicionales)).
+**Verificación:** la aplicación compila; la corrida 6 dio 14/15 por un fallo del entorno en CP-15 (otro proceso de Windows tenía abierto `mermas.pdf` cuando JUnit borraba la carpeta temporal; las verificaciones del caso pasaron) (la causa real se identificó después: ver OBS-08) y la corrida 7, sin cambios, dio 15/15. La conversión de bases antiguas, el alta, el restablecimiento y la instalación nueva se verificaron aparte contra `seipo_test` (ver el [informe](Informe_Pruebas.md#verificaciones-adicionales)).
 
 ---
 
@@ -239,6 +241,30 @@ El descuento VIP automático no cambia: si el cliente elegido tiene un VIP mayor
 **Ajuste de las pruebas.** CP-11 anula con un motivo de la lista y verifica lo mismo que antes. CP-16 a CP-19 prueban la anulación del personal con su registro, los rechazos (venta ajena y turno cerrado), el motivo obligatorio con el valor límite de 5 caracteres, y la anulación del administrador con su registro.
 
 **Verificación:** la aplicación compila y los 19 casos pasan en la corrida 10. La pantalla de Caja se revisó como personal de tienda contra `seipo_test` (ver el [informe](Informe_Pruebas.md#verificaciones-adicionales)).
+
+---
+
+## OBS-07 — La recepción de lotes vencidos se impedía solo en la pantalla
+
+- **Caso relacionado:** CP-24 (nuevo).
+- **Hallazgo:** al revisar el orden de salida de los lotes se vio que "no se recibe un lote ya vencido" solo lo validaban `PanelRecepcion` y `PanelCompras`. `ControladorInventario.registrarRecepcion` aceptaba el lote si se lo llamaba directamente. El lote no se podía vender (las ventas saltan los vencidos), pero quedaba en el stock.
+
+**Corrección.** `registrarRecepcion` revisa todas las líneas antes de grabar nada y rechaza la guía completa con "El lote … de … ya está vencido (venció el …). No se puede recibir.". Un lote que vence hoy todavía se recibe.
+
+**Verificación:** CP-24 pasa desde la corrida 13 (y en la corrida 16): la guía con un lote vencido no deja recepción, lotes, movimientos ni stock, y la misma guía con un lote que vence hoy se registra.
+
+---
+
+## OBS-08 — Fallo intermitente de CP-15 al borrar su PDF temporal (defecto de la prueba)
+
+- **Caso relacionado:** CP-15.
+- **Síntoma:** en las corridas 6, 13, 14 y 15, CP-15 pasó todas sus verificaciones, pero JUnit no pudo borrar su carpeta temporal: "El proceso no tiene acceso al archivo porque está siendo utilizado por otro proceso" sobre `mermas.pdf`. En la corrida 6 se atribuyó a otro proceso de Windows.
+- **Causa real:** la propia prueba. `new PdfReader(ruta)` de OpenPDF mapea el archivo en memoria, y en Windows un archivo mapeado no se puede borrar hasta que el recolector libera el mapeo, aunque se cierre el lector. Por eso fallaba solo a veces. En la corrida 15, reintentar el borrado durante 10 s no sirvió, lo que descartó un bloqueo breve de otro proceso. Un programa aparte lo confirmó: leído por ruta, el PDF no se puede borrar después de `close()`; leído desde sus bytes, sí.
+- **El sistema no tenía el defecto:** `ExportadorReporte` cierra el archivo al exportar.
+
+**Corrección.** CP-15 lee el PDF con `new PdfReader(Files.readAllBytes(...))`. Las verificaciones del caso no cambiaron.
+
+**Verificación:** la corrida 16 dio 24/24.
 
 ---
 

@@ -4,18 +4,20 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import seipo.controlador.ControladorCaja;
+import seipo.controlador.ControladorInventario;
 import seipo.modelo.Datos;
 
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Orden de salida de los lotes (FEFO, proceso 08). CP-07 ya prueba que sale primero el lote que vence antes; estos
- * casos prueban el desempate por orden de ingreso, los lotes vencidos, los productos sin vencimiento y el registro de
- * una venta que consume varios lotes.
+ * casos prueban el desempate por orden de ingreso, los lotes vencidos, los productos sin vencimiento, el registro de
+ * una venta que consume varios lotes y que no se reciban lotes ya vencidos (CP-24).
  */
 class FefoTest extends PruebaBase {
 
@@ -79,6 +81,40 @@ class FefoTest extends PruebaBase {
                 () -> assertEquals(antes, huellaVentas(), "la venta rechazada no deja registros"),
                 () -> assertTrue(rechazo.getMessage().contains("vencidos"), "mensaje claro: " + rechazo.getMessage()),
                 () -> assertEquals(6, stockProducto(producto), "el stock total sigue incluyendo el vencido (5 + 0 + 1)"));
+    }
+
+    @Test
+    @DisplayName("CP-24 Recepción de un lote vencido: el controlador la rechaza con mensaje claro y sin registros parciales; el que vence hoy se recibe")
+    void cp24_noSeRecibenLotesVencidos() throws SQLException {
+        int producto = crearProducto("CP24", "5.00", 2, null);
+        // Guía con una línea vigente y otra vencida ayer: se rechaza completa
+        List<ControladorInventario.LineaRecepcion> lineas = new ArrayList<>();
+        lineas.add(new ControladorInventario.LineaRecepcion(producto(producto), "CP24-VIGENTE", LocalDate.now().plusDays(60), 6, "A-1"));
+        lineas.add(new ControladorInventario.LineaRecepcion(producto(producto), "CP24-VENCIDO", LocalDate.now().minusDays(1), 4, "A-1"));
+        String antes = huellaRecepciones();
+        SQLException rechazo = assertThrows(SQLException.class,
+                () -> new ControladorInventario().registrarRecepcion("GR-CP24", "Proveedor de prueba", lineas));
+        String despues = huellaRecepciones();
+
+        // Valor límite: un lote que vence hoy todavía se recibe, y la misma guía queda libre
+        List<ControladorInventario.LineaRecepcion> validas = new ArrayList<>();
+        validas.add(new ControladorInventario.LineaRecepcion(producto(producto), "CP24-HOY", LocalDate.now(), 3, "A-1"));
+        new ControladorInventario().registrarRecepcion("GR-CP24", "Proveedor de prueba", validas);
+
+        assertAll(
+                () -> assertTrue(rechazo.getMessage().contains("CP24-VENCIDO") && rechazo.getMessage().contains("ya está vencido"),
+                        "mensaje claro: " + rechazo.getMessage()),
+                () -> assertEquals(antes, despues, "el rechazo no deja recepción, lotes, movimientos ni stock"),
+                () -> assertEquals(0, entero("SELECT COUNT(*) FROM lotes WHERE numero_lote IN ('CP24-VIGENTE', 'CP24-VENCIDO')"),
+                        "tampoco se graba la línea vigente de la guía rechazada"),
+                () -> assertEquals(3, cantidadLote("CP24-HOY"), "el lote que vence hoy se recibe"),
+                () -> assertEquals(3, stockProducto(producto)));
+    }
+
+    /** Filas de las tablas que toca una recepción y el stock total. */
+    private static String huellaRecepciones() throws SQLException {
+        return entero("SELECT COUNT(*) FROM recepciones") + "/" + entero("SELECT COUNT(*) FROM lotes") + "/"
+                + entero("SELECT COUNT(*) FROM movimientos") + "/" + entero("SELECT COALESCE(SUM(stock), 0) FROM productos");
     }
 
     @Test
