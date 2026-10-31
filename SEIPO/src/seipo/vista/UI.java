@@ -178,6 +178,37 @@ public class UI {
         UIManager.put("FileChooser.lookInLabelText", "Buscar en:");
         UIManager.put("FileChooser.fileNameLabelText", "Nombre de archivo:");
         UIManager.put("FileChooser.filesOfTypeLabelText", "Tipo de archivo:");
+        // Títulos de los diálogos estándar y el resto del selector de archivos (Login.main deja Locale.US para los números,
+        // así que Java mostraría estos textos en inglés)
+        UIManager.put("OptionPane.titleText", "Seleccione una opción");
+        UIManager.put("OptionPane.messageDialogTitle", "Mensaje");
+        UIManager.put("OptionPane.inputDialogTitle", "Entrada");
+        String[][] selector = {
+                {"openDialogTitleText", "Abrir"}, {"saveDialogTitleText", "Guardar"},
+                {"directoryOpenButtonText", "Abrir"}, {"updateButtonText", "Actualizar"}, {"helpButtonText", "Ayuda"},
+                {"openButtonToolTipText", "Abrir el archivo seleccionado"}, {"saveButtonToolTipText", "Guardar el archivo seleccionado"},
+                {"cancelButtonToolTipText", "Cerrar sin elegir un archivo"}, {"directoryOpenButtonToolTipText", "Abrir la carpeta seleccionada"},
+                {"updateButtonToolTipText", "Actualizar la lista"}, {"helpButtonToolTipText", "Ayuda del selector de archivos"},
+                {"acceptAllFileFilterText", "Todos los archivos"}, {"fileDescriptionText", "Archivo"}, {"directoryDescriptionText", "Carpeta"},
+                {"folderNameLabelText", "Nombre de la carpeta:"},
+                {"upFolderToolTipText", "Subir un nivel"}, {"upFolderAccessibleName", "Subir"},
+                {"homeFolderToolTipText", "Inicio"}, {"homeFolderAccessibleName", "Inicio"},
+                {"newFolderToolTipText", "Crear una carpeta"}, {"newFolderAccessibleName", "Nueva carpeta"},
+                {"listViewButtonToolTipText", "Lista"}, {"listViewButtonAccessibleName", "Lista"},
+                {"detailsViewButtonToolTipText", "Detalles"}, {"detailsViewButtonAccessibleName", "Detalles"},
+                {"viewMenuLabelText", "Ver"}, {"refreshActionLabelText", "Actualizar"}, {"newFolderActionLabelText", "Nueva carpeta"},
+                {"listViewActionLabelText", "Lista"}, {"detailsViewActionLabelText", "Detalles"},
+                {"fileNameHeaderText", "Nombre"}, {"fileSizeHeaderText", "Tamaño"}, {"fileTypeHeaderText", "Tipo"},
+                {"fileDateHeaderText", "Modificado"}, {"fileAttrHeaderText", "Atributos"},
+                {"win32.newFolder", "Nueva carpeta"}, {"win32.newFolder.subsequent", "Nueva carpeta ({0})"},
+                {"other.newFolder", "NuevaCarpeta"}, {"other.newFolder.subsequent", "NuevaCarpeta.{0}"},
+                {"newFolderErrorText", "No se pudo crear la carpeta"},
+                {"newFolderParentDoesntExistTitleText", "No se pudo crear la carpeta"},
+                {"newFolderParentDoesntExistText", "No se pudo crear la carpeta.\n\nNo se encuentra la ruta indicada."},
+                {"renameErrorTitleText", "Error al cambiar el nombre"}, {"renameErrorText", "No se puede cambiar el nombre de {0}"},
+                {"renameErrorFileExistsText", "No se puede cambiar el nombre de {0}: ya existe un archivo con ese nombre. Escriba otro nombre."}
+        };
+        for (String[] t : selector) UIManager.put("FileChooser." + t[0], t[1]);
     }
 
     public static Font fuente(int estilo, int tamano) {

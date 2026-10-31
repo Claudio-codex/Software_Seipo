@@ -83,8 +83,9 @@ Detalle completo en [`Informe_Pruebas.md`](Informe_Pruebas.md) y [`Defectos.md`]
 - **Corrida 12:** 23/23 (100 %); se agregan CP-20 a CP-23 sobre el orden de salida de los lotes (sin cambios en el código)
 - **Corridas 13 a 15:** 23/24; el controlador rechaza lotes vencidos (OBS-07, CP-24 pasa), pero CP-15 no pudo borrar su PDF temporal
 - **Corrida 16:** 24/24 (100 %); la causa era la propia prueba, que mapeaba el PDF en memoria al leerlo (OBS-08, corregido)
-- **Corrida 17:** **24/24 (100 %)**; regresión tras ajustar la tipografía y los tamaños de la interfaz (misma suite, solo cambió la vista)
-- Cada corrida dura unos 15 s; las diecisiete salidas están en `docs/pruebas/evidencias/`
+- **Corrida 17:** 24/24 (100 %); regresión tras ajustar la tipografía y los tamaños de la interfaz (misma suite, solo cambió la vista)
+- **Corrida 18:** **24/24 (100 %)**; regresión tras pasar al español los títulos y textos de los diálogos estándar (misma suite, solo cambió la vista)
+- Cada corrida dura unos 15 s; las dieciocho salidas están en `docs/pruebas/evidencias/`
 
 ---
 
@@ -129,7 +130,7 @@ Detalle completo en [`Informe_Pruebas.md`](Informe_Pruebas.md) y [`Defectos.md`]
 ---
 
 ## Diapositiva 13 — Conclusiones
-- Los procesos centrales cumplen el documento: 15/15 casos aprobados en las corridas 3, 4, 5, 7, 8 y 9, y 19/19 en las corridas 10 y 11, y 23/23 en la corrida 12, y 24/24 en las corridas 16 y 17
+- Los procesos centrales cumplen el documento: 15/15 casos aprobados en las corridas 3, 4, 5, 7, 8 y 9, y 19/19 en las corridas 10 y 11, y 23/23 en la corrida 12, y 24/24 en las corridas 16 a 18
 - Todas las operaciones rechazadas se revierten sin dejar registros parciales
 - Las pruebas encontraron un defecto de seguridad real, que ya está corregido
 - También aclararon un requerimiento ambiguo y, con los manuales, cuatro observaciones menores
