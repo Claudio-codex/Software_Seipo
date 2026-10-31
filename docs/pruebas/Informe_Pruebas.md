@@ -1,8 +1,8 @@
 # Informe de pruebas de caja negra — SEIPO
 
-**Curso:** Procesos de Software · **Sistema:** SEIPO, sistema de venta e inventario · **Fecha de ejecución:** 19/10/2026 (corridas 1 a 5), 29/10/2026 (corridas 6 a 8) y 30/10/2026 (corridas 9 y 10)
+**Curso:** Procesos de Software · **Sistema:** SEIPO, sistema de venta e inventario · **Fecha de ejecución:** 19/10/2026 (corridas 1 a 5), 29/10/2026 (corridas 6 a 8) y 30/10/2026 (corridas 9 a 11)
 
-**Resultado final (corrida 10): 19 de 19 casos aprobados (100 %).** Evidencias en [`evidencias/`](evidencias/) · Defectos en [`Defectos.md`](Defectos.md) · Tabla para Excel en [`Casos_de_Prueba.csv`](Casos_de_Prueba.csv) · Diapositivas en [`Resumen_para_PPT.md`](Resumen_para_PPT.md)
+**Resultado final (corrida 11): 19 de 19 casos aprobados (100 %).** Evidencias en [`evidencias/`](evidencias/) · Defectos en [`Defectos.md`](Defectos.md) · Tabla para Excel en [`Casos_de_Prueba.csv`](Casos_de_Prueba.csv) · Diapositivas en [`Resumen_para_PPT.md`](Resumen_para_PPT.md)
 
 ## 1. Objetivo y alcance
 
@@ -29,7 +29,7 @@ Verificar con pruebas automatizadas que SEIPO cumple las reglas de negocio de `D
 | Usuarios de demostración | `admin` / `123` (administrador), `Personal1` / `890` y `personal2` / `456` (personal de tienda) |
 | Cómo ejecutar | IntelliJ: configuración **Pruebas SEIPO** → ▶. Consola: `pruebas.bat` en la raíz del repositorio. Duración: unos 15 segundos |
 
-## 4. Casos de prueba (resultado final, corrida 10)
+## 4. Casos de prueba (resultado final, corrida 11)
 
 | ID | Proceso / requisito | Entrada | Resultado esperado | Resultado obtenido | Estado | Corregido en |
 |---|---|---|---|---|---|---|
@@ -73,9 +73,10 @@ Verificar con pruebas automatizadas que SEIPO cumple las reglas de negocio de `D
 | 7 | 29/10/2026 23:08 | 15/15 | 100 % | — | Repetición de la corrida 6 sin cambios en el código ni en las pruebas | [`Resultados_Corrida_7.txt`](evidencias/Resultados_Corrida_7.txt) |
 | 8 | 29/10/2026 23:40 | 15/15 | 100 % | — | Corrida 8: regresión tras el cambio visual (tema claro con acento naranja, menú con iconos, tarjetas e insignias de estado). Solo cambió la capa de vista; ningún caso cambió | [`Resultados_Corrida_8.txt`](evidencias/Resultados_Corrida_8.txt) |
 | 9 | 30/10/2026 19:39 | 15/15 | 100 % | — | Corrida 9: regresión tras quitar el redondeo del IGV. El total es base más IGV con 2 decimales, sin redondeo a 10 céntimos; el efectivo acepta céntimos y el vuelto es exacto. CP-05 se ajustó al nuevo resultado (total S/ 14.57, vuelto S/ 5.43); CP-09, CP-10, CP-11 y CP-14 siguen pasando con totales exactos | [`Resultados_Corrida_9.txt`](evidencias/Resultados_Corrida_9.txt) |
-| 10 | 30/10/2026 20:22 | **19/19** | **100 %** | — | Corrida 10: el personal puede anular las ventas de su propio turno abierto, con motivo de una lista y registro de anulaciones (CAM-02). Se agregaron CP-16 a CP-19 y CP-11 usa la firma nueva; los 15 casos anteriores siguen aprobando | [`Resultados_Corrida_10.txt`](evidencias/Resultados_Corrida_10.txt) |
+| 10 | 30/10/2026 20:22 | 19/19 | 100 % | — | Corrida 10: el personal puede anular las ventas de su propio turno abierto, con motivo de una lista y registro de anulaciones (CAM-02). Se agregaron CP-16 a CP-19 y CP-11 usa la firma nueva; los 15 casos anteriores siguen aprobando | [`Resultados_Corrida_10.txt`](evidencias/Resultados_Corrida_10.txt) |
+| 11 | 30/10/2026 20:52 | **19/19** | **100 %** | — | Corrida 11: regresión tras corregir el texto de Caja (la descripción de la sección en la cabecera menciona las anulaciones). Solo cambió un texto de la vista; ningún caso cambió. También se corrigió la advertencia sobre las claves en el Manual del Administrador | [`Resultados_Corrida_11.txt`](evidencias/Resultados_Corrida_11.txt) |
 
-Cada corrida duró unos 15 segundos (14,9 s, 14,5 s, 14,5 s, 15,3 s, 15 s, 16,1 s, 14,3 s, 16,1 s, 14,9 s y 18,8 s; la corrida 10 tiene 19 casos), incluida la recarga de `seipo_test` antes de la primera prueba y después de cada una.
+Cada corrida duró unos 15 segundos (14,9 s, 14,5 s, 14,5 s, 15,3 s, 15 s, 16,1 s, 14,3 s, 16,1 s, 14,9 s, 18,8 s y 18,4 s; las corridas 10 y 11 tienen 19 casos), incluida la recarga de `seipo_test` antes de la primera prueba y después de cada una.
 
 ## 7. Defectos y observaciones
 

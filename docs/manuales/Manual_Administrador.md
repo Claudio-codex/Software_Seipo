@@ -183,7 +183,7 @@ Este manual está dirigido al **administrador**. El administrador hace todo lo q
 
 **Resultado esperado:** "¡Usuario registrado exitosamente!" o "Contraseña actualizada.". Un usuario desactivado ya no puede ingresar.
 
-> **Advertencia:** no puede quitarse el rol de administrador ni desactivarse a sí mismo, y siempre debe quedar al menos un administrador activo. Las claves se guardan sin cifrar en la base de datos: no use claves personales que se repitan en otros servicios.
+> **Advertencia:** no puede quitarse el rol de administrador ni desactivarse a sí mismo, y siempre debe quedar al menos un administrador activo. Desde OBS-06 las claves se guardan cifradas (hash PBKDF2 con sal): nadie puede leerlas en la base de datos ni en sus respaldos, ni siquiera el administrador. El administrador puede restablecer la clave de un usuario, pero no ver la que tenía.
 
 ### 4.8 Gestionar productos
 

@@ -68,8 +68,9 @@ Detalle completo en [`Informe_Pruebas.md`](Informe_Pruebas.md) y [`Defectos.md`]
 - **Corrida 7:** 15/15 (100 %); repetición de la corrida 6 sin cambios
 - **Corrida 8:** 15/15 (100 %); regresión tras el cambio visual (tema claro)
 - **Corrida 9:** 15/15 (100 %); regresión tras quitar el redondeo del IGV (total = base + IGV, con 2 decimales)
-- **Corrida 10:** **19/19 (100 %)**; el personal anula ventas de su turno con registro del motivo (CAM-02), con CP-16 a CP-19
-- Cada corrida dura unos 15 s; las diez salidas están en `docs/pruebas/evidencias/`
+- **Corrida 10:** 19/19 (100 %); el personal anula ventas de su turno con registro del motivo (CAM-02), con CP-16 a CP-19
+- **Corrida 11:** **19/19 (100 %)**; regresión tras corregir el texto de Caja (solo cambió un texto de la vista)
+- Cada corrida dura unos 15 s; las once salidas están en `docs/pruebas/evidencias/`
 
 ---
 
@@ -112,7 +113,7 @@ Detalle completo en [`Informe_Pruebas.md`](Informe_Pruebas.md) y [`Defectos.md`]
 ---
 
 ## Diapositiva 12 — Conclusiones
-- Los procesos centrales cumplen el documento: 15/15 casos aprobados en las corridas 3, 4, 5, 7, 8 y 9, y 19/19 en la corrida 10
+- Los procesos centrales cumplen el documento: 15/15 casos aprobados en las corridas 3, 4, 5, 7, 8 y 9, y 19/19 en las corridas 10 y 11
 - Todas las operaciones rechazadas se revierten sin dejar registros parciales
 - Las pruebas encontraron un defecto de seguridad real, que ya está corregido
 - También aclararon un requerimiento ambiguo y, con los manuales, cuatro observaciones menores

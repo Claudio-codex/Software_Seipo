@@ -61,7 +61,7 @@ public class Principal extends JFrame {
         setLocationRelativeTo(null);
 
         secciones.put("Ventas", new Seccion("OPERACIÓN", "Busque productos, arme la venta, elija el cliente y cobre.", ventas));
-        secciones.put("Caja", new Seccion("OPERACIÓN", "Apertura y cierre de turno, cuadre de caja y ventas del turno.", caja));
+        secciones.put("Caja", new Seccion("OPERACIÓN", "Apertura y cierre de turno, cuadre de caja, ventas del turno y anulaciones.", caja));
         secciones.put("Clientes", new Seccion("OPERACIÓN", "Consulte y registre clientes con su DNI o RUC.", clientes));
         secciones.put("Productos", new Seccion("INVENTARIO", "Catálogo de productos, precios y stock mínimo y máximo.", productos));
         secciones.put("Inventario", new Seccion("INVENTARIO", "Resumen del almacén, lotes en orden FEFO y recepción de mercadería.", inventario));

@@ -1,0 +1,51 @@
+Resultado de la ejecución de las pruebas automatizadas de SEIPO - Corrida 11 (regresión tras corregir el texto de Caja: la descripción de la sección en la cabecera menciona las anulaciones; solo cambió un texto de la vista)
+Comando: pruebas.bat (JUnit 5.12.2, Console Launcher)
+Base de datos: seipo_test (MariaDB 12.3.3), recargada desde SEIPO/bd/seipo_db.sql antes de la primera prueba y después de cada una
+Inicio: 2026-10-30 20:52:12   Fin: 2026-10-30 20:52:33   Código de salida: 0
+Java: java version "25.0.3" 2026-04-21 LTS
+
+Compilando...
+Ejecutando las pruebas contra seipo_test...
+╷
+├─ JUnit Platform Suite ✔
+├─ JUnit Jupiter ✔
+│  ├─ CajaYVentasTest ✔
+│  │  ├─ CP-04 Venta sin turno: se bloquea, no se registra nada y no se descuenta stock ✔
+│  │  ├─ CP-08 Stock insuficiente: con stock + 1 se rechaza sin registros parciales; con ... ✔
+│  │  ├─ CP-06 Descuento VIP: valor límite del umbral de 10 % (después de 3 compras, a pa... ✔
+│  │  ├─ CP-03 Apertura de turno: se abre con S/ 100.00 y se rechaza un segundo turno sin... ✔
+│  │  ├─ CP-05 Venta en efectivo: total exacto con IGV (sin redondeo a 10 céntimos), vuel... ✔
+│  │  ├─ CP-07 FEFO: la venta descuenta del lote que vence primero y el otro queda intact... ✔
+│  │  └─ CP-14 Cierre de turno: faltante y sobrante por la diferencia exacta; el turno ce... ✔
+│  ├─ AnulacionesTest ✔
+│  │  ├─ CP-16 Anulación por el personal: anula una venta propia de su turno abierto con ... ✔
+│  │  ├─ CP-19 Anulación por el administrador: anula una venta de un turno abierto de otr... ✔
+│  │  ├─ CP-18 Motivo obligatorio: sin motivo, con un motivo fuera de la lista o con "Otr... ✔
+│  │  └─ CP-17 Anulación no permitida: el personal no anula ventas de otro usuario ni de ... ✔
+│  ├─ PagosYComprobantesTest ✔
+│  │  ├─ CP-10 Comprobante: RUC emite factura F001, DNI y consumidor final emiten boleta ... ✔
+│  │  ├─ CP-09 Forma de pago: la tarjeta (retirada) y otras formas se rechazan; Yape o Pl... ✔
+│  │  └─ CP-11 Anulación: el stock vuelve a los mismos lotes, la venta queda anulada y sa... ✔
+│  ├─ AccesoYRolesTest ✔
+│  │  ├─ CP-02 Restricción por rol: el personal no accede a Reportes, Negocio ni Usuarios... ✔
+│  │  └─ CP-01 Acceso al sistema: credencial válida entra como administrador; clave errad... ✔
+│  └─ InventarioYReportesTest ✔
+│     ├─ CP-12 Mermas: nace Pendiente sin descontar stock; al aprobar descuenta y registr... ✔
+│     ├─ CP-13 Alertas y orden de compra: el producto bajo el mínimo aparece en alertas; ... ✔
+│     └─ CP-15 Reporte de mermas: se generan PDF y Excel no vacíos y sus totales coincide... ✔
+└─ JUnit Vintage ✔
+
+Test run finished after 18354 ms
+[         8 containers found      ]
+[         0 containers skipped    ]
+[         8 containers started    ]
+[         0 containers aborted    ]
+[         8 containers successful ]
+[         0 containers failed     ]
+[        19 tests found           ]
+[         0 tests skipped         ]
+[        19 tests started         ]
+[         0 tests aborted         ]
+[        19 tests successful      ]
+[         0 tests failed          ]
+
