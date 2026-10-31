@@ -26,7 +26,7 @@ public class ControladorVentas {
 
     /** Venta del historial con su desglose de importes. */
     public static class VentaVO {
-        public int id, turnoId;
+        public int id, turnoId, usuarioId;
         public LocalDateTime fecha;
         public String cliente, documentoCliente, vendedor, formaPago, estado, anuladoPor, motivoAnulacion;
         /** Número del comprobante (B001-00000001); null en ventas anteriores a los comprobantes. */
@@ -293,7 +293,7 @@ public class ControladorVentas {
     }
 
     private List<VentaVO> listar(String filtro, Parametros parametros) throws SQLException {
-        String sql = "SELECT v.id, v.turno_id, v.creado_en, v.forma_pago, v.estado, v.motivo_anulacion, " +
+        String sql = "SELECT v.id, v.turno_id, v.usuario_id, v.creado_en, v.forma_pago, v.estado, v.motivo_anulacion, " +
                 "COALESCE(v.subtotal, v.total / (1 + " + Datos.IGV + ")) AS subtotal, v.descuento, v.total, v.monto_recibido, " +
                 "c.nombre AS cliente, c.documento, COALESCE(NULLIF(u.nombre, ''), u.usuario) AS vendedor, " +
                 "COALESCE(NULLIF(a.nombre, ''), a.usuario) AS anulado_por, cp.serie, cp.numero " +
@@ -309,6 +309,7 @@ public class ControladorVentas {
                     VentaVO v = new VentaVO();
                     v.id = rs.getInt("id");
                     v.turnoId = rs.getInt("turno_id");
+                    v.usuarioId = rs.getInt("usuario_id");
                     v.fecha = rs.getTimestamp("creado_en").toLocalDateTime();
                     v.formaPago = rs.getString("forma_pago");
                     v.estado = rs.getString("estado");
@@ -350,14 +351,96 @@ public class ControladorVentas {
         return lista;
     }
 
+    /** Anulación registrada en la tabla anulaciones. */
+    public static class AnulacionVO {
+        public int ventaId;
+        public Integer turnoId;
+        public LocalDateTime fecha;
+        public String usuario, rol, motivo, detalle, formaPago;
+        /** Número del comprobante de la venta; null si la venta no tiene. */
+        public String comprobante;
+        public double monto;
+    }
+
     /**
-     * Anula una venta (solo el administrador y mientras su turno siga abierto, para no alterar un cuadre ya cerrado).
-     * Devuelve las unidades a los mismos lotes de los que salieron y registra un movimiento "Anulación" por lote.
+     * Anulaciones de un rango de fechas, de la más reciente a la más antigua; el personal solo ve las suyas.
+     * Las ventas anuladas antes de existir el registro no aparecen.
      */
-    public void anularVenta(int ventaId, String motivo) throws SQLException {
-        if (!Sesion.esAdministrador()) throw new SQLException("Solo el administrador puede anular ventas.");
-        String sqlVenta = "SELECT v.estado, t.estado AS estado_turno FROM ventas v LEFT JOIN turnos t ON t.id = v.turno_id " +
-                "WHERE v.id = ? FOR UPDATE";
+    public List<AnulacionVO> listarAnulaciones(LocalDate desde, LocalDate hasta) throws SQLException {
+        boolean soloPropias = !Sesion.esAdministrador();
+        String sql = "SELECT a.venta_id, a.turno_id, a.fecha, a.rol, a.motivo, a.detalle, a.monto, v.forma_pago, " +
+                "COALESCE(NULLIF(u.nombre, ''), u.usuario) AS usuario, cp.serie, cp.numero " +
+                "FROM anulaciones a JOIN usuarios u ON u.id = a.usuario_id JOIN ventas v ON v.id = a.venta_id " +
+                "LEFT JOIN comprobantes cp ON cp.venta_id = a.venta_id " +
+                "WHERE a.fecha >= ? AND a.fecha < ?" + (soloPropias ? " AND a.usuario_id = ?" : "") + " ORDER BY a.fecha DESC, a.id DESC";
+        List<AnulacionVO> lista = new ArrayList<>();
+        try (Connection con = ConexionBD.obtenerConexion();
+             PreparedStatement pst = con.prepareStatement(sql)) {
+            pst.setTimestamp(1, Timestamp.valueOf(desde.atStartOfDay()));
+            pst.setTimestamp(2, Timestamp.valueOf(hasta.plusDays(1).atStartOfDay()));
+            if (soloPropias) pst.setInt(3, Sesion.getId());
+            try (ResultSet rs = pst.executeQuery()) {
+                while (rs.next()) {
+                    AnulacionVO a = new AnulacionVO();
+                    a.ventaId = rs.getInt("venta_id");
+                    a.turnoId = (Integer) rs.getObject("turno_id");
+                    a.fecha = rs.getTimestamp("fecha").toLocalDateTime();
+                    a.usuario = rs.getString("usuario");
+                    a.rol = rs.getString("rol");
+                    a.motivo = rs.getString("motivo");
+                    a.detalle = rs.getString("detalle");
+                    a.monto = rs.getDouble("monto");
+                    a.formaPago = rs.getString("forma_pago");
+                    if (rs.getString("serie") != null) a.comprobante = rs.getString("serie") + "-" + String.format("%08d", rs.getInt("numero"));
+                    lista.add(a);
+                }
+            }
+        }
+        return lista;
+    }
+
+    /**
+     * Indica si el usuario de la sesión puede anular la venta de ese turno (la pantalla lo usa para habilitar el botón;
+     * anularVenta vuelve a validarlo). El administrador anula mientras el turno siga abierto; el personal, además,
+     * solo las ventas que registró en su propio turno.
+     */
+    public static boolean puedeAnular(VentaVO v, ControladorCaja.TurnoVO turno) {
+        if (v == null || turno == null || v.anulada() || !ControladorCaja.ABIERTO.equals(turno.estado)) return false;
+        return Sesion.esAdministrador() || (v.usuarioId == Sesion.getId() && turno.usuarioId == Sesion.getId());
+    }
+
+    /** Valida el motivo y el detalle de una anulación; devuelve el mensaje de error o null si son válidos. */
+    public static String validarMotivo(String motivo, String detalle) {
+        if (motivo == null || !Arrays.asList(Datos.MOTIVOS_ANULACION).contains(motivo)) return "Elija el motivo de la anulación de la lista.";
+        String d = detalle == null ? "" : detalle.trim();
+        if (Datos.MOTIVO_OTRO.equals(motivo) && d.length() < Datos.DETALLE_MINIMO_OTRO) {
+            return "Con el motivo \"" + Datos.MOTIVO_OTRO + "\", escriba el detalle (mínimo " + Datos.DETALLE_MINIMO_OTRO + " caracteres).";
+        }
+        if (d.length() > 255) return "El detalle no puede pasar de 255 caracteres.";
+        return null;
+    }
+
+    /**
+     * Anula una venta mientras su turno siga abierto, para no alterar un cuadre ya cerrado. El administrador anula
+     * cualquier venta; el personal, solo las que registró en su propio turno. Devuelve las unidades a los mismos lotes
+     * de los que salieron, registra un movimiento "Anulación" por lote y guarda la anulación en la tabla anulaciones,
+     * todo en una sola transacción.
+     *
+     * @param motivo  uno de Datos.MOTIVOS_ANULACION
+     * @param detalle opcional, salvo con el motivo "Otro" (mínimo Datos.DETALLE_MINIMO_OTRO caracteres)
+     */
+    public void anularVenta(int ventaId, String motivo, String detalle) throws SQLException {
+        if (Sesion.getId() == 0) throw new SQLException("Inicie sesión para anular ventas.");
+        String error = validarMotivo(motivo, detalle);
+        if (error != null) throw new SQLException(error);
+        String det = detalle == null || detalle.trim().isEmpty() ? null : detalle.trim();
+        String textoMotivo = det == null ? motivo : motivo + ": " + det;
+        if (textoMotivo.length() > 255) textoMotivo = textoMotivo.substring(0, 255);
+
+        String sqlVenta = "SELECT v.estado, v.usuario_id, v.turno_id, v.total, t.estado AS estado_turno, t.usuario_id AS usuario_turno " +
+                "FROM ventas v LEFT JOIN turnos t ON t.id = v.turno_id WHERE v.id = ? FOR UPDATE";
+        String sqlRegistro = "INSERT INTO anulaciones (venta_id, turno_id, usuario_id, rol, fecha, motivo, detalle, monto) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         String sqlLotes = "SELECT vl.lote_id, vl.producto_id, vl.cantidad, l.numero_lote, p.nombre " +
                 "FROM venta_lotes vl JOIN lotes l ON l.id = vl.lote_id JOIN productos p ON p.id = vl.producto_id " +
                 "WHERE vl.venta_id = ? ORDER BY vl.id";
@@ -370,14 +453,22 @@ public class ControladorVentas {
         try (Connection con = ConexionBD.obtenerConexion()) {
             con.setAutoCommit(false);
             try {
+                Integer turnoId;
+                double monto;
                 try (PreparedStatement pst = con.prepareStatement(sqlVenta)) {
                     pst.setInt(1, ventaId);
                     try (ResultSet rs = pst.executeQuery()) {
                         if (!rs.next()) throw new SQLException("La venta no existe.");
                         if (ANULADA.equals(rs.getString("estado"))) throw new SQLException("La venta ya está anulada.");
+                        // El personal solo anula lo que registró en su propio turno (DEF-01: el rol se valida aquí, no solo en la pantalla)
+                        if (!Sesion.esAdministrador() && (rs.getInt("usuario_id") != Sesion.getId() || rs.getInt("usuario_turno") != Sesion.getId())) {
+                            throw new SQLException("Solo puede anular las ventas que usted registró en su propio turno de caja.");
+                        }
                         if (!ControladorCaja.ABIERTO.equals(rs.getString("estado_turno"))) {
                             throw new SQLException("Solo se pueden anular ventas de un turno abierto: el cuadre de este turno ya se cerró.");
                         }
+                        turnoId = (Integer) rs.getObject("turno_id");
+                        monto = rs.getDouble("total");
                     }
                 }
 
@@ -418,11 +509,23 @@ public class ControladorVentas {
                 }
                 if (devueltos == 0) throw new SQLException("La venta no tiene lotes registrados; no se puede devolver su stock.");
 
+                Timestamp ahora = Timestamp.valueOf(LocalDateTime.now().withNano(0));
                 try (PreparedStatement pst = con.prepareStatement(sqlAnular)) {
                     pst.setInt(1, Sesion.getId());
-                    pst.setTimestamp(2, Timestamp.valueOf(LocalDateTime.now()));
-                    pst.setString(3, motivo);
+                    pst.setTimestamp(2, ahora);
+                    pst.setString(3, textoMotivo);
                     pst.setInt(4, ventaId);
+                    pst.executeUpdate();
+                }
+                try (PreparedStatement pst = con.prepareStatement(sqlRegistro)) {
+                    pst.setInt(1, ventaId);
+                    if (turnoId == null) pst.setNull(2, Types.INTEGER); else pst.setInt(2, turnoId);
+                    pst.setInt(3, Sesion.getId());
+                    pst.setString(4, Sesion.getRol());
+                    pst.setTimestamp(5, ahora);
+                    pst.setString(6, motivo);
+                    pst.setString(7, det);
+                    pst.setDouble(8, monto);
                     pst.executeUpdate();
                 }
                 con.commit();

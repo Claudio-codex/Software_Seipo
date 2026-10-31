@@ -42,7 +42,7 @@ Curso: Procesos de Software · Tarma, 2026
 
 SEIPO es el sistema de venta e inventario de la tienda. Cubre la venta en caja con turnos y cuadre de efectivo, el cobro en efectivo o con Yape o Plin, la boleta o factura de cada venta, el inventario por lotes en orden FEFO (lo que vence primero, sale primero), las mermas, las compras y los reportes del negocio.
 
-Este manual está dirigido al **administrador**. El administrador hace todo lo que hace el personal de tienda y, además, autoriza mermas y órdenes de compra, anula ventas, gestiona los productos, las cuentas de usuario, los datos del negocio y los reportes, y respalda la base de datos. Las tareas que comparte con el personal se explican aquí de forma resumida; el detalle para la caja está en el Manual del Personal de Tienda.
+Este manual está dirigido al **administrador**. El administrador hace todo lo que hace el personal de tienda y, además, autoriza mermas y órdenes de compra, anula cualquier venta de un turno abierto (el personal solo anula las de su propio turno), revisa el registro de anulaciones, gestiona los productos, las cuentas de usuario, los datos del negocio y los reportes, y respalda la base de datos. Las tareas que comparte con el personal se explican aquí de forma resumida; el detalle para la caja está en el Manual del Personal de Tienda.
 
 ## 2. Requisitos y cómo ingresar
 
@@ -76,7 +76,7 @@ Este manual está dirigido al **administrador**. El administrador hace todo lo q
 
 | Sección | Qué puede hacer el administrador (además de lo del personal) |
 |---|---|
-| Caja | Ver el historial de turnos de todos, cerrar el turno de otro usuario y anular ventas. |
+| Caja | Ver el historial de turnos de todos, cerrar el turno de otro usuario, anular cualquier venta de un turno abierto y ver el registro de anulaciones de todos los usuarios. |
 | Productos | Crear y **editar** productos (precio y stock mínimo y máximo). |
 | Inventario | Editar el vencimiento y la ubicación de un lote. |
 | Mermas | **Aprobar** o **rechazar** mermas y exportar su reporte. |
@@ -153,17 +153,22 @@ Este manual está dirigido al **administrador**. El administrador hace todo lo q
 
 ### 4.6 Anular una venta
 
-**Objetivo:** dejar sin efecto una venta mal registrada. **Cuándo se usa:** solo mientras el turno de esa venta siga abierto.
+**Objetivo:** dejar sin efecto una venta mal registrada. **Cuándo se usa:** solo mientras el turno de esa venta siga abierto. El administrador anula cualquier venta de un turno abierto; el personal, solo las que registró en su propio turno abierto.
 
 1. Entre a **Caja** → **Mi turno**, o abra el turno en **Historial de turnos** → **Ver ventas del turno**.
 2. Seleccione la venta y pulse **Anular venta**.
-3. Lea el aviso, escriba el **Motivo de la anulación** y pulse **Aceptar**.
+3. Lea el aviso y elija el **Motivo de la anulación**: Error de registro, Cliente desistió, Producto equivocado, Error en el cobro u Otro.
+4. Escriba el **Detalle** (opcional; con **Otro** es obligatorio, mínimo 5 caracteres) y pulse **Aceptar**.
 
-[CAPTURA 4.6.1: Caja — ventana "Anular venta" con el motivo de la anulación]
+[CAPTURA 4.6.1: Caja — ventana "Anular venta" con la lista de motivos y el detalle]
 
 **Resultado esperado:** la venta queda **Anulada** (fila gris), el stock vuelve a los mismos lotes, y el monto sale del cuadre del turno. Su comprobante muestra **ANULADO**. Si se pagó con Yape o Plin, el sistema no devuelve el dinero: devuélvalo al cliente desde el celular del negocio.
 
 > **Advertencia:** si el turno ya se cerró, el sistema responde "Solo se pueden anular ventas de un turno abierto: el cuadre de este turno ya se cerró.". La anulación no se puede deshacer.
+
+**Registro de anulaciones.** Cada anulación, la haga el administrador o el personal, queda registrada en **Caja** → **Anulaciones**: fecha y hora, venta, comprobante, usuario, rol, motivo, detalle, forma de pago y monto. Como administrador ve las de todos los usuarios; elija el rango en **Período** (Hoy, Últimos 7 días, Últimos 30 días o Este año). Arriba se muestran el número de ventas anuladas y el monto anulado del período. Las ventas anuladas antes de existir el registro no aparecen en esta pestaña, pero su comprobante sigue mostrando **ANULADO** y el motivo.
+
+[CAPTURA 4.6.2: Caja, pestaña Anulaciones — registro de todos los usuarios con el filtro Período]
 
 ### 4.7 Gestionar usuarios y roles
 
@@ -304,7 +309,7 @@ Este manual está dirigido al **administrador**. El administrador hace todo lo q
 | IGV | La base es (subtotal − descuento). El IGV es el 18 % de la base, con 2 decimales y sin redondeo a 10 céntimos; el total es base más IGV. El sistema no redondea el total porque el negocio debe declarar exactamente el IGV cobrado. Las ventas registradas antes de este cambio conservan su línea **Redondeo** en el comprobante. |
 | Comprobante | RUC: factura F001. DNI o sin cliente: boleta B001. Numeración correlativa por serie. |
 | Yape o Plin | El sistema solo registra la forma de pago; el cajero confirma el pago en el celular del negocio. No entra al efectivo de caja. |
-| Anulación | Solo el administrador, y solo con el turno abierto. El stock vuelve a los mismos lotes. El pago con Yape o Plin se devuelve desde el celular del negocio. |
+| Anulación | Solo con el turno de la venta abierto. El administrador anula cualquier venta de un turno abierto; el personal, solo las que registró en su propio turno abierto. Motivo obligatorio de la lista (con **Otro**, detalle de al menos 5 caracteres). Cada anulación queda en **Caja** → **Anulaciones**. El stock vuelve a los mismos lotes. El pago con Yape o Plin se devuelve desde el celular del negocio. |
 | Alertas | Agotado: 0 disponibles. Stock bajo: disponible menor o igual al mínimo. Sobrestock: disponible mayor que el máximo. |
 | Órdenes de compra | Pendiente → Aprobada (solo el administrador) → Recibida, o Rechazada. |
 | Roles | El personal no ve Reportes, Negocio ni Usuarios, y el sistema también le rechaza esas operaciones. |
@@ -316,6 +321,8 @@ Este manual está dirigido al **administrador**. El administrador hace todo lo q
 | No se pudo conectar con el servidor de base de datos. | Inicie el servicio de MariaDB y revise el host y el puerto en `config.properties`. |
 | El servidor rechazó el usuario o la contraseña. | Revise `db.usuario` y `db.clave` en `config.properties`. |
 | Solo se pueden anular ventas de un turno abierto: el cuadre de este turno ya se cerró. | Ya no se puede anular en el sistema; deje constancia del caso según el procedimiento de la tienda. |
+| Solo puede anular las ventas que usted registró en su propio turno de caja. | Lo ve el personal que intenta anular una venta ajena. Anúlela usted si corresponde. |
+| Con el motivo "Otro", escriba el detalle (mínimo 5 caracteres). | Explique el caso en **Detalle** o elija otro motivo de la lista. |
 | No puede desactivarse ni quitarse el rol de administrador a sí mismo. | Pida a otro administrador que haga el cambio. |
 | Debe quedar al menos un administrador activo. | Cree o active otro administrador antes. |
 | Ya existe un producto con ese código. | Use otro código o edite el producto existente. |
@@ -334,6 +341,8 @@ Este manual está dirigido al **administrador**. El administrador hace todo lo q
 
 **¿Puedo anular una venta de ayer?** Solo si su turno sigue abierto. Si ya se cerró el cuadre, el sistema no lo permite.
 
+**¿Cómo sé quién anuló una venta y por qué?** En **Caja** → **Anulaciones** está cada anulación con su usuario, rol, motivo y detalle. El comprobante de la venta también muestra quién la anuló y el motivo.
+
 **¿Por qué el valor perdido no incluye todas las mermas?** Solo cuentan las aprobadas; las pendientes aún pueden rechazarse.
 
 **¿Cómo cambio el precio de un producto?** En **Productos**, selecciónelo y pulse **Editar**. Las ventas anteriores conservan su precio.
@@ -349,7 +358,7 @@ Este manual está dirigido al **administrador**. El administrador hace todo lo q
 ## Lista de capturas pendientes
 
 <!-- CAPTURAS:inicio -->
-Total: **16 capturas**. Tome cada una con datos de demostración y reemplace el marcador correspondiente.
+Total: **17 capturas**. Tome cada una con datos de demostración y reemplace el marcador correspondiente.
 
 | N° | Pantalla | Qué debe verse | Sección del manual |
 |---|---|---|---|
@@ -359,7 +368,8 @@ Total: **16 capturas**. Tome cada una con datos de demostración y reemplace el 
 | 4.2.1 | Ventas | Carrito con cliente VIP y el desglose con Descuento, IGV 18% y TOTAL | 4.2 Registrar una venta y aplicar el descuento VIP |
 | 4.3.1 | Confirmación "Cobro con Yape o Plin" | Pregunta si el cliente ya pagó el total | 4.3 Cobrar en efectivo, con Yape o con Plin |
 | 4.5.1 | Caja, pestaña Historial de turnos | Turnos con faltante (rojo), sobrante (ámbar) y abierto (celeste) | 4.5 Cerrar un turno y cuadrar la caja |
-| 4.6.1 | Caja | Ventana "Anular venta" con el motivo de la anulación | 4.6 Anular una venta |
+| 4.6.1 | Caja | Ventana "Anular venta" con la lista de motivos y el detalle | 4.6 Anular una venta |
+| 4.6.2 | Caja, pestaña Anulaciones | Registro de todos los usuarios con el filtro Período | 4.6 Anular una venta |
 | 4.7.1 | Usuarios | Ventana "Registrar Nuevo Usuario" con el rol elegido | 4.7 Gestionar usuarios y roles |
 | 4.8.1 | Productos | Ventana "Editar producto" con precio y stock mínimo y máximo | 4.8 Gestionar productos |
 | 4.9.1 | Inventario, pestaña Lotes y vencimientos | Lotes en orden FEFO con su estado y el botón Editar lote | 4.9 Recibir mercadería y editar lotes |

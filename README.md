@@ -58,7 +58,7 @@ GRANT ALL PRIVILEGES ON seipo_db.* TO 'seipo'@'localhost';
 * **IGV:** El IGV es el 18 % de la base, con 2 decimales y sin redondeo a 10 céntimos; el total es base más IGV. El sistema no redondea el total porque el negocio debe declarar exactamente el IGV cobrado. El efectivo (recibido, inicial y contado) acepta céntimos y el vuelto es exacto. Las ventas registradas antes de este cambio conservan su línea "Redondeo" en el comprobante.
 * Formas de pago: **Efectivo** y **Yape o Plin**. El cobro con tarjeta se retiró del sistema por ahora.
 * Atajos: `F2` buscar producto, `F4` cliente, `F6` descuento, `F9` efectivo, `F11` Yape o Plin.
-* Solo el **administrador** puede **anular** una venta (desde Caja), y solo mientras el turno siga abierto; el stock vuelve a los mismos lotes. Si se pagó con Yape o Plin, el cajero devuelve el dinero desde el celular del negocio.
+* **Anular una venta** (desde Caja) solo se puede mientras el turno de la venta siga abierto. El **administrador** anula cualquier venta; el **personal de tienda**, solo las que registró en su propio turno. El motivo se elige de una lista (Error de registro, Cliente desistió, Producto equivocado, Error en el cobro u Otro; con Otro el detalle es obligatorio) y cada anulación queda en **Caja → Anulaciones** con el usuario, el rol, la fecha, el motivo y el monto. El stock vuelve a los mismos lotes. Si se pagó con Yape o Plin, el cajero devuelve el dinero desde el celular del negocio.
 
 8. Formas de pago y comprobantes
 * El sistema **solo registra la forma de pago** de cada venta; no procesa cobros. Con **Yape o Plin**, el cliente paga desde su celular y el cajero, después de ver el pago en el celular del negocio, confirma la venta. Esas ventas no entran al efectivo de caja.
@@ -101,7 +101,7 @@ Si el programa no puede conectarse, la ventana de inicio de sesión indica qué 
 * **Método de autenticación no admitido:** en MariaDB para Windows, `root` puede entrar con la autenticación de Windows, que el programa no admite. Usa el usuario `seipo`.
 
 ## Pruebas
-**Qué se probó:** 15 casos de caja negra con JUnit 5 (CP-01 a CP-15) sobre acceso y roles, turno y cierre de caja, ventas con IGV, descuento VIP, FEFO, stock límite, pago digital, comprobantes, anulación, mermas, compras y el reporte de mermas.
+**Qué se probó:** 19 casos de caja negra con JUnit 5 (CP-01 a CP-19) sobre acceso y roles, turno y cierre de caja, ventas con IGV, descuento VIP, FEFO, stock límite, pago digital, comprobantes, anulación (por el administrador y por el personal en su propio turno, con registro del motivo), mermas, compras y el reporte de mermas.
 
 **Cómo ejecutarlas**
 * Usan su propia base, **`seipo_test`**: la crean desde `SEIPO/bd/seipo_db.sql` y la vuelven a cargar después de cada prueba. No tocan `seipo_db` ni `config.properties`. Antes de la primera ejecución, dale permisos al usuario `seipo` (como `root`):
@@ -112,7 +112,7 @@ Si el programa no puede conectarse, la ventana de inicio de sesión indica qué 
 * **Consola:** ejecuta `pruebas.bat` en la raíz del repositorio (unos 15 segundos). Los reportes XML quedan en `out-pruebas\reportes`.
 * La prueba CP-02 abre la ventana principal sin mostrarla, así que necesita un entorno gráfico. Puede aparecer un instante el aviso de alertas del administrador, que se cierra solo.
 
-**Resultados finales:** **15 de 15 casos aprobados (100 %)** en las corridas 3 y 4.
+**Resultados finales:** **19 de 19 casos aprobados (100 %)** en la corrida 10, que agregó CP-16 a CP-19 (anulación por el personal y registro de anulaciones). Antes, los 15 casos aprobaron en las corridas 3, 4, 5, 7, 8 y 9.
 * La corrida 1 dio 13/15. Se corrigió el defecto DEF-01: el control de roles existía solo en la interfaz.
 * La corrida 2 dio 14/15. Se aclaró el requerimiento del descuento VIP (OBS-01) y la prueba CP-06 se ajustó a ese criterio.
 * La corrida 4 (15/15) confirmó que las correcciones menores OBS-02 a OBS-05 no rompieron nada: tope de 10 % al descuento manual del personal, diálogos en español, pausa de `respaldo.bat` y textos corregidos.

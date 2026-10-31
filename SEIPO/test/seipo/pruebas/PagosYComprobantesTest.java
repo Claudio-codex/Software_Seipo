@@ -110,8 +110,8 @@ class PagosYComprobantesTest extends PruebaBase {
 
         ControladorVentas ventas = new ControladorVentas();
         ControladorCaja caja = new ControladorCaja();
-        ventas.anularVenta(ventaEfectivo, "Prueba CP-11 efectivo");
-        ventas.anularVenta(ventaDigital, "Prueba CP-11 digital");
+        ventas.anularVenta(ventaEfectivo, "Error de registro", "Prueba CP-11 efectivo");
+        ventas.anularVenta(ventaDigital, "Cliente desistió", "Prueba CP-11 digital");
 
         assertAll(
                 () -> assertEquals(3, cantidadLote("CP11-PRONTO"), "las unidades vuelven al lote de origen"),

@@ -27,6 +27,7 @@ Curso: Procesos de Software · Tarma, 2026
   - [4.8 Consultar el stock y las alertas](#48-consultar-el-stock-y-las-alertas)
   - [4.9 Recibir mercadería](#49-recibir-mercadería)
   - [4.10 Cerrar el turno y cuadrar la caja](#410-cerrar-el-turno-y-cuadrar-la-caja)
+  - [4.11 Anular una venta](#411-anular-una-venta)
 - [5. Reglas del negocio que debe conocer](#5-reglas-del-negocio-que-debe-conocer)
 - [6. Mensajes de error frecuentes](#6-mensajes-de-error-frecuentes)
 - [7. Preguntas frecuentes](#7-preguntas-frecuentes)
@@ -37,7 +38,7 @@ Curso: Procesos de Software · Tarma, 2026
 
 SEIPO es el sistema de venta e inventario de la tienda. Con él se atiende al cliente en caja (ventas, cobro en efectivo o con Yape o Plin, boleta o factura), se controla el efectivo de cada turno y se lleva el inventario por lotes, para que primero se venda lo que vence antes.
 
-Este manual está dirigido al **personal de tienda**: las personas que venden, cobran, reciben mercadería y registran productos dañados o vencidos. Explica, paso a paso, solo las tareas que su cuenta tiene permitidas. Las tareas del administrador (anular ventas, aprobar mermas y órdenes de compra, reportes, datos del negocio y usuarios) están en el Manual del Administrador.
+Este manual está dirigido al **personal de tienda**: las personas que venden, cobran, reciben mercadería y registran productos dañados o vencidos. Explica, paso a paso, solo las tareas que su cuenta tiene permitidas. Las tareas del administrador (anular ventas de otros usuarios, aprobar mermas y órdenes de compra, reportes, datos del negocio y usuarios) están en el Manual del Administrador.
 
 ## 2. Requisitos y cómo ingresar
 
@@ -75,7 +76,7 @@ La pantalla principal tiene tres partes:
 | Sección | Para qué sirve |
 |---|---|
 | Ventas | Busque productos, arme la venta, elija el cliente y cobre. |
-| Caja | Apertura y cierre de turno, cuadre de caja y ventas del turno. |
+| Caja | Apertura y cierre de turno, cuadre de caja, ventas del turno, anulación de sus ventas y registro de sus anulaciones. |
 | Clientes | Consulte y registre clientes con su DNI o RUC. |
 | Productos | Catálogo de productos, precios y stock mínimo y máximo. |
 | Inventario | Resumen del almacén, lotes en orden FEFO y recepción de mercadería. |
@@ -242,7 +243,28 @@ La pantalla principal tiene tres partes:
 
 **Resultado esperado:** el mensaje "Turno N° … cerrado." con lo esperado, lo contado y el resultado. En **Mis turnos**, la fila sale en rojo si faltó dinero y en ámbar si sobró.
 
-> **Advertencia:** después de cerrar no podrá cobrar hasta abrir otro turno. Si pulsa **Cerrar sesión** con el turno abierto, el sistema se lo recuerda. Para anular una venta, pida autorización al administrador.
+> **Advertencia:** después de cerrar no podrá cobrar hasta abrir otro turno. Si pulsa **Cerrar sesión** con el turno abierto, el sistema se lo recuerda. Si debe anular una venta, hágalo antes de cerrar (punto 4.11): con el turno cerrado ya no se puede anular.
+
+### 4.11 Anular una venta
+
+**Objetivo:** dejar sin efecto una venta que usted registró por error. **Cuándo se usa:** solo mientras su turno de caja siga abierto.
+
+1. Entre a **Caja** → **Mi turno**.
+2. Seleccione la venta en la tabla. El botón **Anular venta** se activa solo si usted registró esa venta, es de su turno y el turno sigue abierto.
+3. Pulse **Anular venta** y lea el aviso con el número, el monto y la forma de pago de la venta.
+4. Elija el **Motivo de la anulación** de la lista: **Error de registro**, **Cliente desistió**, **Producto equivocado**, **Error en el cobro** u **Otro** (cualquier otro caso).
+5. Escriba el **Detalle**. Es opcional, salvo con **Otro**: entonces debe explicar el caso con al menos 5 caracteres.
+6. Pulse **Aceptar**.
+
+[CAPTURA 4.11.1: Ventana "Anular venta" — aviso con el monto, lista de motivos y detalle]
+
+**Resultado esperado:** el mensaje "Venta N° … anulada. El stock volvió a sus lotes." La venta queda **Anulada**, el monto sale del cuadre del turno y su comprobante muestra **ANULADO** con el motivo. Devuelva el dinero al cliente: si pagó en efectivo, desde la caja; si pagó con Yape o Plin, desde el celular del negocio, porque el sistema no lo devuelve.
+
+**Ver sus anulaciones:** entre a **Caja** → **Anulaciones**. Verá la fecha y hora, la venta, el motivo, el detalle y el monto de cada anulación suya; con **Período** elige el rango (Hoy, Últimos 7 días, Últimos 30 días o Este año).
+
+[CAPTURA 4.11.2: Caja, pestaña Anulaciones — sus anulaciones con motivo, detalle y monto]
+
+> **Advertencia:** no puede anular ventas de otro usuario. Si su turno ya se cerró, el botón queda desactivado y el sistema responde "Solo se pueden anular ventas de un turno abierto: el cuadre de este turno ya se cerró.": la venta ya no se puede anular, ni siquiera el administrador, porque el cuadre está cerrado. Avise al administrador para que deje constancia del caso. La anulación no se puede deshacer.
 
 ## 5. Reglas del negocio que debe conocer
 
@@ -257,7 +279,7 @@ La pantalla principal tiene tres partes:
 | Montos en efectivo | Efectivo recibido, inicial y contado: en soles con céntimos (2 decimales). |
 | Comprobante | Cliente con RUC: factura F001. DNI o sin cliente: boleta B001. Numeración correlativa. |
 | Yape o Plin | El sistema solo registra la forma de pago. El cajero confirma el pago en el celular del negocio antes de registrar la venta. No entra al efectivo de caja. |
-| Anulaciones | Solo el administrador anula ventas, y solo mientras el turno siga abierto. |
+| Anulaciones | Usted puede anular solo las ventas que registró en su turno, mientras siga abierto, eligiendo un motivo de la lista (con **Otro**, el detalle es obligatorio). El administrador puede anular cualquier venta de un turno abierto. Cada anulación queda registrada con su usuario, fecha, motivo y monto. |
 
 ## 6. Mensajes de error frecuentes
 
@@ -270,6 +292,9 @@ La pantalla principal tiene tres partes:
 | Producto no encontrado. | Revise el código o búsquelo por nombre. Si no existe, avise al administrador. |
 | Stock insuficiente para … quedan N unidad(es) disponibles. | Venda como máximo esa cantidad. |
 | Ingrese un monto inicial válido (por ejemplo 100 o 85.50). | Corrija el monto. |
+| Solo puede anular las ventas que usted registró en su propio turno de caja. | Esa venta es de otro usuario. Pida que la anule quien la registró, o el administrador. |
+| Con el motivo "Otro", escriba el detalle (mínimo 5 caracteres). | Explique el caso en **Detalle** o elija otro motivo de la lista. |
+| Solo se pueden anular ventas de un turno abierto: el cuadre de este turno ya se cerró. | La venta ya no se puede anular. Avise al administrador. |
 | Describa en la observación qué le ocurrió al producto. | Complete la observación de la merma. |
 | Hay una diferencia de caja: explique el motivo en la observación. | Escriba el motivo del faltante o sobrante y pulse **Aceptar**. |
 | Nombre obligatorio y DNI (8 dígitos) o RUC (11 dígitos). | Corrija los datos del cliente. |
@@ -283,7 +308,7 @@ La pantalla principal tiene tres partes:
 
 **¿Por qué el total tiene céntimos sueltos?** Porque es exactamente la base más el IGV, sin redondeo a 10 céntimos: el negocio debe declarar exactamente el IGV cobrado. Entregue el vuelto exacto.
 
-**Me equivoqué en una venta ya cobrada, ¿puedo anularla?** No con su cuenta. Pida al administrador que la anule mientras su turno siga abierto.
+**Me equivoqué en una venta ya cobrada, ¿puedo anularla?** Sí, mientras su turno siga abierto: **Caja** → **Mi turno**, seleccione la venta y pulse **Anular venta** (punto 4.11). Si el turno ya se cerró, avise al administrador.
 
 **¿Por qué no puedo vender un producto que veo en el almacén?** Puede estar en un lote vencido o tener unidades reservadas por una merma pendiente. Revíselo en **Inventario** → **Lotes y vencimientos**.
 
@@ -294,7 +319,7 @@ La pantalla principal tiene tres partes:
 ## Lista de capturas pendientes
 
 <!-- CAPTURAS:inicio -->
-Total: **12 capturas**. Tome cada una con datos de demostración y reemplace el marcador correspondiente.
+Total: **14 capturas**. Tome cada una con datos de demostración y reemplace el marcador correspondiente.
 
 | N° | Pantalla | Qué debe verse | Sección del manual |
 |---|---|---|---|
@@ -310,4 +335,6 @@ Total: **12 capturas**. Tome cada una con datos de demostración y reemplace el 
 | 4.8.1 | Compras, pestaña Alertas de stock | Productos agotados y con stock bajo con su cantidad sugerida | 4.8 Consultar el stock y las alertas |
 | 4.9.1 | Inventario, pestaña Recepción de mercadería | Guía, proveedor y líneas con lote y vencimiento | 4.9 Recibir mercadería |
 | 4.10.1 | Ventana "Cerrar turno N°" | Efectivo esperado, efectivo contado y diferencia | 4.10 Cerrar el turno y cuadrar la caja |
+| 4.11.1 | Ventana "Anular venta" | Aviso con el monto, lista de motivos y detalle | 4.11 Anular una venta |
+| 4.11.2 | Caja, pestaña Anulaciones | Sus anulaciones con motivo, detalle y monto | 4.11 Anular una venta |
 <!-- CAPTURAS:fin -->

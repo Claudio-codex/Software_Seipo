@@ -26,6 +26,46 @@ CREATE DATABASE /*!32312 IF NOT EXISTS*/ `seipo_db` /*!40100 DEFAULT CHARACTER S
 USE `seipo_db`;
 
 --
+-- Table structure for table `anulaciones`
+--
+
+DROP TABLE IF EXISTS `anulaciones`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `anulaciones` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `venta_id` int(11) NOT NULL,
+  `turno_id` int(11) DEFAULT NULL,
+  `usuario_id` int(11) NOT NULL,
+  `rol` varchar(20) NOT NULL,
+  `fecha` datetime NOT NULL,
+  `motivo` varchar(50) NOT NULL,
+  `detalle` varchar(255) DEFAULT NULL,
+  `monto` decimal(10,2) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `venta_id` (`venta_id`),
+  KEY `turno_id` (`turno_id`),
+  KEY `usuario_id` (`usuario_id`),
+  KEY `idx_anulaciones_fecha` (`fecha`),
+  CONSTRAINT `anulaciones_ibfk_1` FOREIGN KEY (`venta_id`) REFERENCES `ventas` (`id`),
+  CONSTRAINT `anulaciones_ibfk_2` FOREIGN KEY (`turno_id`) REFERENCES `turnos` (`id`),
+  CONSTRAINT `anulaciones_ibfk_3` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `anulaciones`
+--
+
+SET @OLD_AUTOCOMMIT=@@AUTOCOMMIT, @@AUTOCOMMIT=0;
+LOCK TABLES `anulaciones` WRITE;
+/*!40000 ALTER TABLE `anulaciones` DISABLE KEYS */;
+/*!40000 ALTER TABLE `anulaciones` ENABLE KEYS */;
+UNLOCK TABLES;
+COMMIT;
+SET AUTOCOMMIT=@OLD_AUTOCOMMIT;
+
+--
 -- Table structure for table `clientes`
 --
 

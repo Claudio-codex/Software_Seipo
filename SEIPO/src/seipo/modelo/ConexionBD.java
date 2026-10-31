@@ -300,6 +300,24 @@ public class ConexionBD {
                         "    FOREIGN KEY (producto_id) REFERENCES productos(id)" +
                         ");",
 
+                // Registro de cada anulación: quién la hizo, con qué rol, cuándo, por qué y por cuánto.
+                // Las ventas anuladas antes de existir esta tabla no tienen registro.
+                "CREATE TABLE IF NOT EXISTS anulaciones (" +
+                        "    id INT AUTO_INCREMENT PRIMARY KEY," +
+                        "    venta_id INT NOT NULL UNIQUE," +
+                        "    turno_id INT," +
+                        "    usuario_id INT NOT NULL," +
+                        "    rol VARCHAR(20) NOT NULL," +
+                        "    fecha DATETIME NOT NULL," +
+                        "    motivo VARCHAR(50) NOT NULL," +
+                        "    detalle VARCHAR(255)," +
+                        "    monto DECIMAL(10, 2) NOT NULL," +
+                        "    FOREIGN KEY (venta_id) REFERENCES ventas(id)," +
+                        "    FOREIGN KEY (turno_id) REFERENCES turnos(id)," +
+                        "    FOREIGN KEY (usuario_id) REFERENCES usuarios(id)," +
+                        "    INDEX idx_anulaciones_fecha (fecha)" +
+                        ");",
+
                 // Parámetros que configura el administrador: datos del negocio para el comprobante
                 "CREATE TABLE IF NOT EXISTS configuracion (" +
                         "    clave VARCHAR(50) PRIMARY KEY," +

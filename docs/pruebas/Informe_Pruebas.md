@@ -1,22 +1,22 @@
 # Informe de pruebas de caja negra — SEIPO
 
-**Curso:** Procesos de Software · **Sistema:** SEIPO, sistema de venta e inventario · **Fecha de ejecución:** 19/10/2026 (corridas 1 a 5), 29/10/2026 (corridas 6 a 8) y 30/10/2026 (corrida 9)
+**Curso:** Procesos de Software · **Sistema:** SEIPO, sistema de venta e inventario · **Fecha de ejecución:** 19/10/2026 (corridas 1 a 5), 29/10/2026 (corridas 6 a 8) y 30/10/2026 (corridas 9 y 10)
 
-**Resultado final (corrida 9): 15 de 15 casos aprobados (100 %).** Evidencias en [`evidencias/`](evidencias/) · Defectos en [`Defectos.md`](Defectos.md) · Tabla para Excel en [`Casos_de_Prueba.csv`](Casos_de_Prueba.csv) · Diapositivas en [`Resumen_para_PPT.md`](Resumen_para_PPT.md)
+**Resultado final (corrida 10): 19 de 19 casos aprobados (100 %).** Evidencias en [`evidencias/`](evidencias/) · Defectos en [`Defectos.md`](Defectos.md) · Tabla para Excel en [`Casos_de_Prueba.csv`](Casos_de_Prueba.csv) · Diapositivas en [`Resumen_para_PPT.md`](Resumen_para_PPT.md)
 
 ## 1. Objetivo y alcance
 
-Verificar con pruebas automatizadas que SEIPO cumple las reglas de negocio de `Documentacion_Proyecto_Seipo_2.docx` en sus procesos principales: acceso y roles, turno de caja, venta con IGV, descuento VIP, FEFO, forma de pago, comprobantes, anulación, mermas, compras, cierre de caja y reportes. Se ejecutaron 15 casos sobre la lógica de negocio (controladores) y la base de datos. La interfaz gráfica solo se usó para comprobar qué módulos ve cada rol.
+Verificar con pruebas automatizadas que SEIPO cumple las reglas de negocio de `Documentacion_Proyecto_Seipo_2.docx` en sus procesos principales: acceso y roles, turno de caja, venta con IGV, descuento VIP, FEFO, forma de pago, comprobantes, anulación (por el administrador y por el personal en su propio turno, con registro del motivo), mermas, compras, cierre de caja y reportes. Se ejecutaron 19 casos sobre la lógica de negocio (controladores) y la base de datos. La interfaz gráfica solo se usó para comprobar qué módulos ve cada rol.
 
 ## 2. Estrategia de pruebas
 
-- **Tipo de prueba:** caja negra. Cada resultado esperado se fijó con la regla de negocio del documento, no con lo que hace el código. Si el código y el documento no coinciden, la diferencia se reporta como defecto. El código de producción solo se modificó para corregir DEF-01 (después de la corrida 1) y las observaciones OBS-02 a OBS-05 (antes de la corrida 4). Antes de la corrida 5 se quitó la pasarela de pago simulada por decisión del equipo (CAM-01), y CP-02, CP-09 y CP-11 se ajustaron a ese cambio. Antes de la corrida 6 se cifraron las contraseñas (OBS-06); ningún caso cambió. Antes de la corrida 9 se quitó el redondeo del total a 10 céntimos, a pedido del docente: el IGV es el 18 % de la base con 2 decimales y el total es base más IGV, para que el negocio declare exactamente el IGV cobrado. CP-05 se ajustó al nuevo resultado.
+- **Tipo de prueba:** caja negra. Cada resultado esperado se fijó con la regla de negocio del documento, no con lo que hace el código. Si el código y el documento no coinciden, la diferencia se reporta como defecto. El código de producción solo se modificó para corregir DEF-01 (después de la corrida 1) y las observaciones OBS-02 a OBS-05 (antes de la corrida 4). Antes de la corrida 5 se quitó la pasarela de pago simulada por decisión del equipo (CAM-01), y CP-02, CP-09 y CP-11 se ajustaron a ese cambio. Antes de la corrida 6 se cifraron las contraseñas (OBS-06); ningún caso cambió. Antes de la corrida 9 se quitó el redondeo del total a 10 céntimos, a pedido del docente: el IGV es el 18 % de la base con 2 decimales y el total es base más IGV, para que el negocio declare exactamente el IGV cobrado. CP-05 se ajustó al nuevo resultado. Antes de la corrida 10, a pedido del docente, el personal pasó a poder anular las ventas que registró en su propio turno abierto, con un motivo de una lista y un registro de anulaciones (CAM-02, cambio de alcance). Se agregaron CP-16 a CP-19, y CP-11 usa la firma nueva de la anulación (con motivo de la lista).
 - **Técnicas:**
-  - **Partición en clases de equivalencia (válidas e inválidas).** Credenciales correctas, clave errada y usuario inexistente; venta con y sin turno; forma de pago admitida y no admitida; cliente con RUC, con DNI y sin documento; merma aprobada y rechazada; administrador y personal.
-  - **Valores límite.** Stock exacto y stock + 1 (CP-08); umbral de compras del descuento VIP y una compra por debajo (CP-06); efectivo contado por debajo y por encima del esperado (CP-14); producto en el mínimo de stock (CP-13); clave con un espacio de más (CP-01); precio con céntimos sueltos para comprobar que el total no se redondea a 10 céntimos (CP-05).
+  - **Partición en clases de equivalencia (válidas e inválidas).** Credenciales correctas, clave errada y usuario inexistente; venta con y sin turno; forma de pago admitida y no admitida; cliente con RUC, con DNI y sin documento; merma aprobada y rechazada; administrador y personal; venta propia y de otro usuario, turno abierto y cerrado (CP-17); motivo de la lista y fuera de ella (CP-18).
+  - **Valores límite.** Stock exacto y stock + 1 (CP-08); umbral de compras del descuento VIP y una compra por debajo (CP-06); efectivo contado por debajo y por encima del esperado (CP-14); producto en el mínimo de stock (CP-13); clave con un espacio de más (CP-01); precio con céntimos sueltos para comprobar que el total no se redondea a 10 céntimos (CP-05); detalle de 4 y de 5 caracteres con el motivo "Otro" (CP-18).
 - **Independencia y repetibilidad:**
   - Antes de la primera prueba, la base `seipo_test` se crea desde `SEIPO/bd/seipo_db.sql`, y después de cada prueba se vuelve a cargar. Así todas empiezan con los mismos datos y la base queda como estaba.
-  - Cada prueba crea sus propios productos (códigos `CP01`…`CP15`), lotes, clientes y turnos.
+  - Cada prueba crea sus propios productos (códigos `CP01`…`CP19`), lotes, clientes y turnos.
   - La base de producción `seipo_db` y su `config.properties` nunca se usan.
 
 ## 3. Entorno y ejecución
@@ -24,12 +24,12 @@ Verificar con pruebas automatizadas que SEIPO cumple las reglas de negocio de `D
 | Elemento | Detalle |
 |---|---|
 | Base de datos | MariaDB 12.3.3 (servicio de Windows), base `seipo_test`, usuario `seipo` (necesita `GRANT ALL PRIVILEGES ON seipo_test.*`) |
-| Pruebas | JUnit 5.12.2 (Jupiter), jar en `SEIPO/lib-test/`; 15 casos en `SEIPO/test/seipo/pruebas/` |
+| Pruebas | JUnit 5.12.2 (Jupiter), jar en `SEIPO/lib-test/`; 19 casos en `SEIPO/test/seipo/pruebas/` |
 | Java | JDK 25.0.3 |
-| Usuarios de demostración | `admin` / `123` (administrador) y `Personal1` / `890` (personal de tienda) |
+| Usuarios de demostración | `admin` / `123` (administrador), `Personal1` / `890` y `personal2` / `456` (personal de tienda) |
 | Cómo ejecutar | IntelliJ: configuración **Pruebas SEIPO** → ▶. Consola: `pruebas.bat` en la raíz del repositorio. Duración: unos 15 segundos |
 
-## 4. Casos de prueba (resultado final, corrida 9)
+## 4. Casos de prueba (resultado final, corrida 10)
 
 | ID | Proceso / requisito | Entrada | Resultado esperado | Resultado obtenido | Estado | Corregido en |
 |---|---|---|---|---|---|---|
@@ -43,16 +43,22 @@ Verificar con pruebas automatizadas que SEIPO cumple las reglas de negocio de `D
 | CP-08 | Stock insuficiente (valor límite) | Stock 4 (2 lotes de 2): pedir 5 y luego 4 | Con 5 se rechaza sin registros parciales (rollback); con 4 procede | 5: rechazada, sin ningún registro. 4: registrada, stock 0 y ambos lotes en 0 | Pasó | — |
 | CP-09 | Forma de pago (proceso 15) | Tarjeta 4111 1111 1111 1111; forma de pago "Transferencia"; 1 unidad de S/ 10.00 con Yape o Plin | La tarjeta (retirada de esta versión) y cualquier forma que no sea Efectivo o Yape o Plin se rechazan sin registros. Yape o Plin se registra como forma de pago, sin efectivo recibido, con comprobante, y suma en el turno sin cambiar el efectivo en caja | Tarjeta y "Transferencia" rechazadas sin registros. Venta con Yape o Plin por S/ 11.80, sin efectivo recibido y con comprobante. Turno: Yape o Plin S/ 11.80, efectivo en caja S/ 100.00. No existe la tabla de la pasarela | Pasó | Corrida 5 (CAM-01) |
 | CP-10 | Comprobante | Venta a cliente con RUC, con DNI y sin cliente | RUC: factura serie F; DNI o sin documento: boleta serie B; numeración correlativa de 1 en 1 | Factura F001-00001149 (última era 1148); boletas B001-00006694 y B001-00006695 (última era 6693); con código de verificación | Pasó | — |
-| CP-11 | Anulación de venta | Como administrador, anular una venta en efectivo (5 u. de 2 lotes) y una con Plin (5 u.) | Stock vuelve a los mismos lotes; la venta queda anulada y sale del cuadre del turno | Lotes de vuelta a 3 y 10 u., stock 13, ambas ventas ANULADA, total del turno y Yape o Plin en S/ 0.00, 3 movimientos de anulación (uno por lote) | Pasó | Corrida 5 (CAM-01) |
+| CP-11 | Anulación de venta | Como administrador, anular una venta en efectivo (5 u. de 2 lotes) y una con Plin (5 u.) | Stock vuelve a los mismos lotes; la venta queda anulada y sale del cuadre del turno | Lotes de vuelta a 3 y 10 u., stock 13, ambas ventas ANULADA, total del turno y Yape o Plin en S/ 0.00, 3 movimientos de anulación (uno por lote) | Pasó | Corrida 5 (CAM-01); corrida 10 (CAM-02, motivo de la lista) |
 | CP-12 | Mermas (proceso 13) | `Personal1` registra 2 mermas (3 u. y 2 u.); intenta aprobar una; `admin` aprueba la primera y rechaza la segunda | Nace pendiente sin descontar stock; al aprobar descuenta y registra al autorizador; al rechazar no descuenta | Nace PENDIENTE con stock y lote intactos (10). El personal no puede aprobarla. Al aprobar: stock y lote 7, con autorizador y fecha. Al rechazar: stock sigue en 7 | Pasó | — |
 | CP-13 | Alertas y orden de compra (procesos 09-14) | Producto con mínimo 10, máximo 50 y stock 4; `Personal1` crea la orden; `admin` la aprueba | Aparece la alerta de reposición; la orden se crea y la aprueba el administrador | Alerta "Stock bajo" con cantidad sugerida. Orden PENDIENTE; el personal no puede aprobarla y el administrador sí (APROBADA). Las unidades pasan a "en pedido" | Pasó | — |
 | CP-14 | Cierre de turno (proceso 12) | Turno 1: S/ 100.00 inicial + S/ 11.80, cuenta S/ 110.00. Turno 2: S/ 50.00 + S/ 11.80, cuenta S/ 62.30. Luego intentar vender | Faltante y sobrante por la diferencia exacta; el turno queda cerrado y no admite ventas | Turno 1: esperado S/ 111.80, faltante −S/ 1.80. Turno 2: esperado S/ 61.80, sobrante +S/ 0.50. Ambos CERRADO; la venta posterior se rechazó sin registros | Pasó | — |
 | CP-15 | Reportes y exportación (proceso 16) | Mermas del día: 1 aprobada (4 u. × S/ 7.90), 1 rechazada, 1 pendiente; exportar a PDF y Excel | Se crean ambos archivos, no están vacíos y los totales coinciden con la base | PDF y Excel generados y no vacíos. Valor perdido S/ 31.60, 4 unidades y 3 mermas: iguales en el Excel, en el PDF y en la base. El PDF termina con las líneas de firma | Pasó | — |
+| CP-16 | Anulación por el personal (CAM-02) | `Personal1` vende 5 u. de 2 lotes (S/ 59.00) en su turno abierto y la anula con "Cliente desistió" y un detalle | El stock vuelve a los mismos lotes, la venta queda anulada y sale del cuadre; queda un registro con usuario, rol, turno, fecha y hora, motivo, detalle y monto | Lotes de vuelta a 3 y 10 u., stock 13, venta ANULADA, total del turno S/ 0.00. Un registro con Personal1, rol PERSONAL, su turno, la hora de la anulación, "Cliente desistió", el detalle y S/ 59.00 | Pasó | Corrida 10 (CAM-02, caso nuevo) |
+| CP-17 | Anulación no permitida (CAM-02) | `personal2` intenta anular una venta de `Personal1`; `Personal1` intenta anular una venta propia de su turno ya cerrado | Los dos intentos se rechazan con un mensaje claro y sin cambios | Rechazos con "Solo puede anular las ventas que usted registró en su propio turno de caja." y "Solo se pueden anular ventas de un turno abierto…". Las dos ventas siguen COMPLETADA, stock 8 y ningún registro nuevo | Pasó | Corrida 10 (CAM-02, caso nuevo) |
+| CP-18 | Motivo obligatorio (CAM-02) | Anular sin motivo, con motivo vacío, con "Porque sí" (fuera de la lista), con "Otro" sin detalle y con "Otro" y 4 caracteres; luego con "Otro" y 5 caracteres | Los cinco primeros intentos se rechazan sin cambios; con 5 caracteres se acepta (valor límite) | Cinco rechazos sin cambios. Con "abcde" la venta queda ANULADA y el registro guarda el detalle | Pasó | Corrida 10 (CAM-02, caso nuevo) |
+| CP-19 | Anulación por el administrador (CAM-02) | `Personal1` vende 2 u. con Yape o Plin (S/ 23.60) en su turno abierto; `admin` la anula con "Error en el cobro" sin detalle | La venta queda anulada y también queda registrada, con el rol de administrador | Venta ANULADA con el motivo en el comprobante, stock 10. Registro con admin, rol ADMINISTRADOR, "Error en el cobro", sin detalle y S/ 23.60; aparece en el registro del administrador | Pasó | Corrida 10 (CAM-02, caso nuevo) |
 
 ## 5. Adaptaciones respecto al diseño original
 
 - **CP-09:** el documento indica (Alcance de esta versión) que *"el cobro con tarjeta se retiró de esta versión"*. Por eso la tarjeta 4111 1111 1111 1111 se prueba como una forma de pago que debe rechazarse. Desde la corrida 5 el sistema solo registra la forma de pago (CAM-01): ya no hay pasarela, token ni autorización que probar, y la tarjeta terminada en 0002 ("fondos insuficientes") no aplica.
 - **CP-11:** la venta "con tarjeta" se hace con Plin. Desde la corrida 5 ya no hay cobro que reembolsar: se verifica que la venta anulada salga del cuadre del turno. El dinero de Yape o Plin lo devuelve el cajero desde el celular del negocio.
+- **CP-11:** desde la corrida 10 la anulación pide un motivo de la lista. CP-11 anula con "Error de registro" y "Cliente desistió" y verifica lo mismo que antes.
+- **CP-16 a CP-19 (CAM-02):** prueban la regla nueva que pidió el docente: el personal anula solo las ventas que registró en su propio turno abierto, con motivo obligatorio, y cada anulación (también las del administrador) queda en la tabla `anulaciones`.
 
 ## 6. Historial de corridas
 
@@ -66,9 +72,10 @@ Verificar con pruebas automatizadas que SEIPO cumple las reglas de negocio de `D
 | 6 | 29/10/2026 23:07 | 14/15 | 93,3 % | CP-15 (entorno) | Regresión tras cifrar las contraseñas (OBS-06). Las verificaciones de los 15 casos pasaron, pero JUnit marcó CP-15 como fallido al no poder borrar su carpeta temporal: otro proceso de Windows tenía abierto `mermas.pdf`. El sistema cierra el archivo; es un fallo del entorno y se repitió la corrida | [`Resultados_Corrida_6.txt`](evidencias/Resultados_Corrida_6.txt) |
 | 7 | 29/10/2026 23:08 | 15/15 | 100 % | — | Repetición de la corrida 6 sin cambios en el código ni en las pruebas | [`Resultados_Corrida_7.txt`](evidencias/Resultados_Corrida_7.txt) |
 | 8 | 29/10/2026 23:40 | 15/15 | 100 % | — | Corrida 8: regresión tras el cambio visual (tema claro con acento naranja, menú con iconos, tarjetas e insignias de estado). Solo cambió la capa de vista; ningún caso cambió | [`Resultados_Corrida_8.txt`](evidencias/Resultados_Corrida_8.txt) |
-| 9 | 30/10/2026 19:39 | **15/15** | **100 %** | — | Corrida 9: regresión tras quitar el redondeo del IGV. El total es base más IGV con 2 decimales, sin redondeo a 10 céntimos; el efectivo acepta céntimos y el vuelto es exacto. CP-05 se ajustó al nuevo resultado (total S/ 14.57, vuelto S/ 5.43); CP-09, CP-10, CP-11 y CP-14 siguen pasando con totales exactos | [`Resultados_Corrida_9.txt`](evidencias/Resultados_Corrida_9.txt) |
+| 9 | 30/10/2026 19:39 | 15/15 | 100 % | — | Corrida 9: regresión tras quitar el redondeo del IGV. El total es base más IGV con 2 decimales, sin redondeo a 10 céntimos; el efectivo acepta céntimos y el vuelto es exacto. CP-05 se ajustó al nuevo resultado (total S/ 14.57, vuelto S/ 5.43); CP-09, CP-10, CP-11 y CP-14 siguen pasando con totales exactos | [`Resultados_Corrida_9.txt`](evidencias/Resultados_Corrida_9.txt) |
+| 10 | 30/10/2026 20:22 | **19/19** | **100 %** | — | Corrida 10: el personal puede anular las ventas de su propio turno abierto, con motivo de una lista y registro de anulaciones (CAM-02). Se agregaron CP-16 a CP-19 y CP-11 usa la firma nueva; los 15 casos anteriores siguen aprobando | [`Resultados_Corrida_10.txt`](evidencias/Resultados_Corrida_10.txt) |
 
-Cada corrida duró unos 15 segundos (14,9 s, 14,5 s, 14,5 s, 15,3 s, 15 s, 16,1 s, 14,3 s, 16,1 s y 14,9 s), incluida la recarga de `seipo_test` antes de la primera prueba y después de cada una.
+Cada corrida duró unos 15 segundos (14,9 s, 14,5 s, 14,5 s, 15,3 s, 15 s, 16,1 s, 14,3 s, 16,1 s, 14,9 s y 18,8 s; la corrida 10 tiene 19 casos), incluida la recarga de `seipo_test` antes de la primera prueba y después de cada una.
 
 ## 7. Defectos y observaciones
 
@@ -84,6 +91,7 @@ El detalle completo, con pasos para reproducir y esperado contra obtenido, está
 | OBS-05 | — | Textos inexactos: a la ayuda de Usuarios le faltaban Caja y Pagos, y el mensaje de registro de clientes mencionaba una "categoría inicial" | Baja | Corregido y verificado (corrida 4) |
 | CAM-01 | CP-02, CP-09, CP-11 | Cambio de alcance, no defecto: el equipo decidió quitar la pasarela de pago simulada, porque el sistema solo registra la forma de pago. El cajero confirma el pago con Yape o Plin en el celular del negocio; la sección Pagos pasó a ser Negocio (solo los datos del comprobante) | — | Aplicado y verificado (corrida 5) |
 | OBS-06 | CP-01 | Las contraseñas se guardaban en texto plano y quedaban visibles en la base, en los respaldos y en el dump. Ahora se guardan con PBKDF2-HMAC-SHA512 y sal aleatoria; las claves antiguas se cifran solas y siguen entrando | Media | Corregido y verificado (corridas 6 y 7) |
+| CAM-02 | CP-11, CP-16 a CP-19 | Cambio de alcance pedido por el docente, no defecto: el personal puede anular las ventas que registró en su propio turno abierto (antes solo el administrador). El motivo se elige de una lista (con "Otro", detalle obligatorio) y cada anulación queda en la tabla `anulaciones` con usuario, rol, turno, fecha y hora, motivo, detalle y monto. La regla se valida en el controlador | — | Aplicado y verificado (corrida 10) |
 
 OBS-02 a OBS-05 se encontraron al revisar el código para escribir los manuales de usuario, no con los casos automatizados. OBS-06 venía de la recomendación 4 de este informe. Las limitaciones que se dejan como están (creación de productos y proveedores por el personal, exportación del reporte de mermas y falta de recuperación de contraseña) se describen en [`Defectos.md`](Defectos.md#limitaciones-conocidas).
 
@@ -112,10 +120,14 @@ OBS-02 a OBS-05 se encontraron al revisar el código para escribir los manuales 
 - **Instalación nueva:** con `seipo_test` borrada, `ConexionBD` la crea y el `admin` inicial queda cifrado; `admin` / `123` entra.
 - El dump `SEIPO/bd/seipo_db.sql` solo cambió en las tres claves de los usuarios de demostración, que siguen siendo `123`, `890` y `456`.
 
+**Corrida 10 (CAM-02)**
+- **Pantalla (contra `seipo_test`, como `Personal1`):** en **Caja** → **Mi turno**, **Anular venta** se habilita sobre su venta completada y queda desactivado sobre la anulada. La pestaña **Anulaciones** muestra solo sus anulaciones, con período, motivo como insignia, detalle y monto, y las tarjetas de número y monto anulado.
+- **Bases existentes:** `ConexionBD` crea la tabla `anulaciones` al iniciar ("crear si no existe"). El dump `SEIPO/bd/seipo_db.sql` la incluye vacía y se importa sin errores (las pruebas lo cargan antes de cada caso). Las 48 ventas anuladas antes del cambio no tienen registro y su comprobante sigue mostrando ANULADO y el motivo.
+
 ## 8. Conclusiones y recomendaciones
 
 **Conclusiones**
-- **Resultado final:** los 15 casos aprueban (100 %). Los procesos centrales funcionan según el documento: venta con IGV exacto, FEFO, rollback por stock insuficiente, bloqueo sin turno, comprobantes correlativos, anulación con devolución al mismo lote, mermas con autorización, alertas y órdenes de compra, cuadre de caja y reporte de mermas.
+- **Resultado final:** los 19 casos aprueban (100 %). Los procesos centrales funcionan según el documento: venta con IGV exacto, FEFO, rollback por stock insuficiente, bloqueo sin turno, comprobantes correlativos, anulación con devolución al mismo lote, mermas con autorización, alertas y órdenes de compra, cuadre de caja y reporte de mermas.
 - **Integridad transaccional:** en todos los rechazos probados (sin turno, stock insuficiente, forma de pago no admitida, turno cerrado y tarjeta) no quedaron registros parciales.
 - **Defecto de seguridad:** el control de acceso dependía solo de la interfaz (DEF-01). Se corrigió en el controlador y quedó cubierto por CP-02.
 - **Requerimiento ambiguo:** las pruebas detectaron uno (OBS-01), que se resolvió aclarando el documento sin cambiar el código.
@@ -123,6 +135,7 @@ OBS-02 a OBS-05 se encontraron al revisar el código para escribir los manuales 
 - **Cambio de alcance:** la corrida 5 confirmó que quitar la pasarela simulada (CAM-01) no afectó a los demás procesos (15/15).
 - **Contraseñas:** desde la corrida 6 se guardan cifradas (OBS-06). La corrida 7 confirmó que el acceso y los demás procesos siguen funcionando (15/15).
 - **IGV sin redondeo:** desde la corrida 9 el total es base más IGV con 2 decimales, sin redondeo a 10 céntimos, para que el negocio declare exactamente el IGV cobrado. La corrida 9 confirmó que los 15 casos siguen aprobando (15/15).
+- **Anulación por el personal:** desde la corrida 10 el personal anula las ventas de su propio turno abierto, con motivo obligatorio y registro de cada anulación (CAM-02). La regla se valida en el controlador; los intentos no permitidos se rechazan sin cambios (CP-17 y CP-18). La corrida 10 dio 19/19.
 
 **Recomendaciones**
 1. Mantener la validación de rol en cada controlador nuevo que gestione información administrativa.

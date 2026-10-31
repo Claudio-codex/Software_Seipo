@@ -1,6 +1,6 @@
 # Defectos y observaciones — Pruebas de SEIPO
 
-Registro de los hallazgos de las pruebas de caja negra (CP-01 a CP-15). Las evidencias de cada corrida están en [`evidencias/`](evidencias/). Volver al [informe de pruebas](Informe_Pruebas.md).
+Registro de los hallazgos de las pruebas de caja negra (CP-01 a CP-19). Las evidencias de cada corrida están en [`evidencias/`](evidencias/). Volver al [informe de pruebas](Informe_Pruebas.md).
 
 | ID | Caso | Severidad | Estado | Corrida en que se detectó | Corrida en que se cerró |
 |---|---|---|---|---|---|
@@ -12,6 +12,7 @@ Registro de los hallazgos de las pruebas de caja negra (CP-01 a CP-15). Las evid
 | OBS-05 | — | Baja | Corregido y verificado | Revisión del código para los manuales | Corrida 4 |
 | CAM-01 | CP-02, CP-09, CP-11 | — (cambio de alcance) | Aplicado y verificado | Decisión del equipo | Corrida 5 |
 | OBS-06 | CP-01 | Media | Corregido y verificado | Recomendación 4 del informe | Corridas 6 y 7 |
+| CAM-02 | CP-11, CP-16 a CP-19 | — (cambio de alcance) | Aplicado y verificado | Observación del docente | Corrida 10 |
 
 Las observaciones OBS-02 a OBS-05 no las detectó ninguno de los 15 casos automatizados. Se encontraron al leer el código de las pantallas para escribir los manuales de usuario, después de la corrida 3. Se corrigieron antes de la corrida 4. La corrida 4 confirmó que los 15 casos siguen aprobando (15/15), y cada corrección se verificó aparte como se indica en cada observación.
 
@@ -213,6 +214,31 @@ El descuento VIP automático no cambia: si el cliente elegido tiene un VIP mayor
 **Ajuste de las pruebas.** Ninguno: CP-01 ya probaba la clave correcta, la errada, el usuario inexistente y el espacio de más, y sigue pasando sin cambios.
 
 **Verificación:** la aplicación compila; la corrida 6 dio 14/15 por un fallo del entorno en CP-15 (otro proceso de Windows tenía abierto `mermas.pdf` cuando JUnit borraba la carpeta temporal; las verificaciones del caso pasaron) y la corrida 7, sin cambios, dio 15/15. La conversión de bases antiguas, el alta, el restablecimiento y la instalación nueva se verificaron aparte contra `seipo_test` (ver el [informe](Informe_Pruebas.md#verificaciones-adicionales)).
+
+---
+
+## CAM-02 — El personal puede anular las ventas de su turno, con registro del motivo
+
+- **Tipo:** cambio de alcance pedido por el docente, no es un defecto.
+- **Casos relacionados:** CP-11 (ajustado) y CP-16 a CP-19 (nuevos).
+
+**Motivo.** Antes solo el administrador podía anular ventas. El docente observó que el personal de tienda también debe poder anular las ventas que hizo durante su propio turno abierto, y que cada anulación debe quedar registrada con su motivo.
+
+**Reglas**
+- El personal anula una venta solo si la registró él mismo, es de su turno y ese turno sigue abierto. No anula ventas de otro usuario ni de turnos cerrados.
+- El administrador sigue igual: anula cualquier venta mientras el turno de esa venta siga abierto.
+- El motivo se elige de una lista: Error de registro, Cliente desistió, Producto equivocado, Error en el cobro u Otro. Con "Otro", el detalle es obligatorio (mínimo 5 caracteres); con los demás, es opcional.
+- La anulación sigue devolviendo el stock a los mismos lotes, deja la venta ANULADA, la saca del cuadre del turno y el comprobante muestra ANULADO. Con Yape o Plin, el sistema solo recuerda que el cajero devuelve el dinero desde el celular del negocio.
+
+**Cambio**
+- Tabla nueva `anulaciones` (venta, turno, usuario que anuló, rol, fecha y hora, motivo, detalle y monto de la venta), creada por `ConexionBD` con "crear si no existe" para que las bases existentes la reciban al iniciar. El dump `SEIPO/bd/seipo_db.sql` la incluye vacía.
+- `ControladorVentas.anularVenta(venta, motivo, detalle)` valida el rol, la regla del turno y el motivo **en el controlador** (como DEF-01), y guarda la anulación y su registro en la misma transacción: o se guarda todo o nada. `listarAnulaciones` devuelve todas al administrador y solo las propias al personal.
+- **Caja:** el botón **Anular venta** aparece también para el personal y se habilita solo sobre ventas que puede anular. El diálogo pide el motivo de la lista y el detalle. La pestaña nueva **Anulaciones** muestra el registro con el filtro de período.
+- Las ventas anuladas antes del cambio no se tocan: no tienen registro y su comprobante sigue mostrando ANULADO y el motivo.
+
+**Ajuste de las pruebas.** CP-11 anula con un motivo de la lista y verifica lo mismo que antes. CP-16 a CP-19 prueban la anulación del personal con su registro, los rechazos (venta ajena y turno cerrado), el motivo obligatorio con el valor límite de 5 caracteres, y la anulación del administrador con su registro.
+
+**Verificación:** la aplicación compila y los 19 casos pasan en la corrida 10. La pantalla de Caja se revisó como personal de tienda contra `seipo_test` (ver el [informe](Informe_Pruebas.md#verificaciones-adicionales)).
 
 ---
 

@@ -22,6 +22,12 @@ public class Datos {
     /** Billeteras digitales: solo se registra la forma de pago; el cajero confirma el pago en el celular del negocio. */
     public static final String YAPE_PLIN = "Yape o Plin";
     public static final String[] FORMAS_PAGO = {EFECTIVO, YAPE_PLIN};
+    /** Motivos para anular una venta. Con "Otro" el detalle es obligatorio. */
+    public static final String MOTIVO_OTRO = "Otro";
+    public static final String[] MOTIVOS_ANULACION = {"Error de registro", "Cliente desistió", "Producto equivocado",
+            "Error en el cobro", MOTIVO_OTRO};
+    /** Largo mínimo del detalle cuando el motivo es "Otro". */
+    public static final int DETALLE_MINIMO_OTRO = 5;
     /** Fecha y hora para el historial de ventas y turnos. */
     public static final DateTimeFormatter FECHA_HORA = DateTimeFormatter.ofPattern("dd/MM/yy HH:mm");
 

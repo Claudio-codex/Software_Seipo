@@ -3,6 +3,7 @@ package seipo.vista;
 import seipo.controlador.ControladorCaja;
 import seipo.controlador.ControladorCaja.TurnoVO;
 import seipo.controlador.ControladorVentas;
+import seipo.controlador.ControladorVentas.AnulacionVO;
 import seipo.controlador.ControladorVentas.VentaVO;
 import seipo.modelo.Datos;
 import seipo.modelo.Sesion;
@@ -20,7 +21,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableModel;
 
-/** Apertura y cierre de turno, cuadre de caja, ventas del turno e historial de turnos. */
+/** Apertura y cierre de turno, cuadre de caja, ventas del turno, historial de turnos y registro de anulaciones. */
 public class PanelCaja extends JPanel {
 
     private static final String[] PERIODOS = {"Hoy", "Últimos 7 días", "Últimos 30 días", "Este año"};
@@ -46,6 +47,13 @@ public class PanelCaja extends JPanel {
     private final JTable tablaTurnos = UI.tabla(modeloTurnos);
     private final List<TurnoVO> turnos = new ArrayList<>();
 
+    // Anulaciones
+    private final JComboBox<String> cboPeriodoAnulaciones = new JComboBox<>(PERIODOS);
+    private final DefaultTableModel modeloAnulaciones = UI.modelo("Fecha y hora", "Venta", "Comprobante", "Usuario", "Rol",
+            "Motivo", "Detalle", "Pago", "Monto");
+    private final JTable tablaAnulaciones = UI.tabla(modeloAnulaciones);
+    private final JLabel lblNumAnulaciones = new JLabel(), lblMontoAnulado = new JLabel();
+
     /** @param alCambiar se llama al abrir o cerrar un turno o anular una venta (para actualizar otras pantallas) */
     public PanelCaja(Runnable alCambiar) {
         this.alCambiar = alCambiar;
@@ -56,6 +64,7 @@ public class PanelCaja extends JPanel {
         JTabbedPane pestanas = new JTabbedPane();
         pestanas.addTab("Mi turno", pestanaTurno());
         pestanas.addTab(Sesion.esAdministrador() ? "Historial de turnos" : "Mis turnos", pestanaHistorial());
+        pestanas.addTab("Anulaciones", pestanaAnulaciones());
         pestanas.addChangeListener(e -> refrescar());
         p.add(pestanas, BorderLayout.CENTER);
     }
@@ -158,6 +167,57 @@ public class PanelCaja extends JPanel {
         return h;
     }
 
+    /** Registro de anulaciones: el administrador ve todas; el personal, solo las suyas. */
+    private JPanel pestanaAnulaciones() {
+        JPanel a = new JPanel(new BorderLayout(0, 10));
+        a.setBorder(new EmptyBorder(14, 0, 0, 0));
+        JPanel norte = new JPanel(new BorderLayout(0, 10));
+        norte.setOpaque(false);
+        JPanel kpis = new JPanel(new GridLayout(1, 0, 16, 0));
+        kpis.setOpaque(false);
+        kpis.add(UI.tarjeta("Ventas anuladas", lblNumAnulaciones, Iconos.Tipo.PAPELERA, false));
+        kpis.add(UI.tarjeta("Monto anulado", lblMontoAnulado, Iconos.Tipo.MONEDA, true));
+        norte.add(kpis, BorderLayout.NORTH);
+        JPanel filtro = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
+        filtro.setOpaque(false);
+        filtro.add(new JLabel("Período "));
+        cboPeriodoAnulaciones.setSelectedIndex(2);
+        cboPeriodoAnulaciones.addActionListener(e -> cargarAnulaciones());
+        filtro.add(cboPeriodoAnulaciones);
+        filtro.add(Box.createHorizontalStrut(10));
+        filtro.add(UI.ayuda(Sesion.esAdministrador() ? "Anulaciones de todos los usuarios." : "Solo sus anulaciones."));
+        norte.add(filtro, BorderLayout.SOUTH);
+        a.add(norte, BorderLayout.NORTH);
+
+        int[] anchos = {120, 60, 130, 140, 150, 150, 240, 95, 90};
+        for (int i = 0; i < anchos.length; i++) UI.columnaAncha(tablaAnulaciones, i, anchos[i]);
+        UI.insignias(tablaAnulaciones, 5);
+        a.add(new JScrollPane(tablaAnulaciones), BorderLayout.CENTER);
+        a.add(UI.ayuda("Las ventas anuladas antes de existir este registro no aparecen aquí; su comprobante sigue mostrando ANULADO y el motivo."),
+                BorderLayout.SOUTH);
+        return a;
+    }
+
+    private void cargarAnulaciones() {
+        List<AnulacionVO> lista;
+        try {
+            lista = ventas.listarAnulaciones(desdePeriodo(cboPeriodoAnulaciones), LocalDate.now());
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            lista = new ArrayList<>();
+        }
+        modeloAnulaciones.setRowCount(0);
+        double total = 0;
+        for (AnulacionVO an : lista) {
+            total += an.monto;
+            modeloAnulaciones.addRow(new Object[]{an.fecha.format(Datos.FECHA_HORA), an.ventaId,
+                    an.comprobante == null ? "—" : an.comprobante, an.usuario, Sesion.textoRol(an.rol), an.motivo,
+                    an.detalle == null ? "—" : an.detalle, an.formaPago, Datos.soles(an.monto)});
+        }
+        lblNumAnulaciones.setText(String.valueOf(lista.size()));
+        lblMontoAnulado.setText(Datos.soles(total));
+    }
+
     public void refrescar() {
         try {
             turno = caja.turnoAbierto();
@@ -175,21 +235,27 @@ public class PanelCaja extends JPanel {
             lblInfoTurno.setText("Turno N° " + turno.id + " abierto el " + turno.abiertoEn.format(Datos.FECHA_HORA)
                     + "  ·  " + turno.numVentas + " venta(s) por " + Datos.soles(turno.totalVendido())
                     + (turno.numAnuladas > 0 ? "  ·  " + turno.numAnuladas + " anulada(s)" : ""));
-            ventasTurno.cargar(turno.id);
+            ventasTurno.cargar(turno);
             tarjetasTurno.show(panelTurno, "abierto");
         }
         cargarHistorial();
+        cargarAnulaciones();
+    }
+
+    /** Primer día del período elegido en un selector de PERIODOS (el último es hoy). */
+    private static LocalDate desdePeriodo(JComboBox<String> periodo) {
+        LocalDate hoy = LocalDate.now();
+        switch (periodo.getSelectedIndex()) {
+            case 0: return hoy;
+            case 1: return hoy.minusDays(6);
+            case 2: return hoy.minusDays(29);
+            default: return hoy.withDayOfYear(1);
+        }
     }
 
     private void cargarHistorial() {
         LocalDate hoy = LocalDate.now();
-        LocalDate desde;
-        switch (cboPeriodo.getSelectedIndex()) {
-            case 0: desde = hoy; break;
-            case 1: desde = hoy.minusDays(6); break;
-            case 2: desde = hoy.minusDays(29); break;
-            default: desde = hoy.withDayOfYear(1); break;
-        }
+        LocalDate desde = desdePeriodo(cboPeriodo);
         turnos.clear();
         modeloTurnos.setRowCount(0);
         try {
@@ -316,7 +382,7 @@ public class PanelCaja extends JPanel {
                 Dialog.ModalityType.APPLICATION_MODAL);
         JPanel c = UI.base();
         TablaVentas tv = new TablaVentas(this::refrescar);
-        tv.cargar(t.id);
+        tv.cargar(t);
         c.add(tv, BorderLayout.CENTER);
         d.setContentPane(c);
         d.setSize(980, 560);
@@ -334,13 +400,14 @@ public class PanelCaja extends JPanel {
         }
     }
 
-    /** Tabla de ventas de un turno con su detalle y la anulación (solo administrador). */
+    /** Tabla de ventas de un turno con su detalle y la anulación (administrador, o personal en su propio turno abierto). */
     private class TablaVentas extends JPanel {
         private final DefaultTableModel modelo = UI.modelo("N°", "Hora", "Comprobante", "Cliente", "Vendedor", "Pago", "Total", "Recibido", "Vuelto", "Estado");
         private final JTable tabla = UI.tabla(modelo);
         private final List<VentaVO> lista = new ArrayList<>();
         private final Runnable alAnular;
-        private int turnoId;
+        private final JButton btnAnular = UI.botonPeligro("Anular venta");
+        private TurnoVO turno;
 
         TablaVentas(Runnable alAnular) {
             super(new BorderLayout(0, 8));
@@ -354,29 +421,29 @@ public class PanelCaja extends JPanel {
                     if (e.getClickCount() == 2) verDetalle();
                 }
             });
+            // El botón solo se habilita sobre una venta que el usuario puede anular (el controlador lo vuelve a validar)
+            tabla.getSelectionModel().addListSelectionListener(e -> actualizarBoton());
             add(new JScrollPane(tabla), BorderLayout.CENTER);
             JPanel botones = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
             botones.setOpaque(false);
             JButton detalle = UI.botonSecundario("Ver comprobante");
             detalle.addActionListener(e -> verDetalle());
             botones.add(detalle);
-            if (Sesion.esAdministrador()) {
-                JButton anular = UI.botonPeligro("Anular venta");
-                anular.addActionListener(e -> anular());
-                botones.add(anular);
-                botones.add(UI.ayuda("  Al anular, el stock vuelve a sus lotes. Solo en turnos abiertos."));
-            } else {
-                botones.add(UI.ayuda("  Para anular una venta, pida autorización al administrador."));
-            }
+            btnAnular.addActionListener(e -> anular());
+            btnAnular.setEnabled(false);
+            botones.add(btnAnular);
+            botones.add(UI.ayuda(Sesion.esAdministrador()
+                    ? "  Al anular, el stock vuelve a sus lotes. Solo en turnos abiertos."
+                    : "  Puede anular solo las ventas que registró en su turno abierto. El stock vuelve a sus lotes."));
             add(botones, BorderLayout.SOUTH);
         }
 
-        void cargar(int turnoId) {
-            this.turnoId = turnoId;
+        void cargar(TurnoVO turno) {
+            this.turno = turno;
             lista.clear();
             modelo.setRowCount(0);
             try {
-                lista.addAll(ventas.listarVentasTurno(turnoId));
+                lista.addAll(ventas.listarVentasTurno(turno.id));
             } catch (SQLException ex) {
                 ex.printStackTrace();
             }
@@ -386,6 +453,13 @@ public class PanelCaja extends JPanel {
                         v.vendedor, v.formaPago, Datos.soles(v.total), v.recibido == null ? "—" : Datos.soles(v.recibido),
                         vuelto == null ? "—" : Datos.soles(vuelto), v.anulada() ? "Anulada" : "Completada"});
             }
+            actualizarBoton();
+        }
+
+        private void actualizarBoton() {
+            int f = tabla.getSelectedRow();
+            VentaVO v = f < 0 ? null : lista.get(tabla.convertRowIndexToModel(f));
+            btnAnular.setEnabled(ControladorVentas.puedeAnular(v, turno));
         }
 
         private VentaVO seleccionada() {
@@ -403,6 +477,7 @@ public class PanelCaja extends JPanel {
             if (v != null) DialogoComprobante.mostrar(this, v.id, false);
         }
 
+        /** Diálogo de anulación: motivo de la lista, detalle (obligatorio con "Otro") y confirmación. */
         private void anular() {
             VentaVO v = seleccionada();
             if (v == null) return;
@@ -410,24 +485,41 @@ public class PanelCaja extends JPanel {
                 JOptionPane.showMessageDialog(this, "Esa venta ya está anulada.");
                 return;
             }
-            String motivo = JOptionPane.showInputDialog(this, "Anular la venta N° " + v.id + " por " + Datos.soles(v.total)
-                    + ".\nEl stock vuelve a sus lotes y el monto sale del cuadre del turno."
-                    + (Datos.EFECTIVO.equals(v.formaPago) ? "" : "\nEl sistema no devuelve el pago con " + v.formaPago + ": devuélvalo al cliente desde el celular del negocio.")
-                    + "\n\nMotivo de la anulación:",
-                    "Anular venta", JOptionPane.WARNING_MESSAGE);
-            if (motivo == null) return;
-            if (motivo.trim().isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Indique el motivo de la anulación.");
-                return;
+            JComboBox<String> cboMotivo = new JComboBox<>(Datos.MOTIVOS_ANULACION);
+            cboMotivo.setSelectedIndex(-1);
+            JTextField txtDetalle = new JTextField();
+            JLabel lblDetalle = new JLabel();
+            Runnable etiqueta = () -> lblDetalle.setText(Datos.MOTIVO_OTRO.equals(cboMotivo.getSelectedItem())
+                    ? "Detalle (obligatorio, mínimo " + Datos.DETALLE_MINIMO_OTRO + " caracteres):" : "Detalle (opcional):");
+            cboMotivo.addActionListener(e -> etiqueta.run());
+            etiqueta.run();
+            JLabel aviso = new JLabel("<html>Anular la venta N° " + v.id + " por <b>" + Datos.soles(v.total) + "</b> (" + v.formaPago + ").<br>"
+                    + "El stock vuelve a sus lotes y el monto sale del cuadre del turno. No se puede deshacer.</html>");
+            Object[] campos = {aviso, " ", "Motivo de la anulación:", cboMotivo, lblDetalle, txtDetalle};
+            while (true) {
+                if (JOptionPane.showConfirmDialog(this, campos, "Anular venta", JOptionPane.OK_CANCEL_OPTION,
+                        JOptionPane.WARNING_MESSAGE) != JOptionPane.OK_OPTION) return;
+                String motivo = (String) cboMotivo.getSelectedItem();
+                String error = ControladorVentas.validarMotivo(motivo, txtDetalle.getText());
+                if (error != null) {
+                    JOptionPane.showMessageDialog(this, error);
+                    continue;
+                }
+                try {
+                    ventas.anularVenta(v.id, motivo, txtDetalle.getText());
+                } catch (SQLException ex) {
+                    JOptionPane.showMessageDialog(this, ex.getMessage(), "No se pudo anular", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                break;
             }
-            try {
-                ventas.anularVenta(v.id, motivo.trim());
-                cargar(turnoId);
-                alAnular.run();
-                alCambiar.run();
-            } catch (SQLException ex) {
-                JOptionPane.showMessageDialog(this, ex.getMessage(), "No se pudo anular", JOptionPane.ERROR_MESSAGE);
-            }
+            JOptionPane.showMessageDialog(this, "Venta N° " + v.id + " anulada. El stock volvió a sus lotes."
+                    + (Datos.EFECTIVO.equals(v.formaPago) ? "\nDevuelva " + Datos.soles(v.total) + " en efectivo al cliente."
+                    : "\nEl sistema no devuelve el pago con " + v.formaPago + ": devuelva " + Datos.soles(v.total)
+                    + " al cliente desde el celular del negocio."));
+            cargar(turno);
+            alAnular.run();
+            alCambiar.run();
         }
     }
 }
