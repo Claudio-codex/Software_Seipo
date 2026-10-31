@@ -1,8 +1,8 @@
 # Informe de pruebas de caja negra — SEIPO
 
-**Curso:** Procesos de Software · **Sistema:** SEIPO, sistema de venta e inventario · **Fecha de ejecución:** 19/10/2026 (corridas 1 a 5), 29/10/2026 (corridas 6 a 8) y 30/10/2026 (corridas 9 a 16)
+**Curso:** Procesos de Software · **Sistema:** SEIPO, sistema de venta e inventario · **Fecha de ejecución:** 19/10/2026 (corridas 1 a 5), 29/10/2026 (corridas 6 a 8) y 30/10/2026 (corridas 9 a 17)
 
-**Resultado final (corrida 16): 24 de 24 casos aprobados (100 %).** Evidencias en [`evidencias/`](evidencias/) · Defectos en [`Defectos.md`](Defectos.md) · Tabla para Excel en [`Casos_de_Prueba.csv`](Casos_de_Prueba.csv) · Diapositivas en [`Resumen_para_PPT.md`](Resumen_para_PPT.md)
+**Resultado final (corrida 17): 24 de 24 casos aprobados (100 %).** Evidencias en [`evidencias/`](evidencias/) · Defectos en [`Defectos.md`](Defectos.md) · Tabla para Excel en [`Casos_de_Prueba.csv`](Casos_de_Prueba.csv) · Diapositivas en [`Resumen_para_PPT.md`](Resumen_para_PPT.md)
 
 ## 1. Objetivo y alcance
 
@@ -29,7 +29,7 @@ Verificar con pruebas automatizadas que SEIPO cumple las reglas de negocio de `D
 | Usuarios de demostración | `admin` / `123` (administrador), `Personal1` / `890` y `personal2` / `456` (personal de tienda) |
 | Cómo ejecutar | IntelliJ: configuración **Pruebas SEIPO** → ▶. Consola: `pruebas.bat` en la raíz del repositorio. Duración: unos 15 segundos |
 
-## 4. Casos de prueba (resultado final, corrida 16)
+## 4. Casos de prueba (resultado final, corrida 17)
 
 | ID | Proceso / requisito | Entrada | Resultado esperado | Resultado obtenido | Estado | Corregido en |
 |---|---|---|---|---|---|---|
@@ -84,9 +84,10 @@ Verificar con pruebas automatizadas que SEIPO cumple las reglas de negocio de `D
 | 13 | 30/10/2026 21:13 | 23/24 | 95,8 % | CP-15 (limpieza) | El controlador rechaza la recepción de lotes vencidos (OBS-07) y se agrega CP-24, que pasa. CP-15 pasó sus verificaciones, pero JUnit no pudo borrar su carpeta temporal porque `mermas.pdf` seguía abierto | [`Resultados_Corrida_13.txt`](evidencias/Resultados_Corrida_13.txt) |
 | 14 | 30/10/2026 21:14 | 23/24 | 95,8 % | CP-15 (limpieza) | Repetición de la corrida 13 sin cambios; el mismo fallo de CP-15 | [`Resultados_Corrida_14.txt`](evidencias/Resultados_Corrida_14.txt) |
 | 15 | 30/10/2026 21:15 | 23/24 | 95,8 % | CP-15 (limpieza) | CP-15 reintentó borrar sus archivos durante 10 s y el PDF siguió bloqueado: no era un bloqueo breve de otro proceso. Se investigó la causa (OBS-08) | [`Resultados_Corrida_15.txt`](evidencias/Resultados_Corrida_15.txt) |
-| 16 | 30/10/2026 21:17 | **24/24** | **100 %** | — | Corrida 16: CP-15 lee el PDF desde sus bytes (OBS-08) y se quitan los reintentos. Los 24 casos aprueban, incluido CP-24 | [`Resultados_Corrida_16.txt`](evidencias/Resultados_Corrida_16.txt) |
+| 16 | 30/10/2026 21:17 | 24/24 | 100 % | — | Corrida 16: CP-15 lee el PDF desde sus bytes (OBS-08) y se quitan los reintentos. Los 24 casos aprueban, incluido CP-24 | [`Resultados_Corrida_16.txt`](evidencias/Resultados_Corrida_16.txt) |
+| 17 | 30/10/2026 22:14 | **24/24** | **100 %** | — | Corrida de regresión, misma suite sin casos nuevos: se ajustaron la tipografía y los tamaños de la interfaz (nada menor a 12 pt, botones de al menos 40 px, campos de al menos 32 px, encabezados de tabla en 14 pt y columnas ajustadas a su contenido). Solo cambió la capa de vista | [`Resultados_Corrida_17.txt`](evidencias/Resultados_Corrida_17.txt) |
 
-Cada corrida duró unos 15 segundos (14,9 s, 14,5 s, 14,5 s, 15,3 s, 15 s, 16,1 s, 14,3 s, 16,1 s, 14,9 s, 18,8 s, 18,4 s, 22,4 s, 24,6 s, 29,8 s, 36,1 s y 26,6 s; las corridas 10 y 11 tienen 19 casos, la 12 tiene 23 y de la 13 en adelante 24; la 15 incluye 10 s de reintentos), incluida la recarga de `seipo_test` antes de la primera prueba y después de cada una.
+Cada corrida duró unos 15 segundos (14,9 s, 14,5 s, 14,5 s, 15,3 s, 15 s, 16,1 s, 14,3 s, 16,1 s, 14,9 s, 18,8 s, 18,4 s, 22,4 s, 24,6 s, 29,8 s, 36,1 s, 26,6 s y 23,6 s; las corridas 10 y 11 tienen 19 casos, la 12 tiene 23 y de la 13 en adelante 24; la 15 incluye 10 s de reintentos), incluida la recarga de `seipo_test` antes de la primera prueba y después de cada una.
 
 ## 7. Defectos y observaciones
 

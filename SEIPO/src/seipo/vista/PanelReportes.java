@@ -147,7 +147,7 @@ public class PanelReportes extends JPanel {
     private JPanel filaIndicadores() {
         JPanel fila = new JPanel(new GridLayout(1, 5, 16, 0));
         fila.setOpaque(false);
-        String[] titulos = {"Ingresos", "Nº ventas", "Ticket promedio", "Productos vendidos", "Precio prom. por unidad"};
+        String[] titulos = {"Ingresos", "Nº ventas", "Ticket promedio", "Productos vendidos", "Precio promedio"};
         JLabel[] valores = {lblIngresos, lblNVentas, lblTicket, lblUnidades, lblPrecio};
         JLabel[] deltas = {dIngresos, dNVentas, dTicket, dUnidades, dPrecio};
         Iconos.Tipo[] iconos = {Iconos.Tipo.MONEDA, Iconos.Tipo.CARRITO, Iconos.Tipo.BILLETE, Iconos.Tipo.CUBO, Iconos.Tipo.ETIQUETA};
@@ -484,7 +484,7 @@ public class PanelReportes extends JPanel {
         r.indicadores.add(new ExportadorReporte.Indicador("Nº ventas", k.numeroVentas, Formato.ENTERO));
         r.indicadores.add(new ExportadorReporte.Indicador("Ticket promedio", k.ticketPromedio(), Formato.SOLES));
         r.indicadores.add(new ExportadorReporte.Indicador("Productos vendidos", k.unidades, Formato.ENTERO));
-        r.indicadores.add(new ExportadorReporte.Indicador("Precio prom. por unidad", k.precioPromedio(), Formato.SOLES));
+        r.indicadores.add(new ExportadorReporte.Indicador("Precio promedio", k.precioPromedio(), Formato.SOLES));
 
         ExportadorReporte.Seccion serie = new ExportadorReporte.Seccion(vo.serieMensual ? "Ventas por mes" : "Ventas por día",
                 new String[]{vo.serieMensual ? "Mes" : "Día", "Ventas"}, Formato.TEXTO, Formato.SOLES);

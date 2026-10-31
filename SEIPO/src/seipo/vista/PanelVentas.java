@@ -71,7 +71,6 @@ public class PanelVentas extends JPanel {
         barraTurno.setBorder(UI.bordeTarjeta(6, 14, 6, 8));
         lblTurno.setFont(UI.fuente(Font.PLAIN, 13));
         lblTurnoIcono.setFont(UI.fuente(Font.BOLD, 14));
-        irCaja.setMargin(new Insets(3, 14, 3, 14));
         barraTurno.add(lblTurnoIcono, BorderLayout.WEST);
         barraTurno.add(lblTurno, BorderLayout.CENTER);
         barraTurno.add(irCaja, BorderLayout.EAST);
@@ -146,7 +145,7 @@ public class PanelVentas extends JPanel {
         c.setBackground(UI.SUPERFICIE);
         c.setBorder(UI.bordeTarjeta(10, 16, 10, 12));
         JLabel t = UI.ayuda("CLIENTE (F4)");
-        t.setFont(UI.fuente(Font.BOLD, 11));
+        t.setFont(UI.fuente(Font.BOLD, 12));
         lblCliente.setFont(UI.fuente(Font.BOLD, 14));
         JPanel textos = new JPanel(new GridLayout(0, 1, 0, 2));
         textos.setOpaque(false);
@@ -160,7 +159,6 @@ public class PanelVentas extends JPanel {
         buscar.setToolTipText("Buscar o registrar el cliente de la venta (F4)");
         buscar.addActionListener(e -> elegirCliente());
         for (JButton b : new JButton[]{buscar, quitarCliente}) {
-            b.setFont(UI.fuente(Font.BOLD, 12));
             b.setMargin(new Insets(2, 12, 2, 12));
             botones.add(b);
         }
@@ -189,8 +187,7 @@ public class PanelVentas extends JPanel {
             if (i == 1) {
                 // El concepto Descuento es un botón para cambiar el porcentaje
                 JButton c = UI.botonSecundario("Descuento (F6)");
-                c.setFont(UI.fuente(Font.PLAIN, 12));
-                c.setMargin(new Insets(1, 8, 1, 8));
+                c.setMargin(new Insets(1, 10, 1, 10));
                 c.setToolTipText("Aplicar un porcentaje de descuento a toda la venta");
                 c.addActionListener(e -> aplicarDescuento());
                 JPanel izq = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
@@ -230,7 +227,7 @@ public class PanelVentas extends JPanel {
         pago.setOpaque(false);
         pago.setAlignmentX(LEFT_ALIGNMENT);
         JLabel cobrarCon = new JLabel("COBRAR CON");
-        cobrarCon.setFont(UI.fuente(Font.BOLD, 11));
+        cobrarCon.setFont(UI.fuente(Font.BOLD, 12));
         cobrarCon.setForeground(UI.TEXTO_SECUNDARIO);
         // Junto al título va el conteo de productos y unidades de la venta
         JPanel titulo = new JPanel(new BorderLayout());

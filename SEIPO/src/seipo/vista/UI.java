@@ -75,6 +75,10 @@ public class UI {
         UIManager.put("Button.arc", ARCO);
         UIManager.put("TextComponent.arc", ARCO);
         UIManager.put("CheckBox.arc", 6);
+        // Campos de al menos 32 px de alto y botones de diálogo (Aceptar, Cancelar…) de al menos 40 px
+        Insets margenCampo = new Insets(5, 8, 5, 8);
+        for (String k : new String[]{"TextField.margin", "PasswordField.margin", "FormattedTextField.margin", "Spinner.padding"}) UIManager.put(k, margenCampo);
+        UIManager.put("Button.margin", new Insets(9, 16, 9, 16));
         UIManager.put("Component.focusWidth", 1);
         UIManager.put("Component.innerFocusWidth", 0);
         UIManager.put("Component.focusColor", ACENTO_SUAVE);
@@ -199,7 +203,11 @@ public class UI {
     }
 
     private static JButton crearBoton(String texto, Color fondo, Color hover, Color pulsado, Color letra) {
-        JButton b = new JButton(texto);
+        // Ningún botón de la aplicación mide menos de ALTO_MINIMO_BOTON, aunque se le reduzca el margen o el borde
+        JButton b = new JButton(texto) {
+            @Override public Dimension getPreferredSize() { return conAltoMinimo(super.getPreferredSize()); }
+            @Override public Dimension getMinimumSize() { return conAltoMinimo(super.getMinimumSize()); }
+        };
         b.setFont(NEGRITA);
         b.setBackground(fondo);
         b.setForeground(letra);
@@ -213,25 +221,74 @@ public class UI {
         return b;
     }
 
+    /** Alto mínimo de los botones (para tocarlos y leerlos con comodidad). */
+    static final int ALTO_MINIMO_BOTON = 40;
+
+    private static Dimension conAltoMinimo(Dimension d) {
+        d.height = Math.max(d.height, ALTO_MINIMO_BOTON);
+        return d;
+    }
+
     public static DefaultTableModel modelo(String... columnas) {
         return new DefaultTableModel(columnas, 0) {
             @Override public boolean isCellEditable(int r, int c) { return false; }
         };
     }
 
+    /** Ancho máximo que una columna toma por su contenido; un texto más largo se lee completo en el tooltip. */
+    private static final int ANCHO_MAXIMO_COLUMNA = 600;
+    /** Filas que se miden para ajustar el ancho de las columnas. */
+    private static final int FILAS_MEDIDAS = 300;
+
+    /**
+     * Tabla de solo lectura con el estilo de SEIPO. Cada columna se ajusta al ancho de su encabezado y de su contenido,
+     * así ningún texto queda cortado: si todas caben, la tabla ocupa todo el ancho; si no, aparece el desplazamiento
+     * horizontal. Una celda que aun así no entre muestra su texto completo en el tooltip.
+     */
     public static JTable tabla(DefaultTableModel m) {
-        JTable t = new JTable(m);
+        JTable t = new JTable(m) {
+            @Override public boolean getScrollableTracksViewportWidth() {
+                return getParent() == null || getPreferredSize().width <= getParent().getWidth();
+            }
+
+            @Override public String getToolTipText(java.awt.event.MouseEvent e) {
+                int f = rowAtPoint(e.getPoint()), c = columnAtPoint(e.getPoint());
+                if (f < 0 || c < 0 || getValueAt(f, c) == null) return null;
+                Component r = prepareRenderer(getCellRenderer(f, c), f, c);
+                return r.getPreferredSize().width > getColumnModel().getColumn(c).getWidth() ? getValueAt(f, c).toString() : null;
+            }
+        };
         t.setRowHeight(34);
         t.setFont(NORMAL);
         t.setFillsViewportHeight(true);
         JTableHeader h = t.getTableHeader();
-        h.setFont(fuente(Font.BOLD, 13));
+        h.setFont(fuente(Font.BOLD, 14));
         h.setPreferredSize(new Dimension(h.getPreferredSize().width, 36));
         h.setReorderingAllowed(false);
+        ToolTipManager.sharedInstance().registerComponent(t);
+        // Se reajusta al cambiar los datos; los cambios seguidos (una fila tras otra) se agrupan en un solo ajuste
+        Timer ajuste = new Timer(40, e -> ajustarColumnas(t));
+        ajuste.setRepeats(false);
+        m.addTableModelListener(e -> ajuste.restart());
+        ajuste.start();
         return t;
     }
 
-    /** Da más espacio a una columna (por ejemplo, el nombre del producto); las demás se reparten el resto. */
+    /** Ancho preferido de cada columna = lo que ocupan su encabezado y sus celdas (sin pasar del máximo). */
+    private static void ajustarColumnas(JTable t) {
+        javax.swing.table.TableColumnModel cm = t.getColumnModel();
+        int filas = Math.min(t.getRowCount(), FILAS_MEDIDAS);
+        for (int c = 0; c < cm.getColumnCount(); c++) {
+            javax.swing.table.TableColumn col = cm.getColumn(c);
+            javax.swing.table.TableCellRenderer rh = col.getHeaderRenderer() != null ? col.getHeaderRenderer() : t.getTableHeader().getDefaultRenderer();
+            int ancho = rh.getTableCellRendererComponent(t, col.getHeaderValue(), false, false, -1, c).getPreferredSize().width;
+            for (int f = 0; f < filas; f++) ancho = Math.max(ancho, t.prepareRenderer(t.getCellRenderer(f, c), f, c).getPreferredSize().width);
+            col.setPreferredWidth(Math.max(col.getMinWidth(), Math.min(ancho + 4, ANCHO_MAXIMO_COLUMNA)));
+        }
+        t.revalidate();
+    }
+
+    /** Ancho inicial de una columna, antes de cargar datos; luego cada columna se ajusta a su contenido. */
     public static void columnaAncha(JTable t, int columna, int ancho) {
         t.getColumnModel().getColumn(columna).setPreferredWidth(ancho);
     }

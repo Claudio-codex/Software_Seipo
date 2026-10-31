@@ -19,7 +19,7 @@ public class Graficos {
     public static final Color TENUE = UI.TEXTO_SECUNDARIO;
     static final Color GRILLA = UI.LINEA_FILA;
     static final Color EJE = UI.BORDE_CAMPO;
-    static final Font CHICA = UI.fuente(Font.PLAIN, 11);
+    static final Font CHICA = UI.fuente(Font.PLAIN, 12);
     static final Font ETIQUETA = UI.fuente(Font.PLAIN, 12);
     static final Font ETIQUETA_NEGRITA = UI.fuente(Font.BOLD, 12);
 

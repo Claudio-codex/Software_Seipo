@@ -122,7 +122,7 @@ public class Principal extends JFrame {
             if (!s.getValue().grupo.equals(grupoActual)) {
                 grupoActual = s.getValue().grupo;
                 JLabel g = new JLabel(grupoActual);
-                g.setFont(UI.fuente(Font.BOLD, 11));
+                g.setFont(UI.fuente(Font.BOLD, 12));
                 g.setForeground(UI.GRIS_INSIGNIA);
                 g.setBorder(new EmptyBorder(menu.getComponentCount() == 0 ? 12 : 16, 14, 6, 0));
                 g.setAlignmentX(LEFT_ALIGNMENT);
@@ -329,7 +329,7 @@ public class Principal extends JFrame {
             setFont(UI.fuente(Font.PLAIN, 14));
             setForeground(UI.TEXTO);
             setHorizontalAlignment(SwingConstants.LEFT);
-            setBorder(new EmptyBorder(9, 14, 9, 14));
+            setBorder(new EmptyBorder(10, 14, 10, 14));
             setContentAreaFilled(false);
             setFocusPainted(false);
             setAlignmentX(LEFT_ALIGNMENT);
@@ -363,7 +363,7 @@ public class Principal extends JFrame {
             }
             if (aviso > 0) {
                 String n = String.valueOf(aviso);
-                g.setFont(UI.fuente(Font.BOLD, 11));
+                g.setFont(UI.fuente(Font.BOLD, 12));
                 FontMetrics fm = g.getFontMetrics();
                 int w = Math.max(22, fm.stringWidth(n) + 12), h = 20;
                 int x = getWidth() - w - 10, y = (getHeight() - h) / 2;
